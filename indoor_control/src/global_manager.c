@@ -10,6 +10,7 @@
 
 #include "../include/global_manager.h"
 #include "../include/jumpers_manager.h"
+#include "../include/pote_input_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -78,6 +79,12 @@ void global_manager_init(void)
 
     device_mode = global_manager_find_device_mode();
     global_manager_set_device_mode(device_mode);
+
+    global_manager_set_pwm_mode(MANUAL);
+
+    pote_input_manager_init();
+
+
 }
 //------------------------------------------------------------------------------
 

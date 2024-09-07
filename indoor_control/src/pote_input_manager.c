@@ -15,12 +15,12 @@
 
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
-//#define DEBUG_MODULE 
+#define DEBUG_MODULE 
 
 #define ADC_WIDTH       ADC_BITWIDTH_9
 #define ADC_ATTEN       ADC_ATTEN_DB_0
 
-#define CUENTAS_ADC_100_PER_PWM 509
+#define CUENTAS_ADC_100_PER_PWM 638
 #define HISTERESIS_PER_PWM_UPDATE 8 // histeresis para que se envie una actualizacion en la potencia depwmde salida
 
 #define QUEUE_ELEMENT_QUANTITY 20

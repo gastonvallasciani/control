@@ -9,8 +9,14 @@
 
 void app_main() 
 {
+    char version[10];
+     uint8_t version_len;
+
     nv_flash_manager_init();
     global_manager_init();
+
+    get_version(version, &version_len);
+    printf("Version number %s \n", version);
     
     while(true)
     {
