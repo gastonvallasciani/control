@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "pote_input_manager.h": "c",
+        "flora_vege_manager.h": "c"
+    }
+}

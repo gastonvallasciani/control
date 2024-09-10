@@ -20,6 +20,11 @@ typedef enum{
     MODE_4 = 3,
 }device_mode_t;
 
+typedef enum{
+    FLORA_VEGE_OUTPUT_DISABLE = 0,
+    FLORA_VEGE_OUTPUT_ENABLE = 1,
+}flora_vege_status_t;
+
 typedef struct{
     uint8_t percent_power;
 
@@ -28,6 +33,7 @@ typedef struct{
 typedef struct{
     pwm_mode_t pwm_mode;
     pwm_automatic_info_t pwm_auto_info;
+    flora_vege_status_t flora_vege_status;
 }global_manager_nv_t;
 
 typedef struct{
@@ -51,5 +57,7 @@ uint8_t global_manager_get_pwm_mode(pwm_mode_t* pwm_mode);
 uint8_t global_manager_set_device_mode(device_mode_t device_mode);
 uint8_t global_manager_get_device_mode(device_mode_t *device_mode);
 
+uint8_t global_manager_set_flora_vege_status(flora_vege_status_t flora_vege_status);
+uint8_t global_manager_get_flora_vege_status(flora_vege_status_t* flora_vege_status);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* GLOBAL_MANAGER_H__ */

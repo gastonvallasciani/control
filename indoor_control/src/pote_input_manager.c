@@ -15,7 +15,7 @@
 
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
-#define DEBUG_MODULE 
+//#define DEBUG_MODULE 
 
 #define ADC_WIDTH       ADC_BITWIDTH_9
 #define ADC_ATTEN       ADC_ATTEN_DB_0

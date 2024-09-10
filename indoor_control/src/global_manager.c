@@ -11,6 +11,10 @@
 #include "../include/global_manager.h"
 #include "../include/jumpers_manager.h"
 #include "../include/pote_input_manager.h"
+#include "../include/button_manager.h"
+#include "../include/nv_flash_driver.h"
+#include "../include/led_manager.h"
+
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -84,6 +88,11 @@ void global_manager_init(void)
 
     pote_input_manager_init();
 
+    led_manager_init();
+
+    button_manager_init();
+
+
 
 }
 //------------------------------------------------------------------------------
@@ -156,6 +165,31 @@ uint8_t global_manager_get_pwm_mode(pwm_mode_t* pwm_mode)
     if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {
         *pwm_mode = global_manager_info.nv_info.pwm_mode;
+        xSemaphoreGive(global_manager_semaph);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+
+uint8_t global_manager_set_flora_vege_status(flora_vege_status_t flora_vege_status)
+{
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {     
+        global_manager_info.nv_info.flora_vege_status = flora_vege_status;
+        xSemaphoreGive(global_manager_semaph);
+        return 1; 
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_get_flora_vege_status(flora_vege_status_t* flora_vege_status)
+{
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        *flora_vege_status = global_manager_info.nv_info.flora_vege_status;
         xSemaphoreGive(global_manager_semaph);
         return 1;
     }
