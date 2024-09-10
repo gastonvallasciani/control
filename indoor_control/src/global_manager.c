@@ -14,6 +14,7 @@
 #include "../include/button_manager.h"
 #include "../include/nv_flash_driver.h"
 #include "../include/led_manager.h"
+#include "../include/flora_vege_manager.h"
 
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
@@ -90,9 +91,9 @@ void global_manager_init(void)
 
     led_manager_init();
 
+    flora_vege_manager_init();
+
     button_manager_init();
-
-
 
 }
 //------------------------------------------------------------------------------
