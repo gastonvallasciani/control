@@ -2,6 +2,7 @@
     "files.associations": {
         "pote_input_manager.h": "c",
         "flora_vege_manager.h": "c",
-        "led_manager.h": "c"
+        "led_manager.h": "c",
+        "jumpers_manager.h": "c"
     }
 }

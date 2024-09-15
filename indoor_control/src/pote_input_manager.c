@@ -21,7 +21,7 @@
 #define ADC_ATTEN       ADC_ATTEN_DB_0
 
 #define CUENTAS_ADC_100_PER_PWM 638
-#define HISTERESIS_PER_PWM_UPDATE 8 // histeresis para que se envie una actualizacion en la potencia depwmde salida
+#define HISTERESIS_PER_PWM_UPDATE 4 // histeresis para que se envie una actualizacion en la potencia depwmde salida
 
 #define QUEUE_ELEMENT_QUANTITY 20
 //------------------- TYPEDEF --------------------------------------------------
@@ -121,7 +121,18 @@ static void analog_input_manager_task(void* arg)
                         index = 0;
 
                         //per_pwm = (val*100) / max_pote_reference;
-                        per_pwm = ((90*(val-25)) / (max_pote_reference - 25)) + 10;
+                        //per_pwm = ((90*(val-25)) / (max_pote_reference - 25)) + 10;
+                        if (val < 1) {
+                            // Si el valor del ADC es menor a las cuentas de 5 mV, PWM es 0
+                            per_pwm = 0;
+                        } else if (val >= 1 && val < (max_pote_reference / 10)) {
+                            // Entre 5 mV y el 10% del rango, el PWM es fijo en 10%
+                            per_pwm = 10;
+                        } else {
+                            // A partir del 10% del rango, el PWM sigue la curva lineal hasta 100%
+                            per_pwm = ((90 * (val - (max_pote_reference / 10))) / (max_pote_reference - (max_pote_reference / 10))) + 10;
+                        }
+
                         global_manager_set_pwm_manual_percentage((uint8_t)per_pwm);
                         #ifdef DEBUG_MODULE
                             printf("Valor ADC channel 5: %d \n", val);

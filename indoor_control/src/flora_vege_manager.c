@@ -6,8 +6,15 @@
 #include "esp_log.h"
 #include "sdkconfig.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
 #include "../include/board_def.h"
 #include "../include/flora_vege_manager.h"
+#include "../include/pwm_manager.h"
+#include "../include/jumpers_manager.h"
+#include "../include/global_manager.h"
+
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE
@@ -48,18 +55,48 @@ void flora_vege_manager_init(void)
 //------------------------------------------------------------------------------
 void flora_vege_manager_turn_on(void)
 {
+    uint8_t pwm_manual_value = 0;
     #ifdef DEBUG_MODULE
         printf("TURN ON RELE VEGE \n");
     #endif
-    gpio_set_level(S_VEGE, 1);
+
+    // Cuando el pwm se maneja por potenciometro y no por teclas
+    if(!is_jp3_teclas_connected())
+    {
+        global_manager_get_pwm_manual_percentage(&pwm_manual_value);
+        pwm_manager_turn_off_pwm();
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        gpio_set_level(S_VEGE, 1);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        pwm_manager_turn_on_pwm(pwm_manual_value);
+    }
+    else
+    {
+        gpio_set_level(S_VEGE, 1);
+    }
+    
 }
 //------------------------------------------------------------------------------
 void flora_vege_manager_turn_off(void)
 {
+    uint8_t pwm_manual_value = 0;
     #ifdef DEBUG_MODULE
         printf("TURN OFF RELE VEGE \n");
     #endif
-    gpio_set_level(S_VEGE, 0);
+    // Cuando el pwm se maneja por potenciometro y no por teclas
+    if(!is_jp3_teclas_connected())
+    {
+        global_manager_get_pwm_manual_percentage(&pwm_manual_value);
+        pwm_manager_turn_off_pwm();
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        gpio_set_level(S_VEGE, 0);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        pwm_manager_turn_on_pwm(pwm_manual_value);
+    }
+    else
+    {
+        gpio_set_level(S_VEGE, 0);
+    }
 }
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------

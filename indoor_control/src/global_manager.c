@@ -15,10 +15,11 @@
 #include "../include/nv_flash_driver.h"
 #include "../include/led_manager.h"
 #include "../include/flora_vege_manager.h"
+#include "../include/pwm_manager.h"
 
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
-
+#define DEBUG_MODULE
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -28,6 +29,7 @@ static SemaphoreHandle_t global_manager_semaph;
 static global_manager_t global_manager_info;
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
+static void global_manager_task(void* arg);
 
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
@@ -68,12 +70,49 @@ device_mode_t global_manager_find_device_mode(void)
 
     return(device_mode);
 }
+//------------------------------------------------------------------------------
+static void global_manager_task(void* arg)
+{
+    uint8_t pwm_manual_value = 0, pwm_value_bkp = 0;
+    int8_t pwm_diff = 0;
+    if(is_jp3_teclas_connected() == false)
+    {
+        global_manager_get_pwm_manual_percentage(&pwm_manual_value);
+        pwm_manager_turn_on_pwm(pwm_manual_value);
+
+        pwm_value_bkp = pwm_manual_value;
+    }
+
+    while(true)
+    {
+        if(is_jp3_teclas_connected() == false)
+        {
+            global_manager_get_pwm_manual_percentage(&pwm_manual_value);
+            
+            pwm_diff = (int8_t)pwm_manual_value - (int8_t)pwm_value_bkp;
+            
+            if((pwm_diff > 1) || (pwm_diff < -1))
+            {
+                #ifdef DEBUG_MODULE
+                    printf("Update PWM to value: %d \n", pwm_manual_value);
+                #endif  
+                pwm_manager_update_pwm(pwm_manual_value);
+                pwm_value_bkp = pwm_manual_value;
+            }
+        }
+
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+    }
+}
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------
 void global_manager_init(void)
 {
     device_mode_t device_mode;
     global_manager_semaph = xSemaphoreCreateBinary(); 
+
+    xTaskCreate(global_manager_task, "global_manager_task", 
+        configMINIMAL_STACK_SIZE*4, NULL, configMAX_PRIORITIES-2, NULL);
 
     if(global_manager_semaph != NULL)
         xSemaphoreGive(global_manager_semaph);
@@ -94,6 +133,8 @@ void global_manager_init(void)
     flora_vege_manager_init();
 
     button_manager_init();
+
+    pwm_manager_init();
 
 }
 //------------------------------------------------------------------------------
