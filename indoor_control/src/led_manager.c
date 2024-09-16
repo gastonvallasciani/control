@@ -24,6 +24,9 @@
 
 #define LED_ON 0
 #define LED_OFF 1
+
+#define MIN_BLINK_FREQ 1   // Frecuencia mínima de parpadeo (1 Hz)
+#define MAX_BLINK_FREQ 10  // Frecuencia máxima de parpadeo (10 Hz)
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 typedef enum
@@ -31,10 +34,12 @@ typedef enum
     CMD_UNDEFINED = 0,
     RELE_VEGE_ON = 1,
     RELE_VEGE_OFF = 2,
+    UPDATE_LED_PWM_OUTPUT = 3,
 } led_event_cmds_t;
 
 typedef struct
 {
+    uint8_t pwm_value;
     led_event_cmds_t cmd;
 } led_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
@@ -51,13 +56,44 @@ static void set_rele_vege_off_indicator(void);
 static void led_manager_task(void *arg);
 
 static void timer_led_toggle_pwm_status_callback(void *arg);
+
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
+static esp_timer_handle_t blink_timer;
 
 //------------------- DEFINICION DE DATOS GLOBALES -----------------------------
 //------------------------------------------------------------------------------
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
+//------------------------------------------------------------------------------
+static int map_value_to_frequency(int value) 
+{
+    return MIN_BLINK_FREQ + (MAX_BLINK_FREQ - MIN_BLINK_FREQ) * value / 100;
+}
+//------------------------------------------------------------------------------
+void start_led_blink_timer(int pwm_value) {
+    int freq = map_value_to_frequency(pwm_value);  // Obtener la frecuencia basada en el valor PWM
+    int64_t period = (1000000 / freq) / 2;  // Periodo en microsegundos, dividido por 2 para el ciclo ON/OFF
+
+    if (blink_timer != NULL) {
+        esp_timer_stop(blink_timer);  // Detener cualquier timer activo
+    }
+
+    // Crear y empezar el timer para hacer toggle del LED
+    esp_timer_create_args_t timer_args = {
+        .callback = &timer_led_toggle_pwm_status_callback,
+        .name = "led_blink_timer"
+    };
+    esp_timer_create(&timer_args, &blink_timer);
+    esp_timer_start_periodic(blink_timer, period);  // Empezar el timer con el periodo calculado
+}
+//------------------------------------------------------------------------------
+// Callback para alternar el estado del LED
+static void timer_led_toggle_pwm_status_callback(void *arg) {
+    static bool led_on = false;
+    gpio_set_level(LED_PWM, led_on ? LED_OFF : LED_ON);
+    led_on = !led_on;
+}
 //------------------------------------------------------------------------------
 static void config_led_rele_vege_status_up(void)
 {
@@ -77,8 +113,16 @@ static void config_led_rele_vege_status_up(void)
     io_conf.pull_up_en = 0;                            
     gpio_config(&io_conf);
 
+    io_conf.intr_type = GPIO_INTR_DISABLE;                 
+    io_conf.mode = GPIO_MODE_OUTPUT;                      
+    io_conf.pin_bit_mask = (1ULL << LED_PWM); 
+    io_conf.pull_down_en = 0;                        
+    io_conf.pull_up_en = 0;                            
+    gpio_config(&io_conf);
+
     gpio_set_level(LED_FLORA, LED_OFF);
     gpio_set_level(LED_VEGE, LED_OFF);
+    gpio_set_level(LED_PWM, LED_OFF);
 }
 
 //------------------------------------------------------------------------------
@@ -121,6 +165,9 @@ static void led_manager_task(void *arg)
             case RELE_VEGE_OFF:
                 set_rele_vege_off_indicator();
                 break;
+            case UPDATE_LED_PWM_OUTPUT:
+                start_led_blink_timer(led_ev.pwm_value);
+                break;
             default:
                 break;
             }
@@ -154,6 +201,16 @@ void led_manager_rele_vege_off(void)
     led_event_t ev;
 
     ev.cmd = RELE_VEGE_OFF;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_pwm_output(uint8_t pwm_value)
+{
+    led_event_t ev;
+
+    ev.cmd = UPDATE_LED_PWM_OUTPUT;
+    ev.pwm_value = pwm_value;
 
     xQueueSend(led_manager_queue, &ev, 10);
 }

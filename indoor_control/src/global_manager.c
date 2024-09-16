@@ -16,6 +16,7 @@
 #include "../include/led_manager.h"
 #include "../include/flora_vege_manager.h"
 #include "../include/pwm_manager.h"
+#include "../include/led_manager.h"
 
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
@@ -79,6 +80,7 @@ static void global_manager_task(void* arg)
     {
         global_manager_get_pwm_manual_percentage(&pwm_manual_value);
         pwm_manager_turn_on_pwm(pwm_manual_value);
+        led_manager_pwm_output(pwm_manual_value);
 
         pwm_value_bkp = pwm_manual_value;
     }
@@ -97,6 +99,7 @@ static void global_manager_task(void* arg)
                     printf("Update PWM to value: %d \n", pwm_manual_value);
                 #endif  
                 pwm_manager_update_pwm(pwm_manual_value);
+                led_manager_pwm_output(pwm_manual_value);
                 pwm_value_bkp = pwm_manual_value;
             }
         }
