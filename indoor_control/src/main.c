@@ -7,6 +7,8 @@
 #include "driver/i2c.h"
 #include "esp_log.h"
 
+#include "display.h"
+
 #define RESET_PIN_DISPLAY 13
 #define LED_PIN 18
 
@@ -59,24 +61,6 @@ static esp_err_t set_i2c(void)
 
     return ESP_OK;
 }
-
-/*static esp_err_t display_send_command(uint8_t command)
-{
-    uint8_t buffer[2];
-    buffer[0] = 0x00;    // Control byte (0x00 = comando)
-    buffer[1] = command; // Comando a enviar
-    esp_err_t err = i2c_master_write_to_device(I2C_NUM_0, DISPLAY_ADDRESS, buffer, sizeof(buffer), 1000 / portTICK_PERIOD_MS);
-    if (err == ESP_FAIL)
-    {
-        ESP_LOGE(TAG, "Error en el envio de comando al display");
-        return ESP_FAIL;
-    }
-    else
-    {
-        ESP_LOGI(TAG, "Comando enviado al display con exito");
-        return ESP_OK;
-    }
-}*/
 
 static esp_err_t display_send_command(uint8_t command)
 {
@@ -141,31 +125,48 @@ static esp_err_t display_init(void)
     vTaskDelay(100 / portTICK_PERIOD_MS);
     gpio_set_level(RESET_PIN_DISPLAY, 1);
     vTaskDelay(500 / portTICK_PERIOD_MS);
-    display_send_command(0x3A); // 8 bits, 2 o 4 lineas, re =1, is=0
-    display_send_command(0x1B); // 2 lines
-    display_send_command(0x06); // bottom view
-    display_send_command(0x1E); //
-    display_send_command(0x3D); //
-    display_send_command(0x1B); //
-    display_send_command(0x6C);
-    display_send_command(0x56);
-    display_send_command(0x6B);
-    display_send_command(0x38);
-    display_send_command(0x01);
+    display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
+    display_send_command(COMMAND_4LINES);
+    display_send_command(COMMAND_BOTTOM_VIEW); //
+    display_send_command(COMMAND_BS1_1);       //
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS1);
+    display_send_command(COMMAND_BS0_1); //
+    display_send_command(COMMAND_FOLLOWER_CONTROL_DOGS164);
+    display_send_command(COMMAND_POWER_CONTROL_DOGS164);
+    display_send_command(COMMAND_CONTRAST_DEFAULT_DOGS164);
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
+    display_send_command(COMMAND_CLEAR_DISPLAY);
     vTaskDelay(100 / portTICK_PERIOD_MS);
-    display_send_command(0x0F); //
-    display_send_command(0x0C);
+    display_send_command(COMMAND_SHIFT_SCROLL_ALL_LINES); //
+    display_send_command(COMMAND_DISPLAY_SHIFT_RIGHT);
+    display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
+    display_send_command(COMMAND_2LINES);
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0_DH1);
     set_cursor(0, 0);
     display_write_string(master);
     set_cursor(0, 9);
     display_write_string(lumenar);
-    set_cursor(3, 0);
+    set_cursor(1, 0);
     display_write_string(numero);
+    display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
+    display_send_command(COMMAND_ROM_SELECT);
+    display_send_data(COMMAND_ROM_A);
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0_DH1);
+    set_cursor(1, 5);
+    display_send_data(0xDE);
+    int i;
+    for (i = 7; i < 16; i++)
+    {
+        set_cursor(1, i);
+        display_send_data(0x1F);
+    }
+
     return ESP_OK;
 }
 
 void app_main()
 {
+    int a = 0;
     init_led_pin();
     ESP_LOGI(TAG, "Inicializando I2C");
     ESP_ERROR_CHECK(set_i2c());
@@ -176,6 +177,19 @@ void app_main()
     while (true)
     {
         ESP_LOGI("wait", "...");
+        if (a == 0)
+        {
+            set_cursor(1, 5);
+            display_send_data(0xE0);
+            a = 1;
+        }
+        else
+        {
+            set_cursor(1, 5);
+            display_send_data(0xDE);
+            a = 0;
+        }
+
         blink_led();
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
