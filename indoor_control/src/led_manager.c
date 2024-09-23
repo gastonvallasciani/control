@@ -60,6 +60,7 @@ static void timer_led_toggle_pwm_status_callback(void *arg);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 static esp_timer_handle_t blink_timer;
+static uint8_t pwm_val_bkp = 0;
 
 //------------------- DEFINICION DE DATOS GLOBALES -----------------------------
 //------------------------------------------------------------------------------
@@ -73,7 +74,12 @@ static int map_value_to_frequency(int value)
 //------------------------------------------------------------------------------
 void start_led_blink_timer(int pwm_value) {
     int freq = map_value_to_frequency(pwm_value);  // Obtener la frecuencia basada en el valor PWM
-    int64_t period = (1000000 / freq) / 2;  // Periodo en microsegundos, dividido por 2 para el ciclo ON/OFF
+    pwm_val_bkp = pwm_value;
+    int64_t period = 1000000;
+    if(freq != 0)
+    {
+        period = (1000000 / freq) / 2;  // Periodo en microsegundos, dividido por 2 para el ciclo ON/OFF
+    }
 
     if (blink_timer != NULL) {
         esp_timer_stop(blink_timer);  // Detener cualquier timer activo
@@ -91,8 +97,17 @@ void start_led_blink_timer(int pwm_value) {
 // Callback para alternar el estado del LED
 static void timer_led_toggle_pwm_status_callback(void *arg) {
     static bool led_on = false;
-    gpio_set_level(LED_PWM, led_on ? LED_OFF : LED_ON);
-    led_on = !led_on;
+    if(pwm_val_bkp != 0)
+    {
+        gpio_set_level(LED_PWM, led_on ? LED_OFF : LED_ON);
+        led_on = !led_on;
+    }
+    else
+    {
+        gpio_set_level(LED_PWM, LED_OFF);
+        led_on = false;
+    }
+    
 }
 //------------------------------------------------------------------------------
 static void config_led_rele_vege_status_up(void)
