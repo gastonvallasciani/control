@@ -1,3 +1,12 @@
+#include <stdio.h>
+#include <string.h>
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+#include "driver/i2c.h"
+#include "esp_log.h"
+
 #define MODE_COMMAND 0x00
 #define MODE_DATA 0x40
 
@@ -60,3 +69,12 @@
 #define COMMAND_ROM_A 0x00
 #define COMMAND_ROM_B 0x04
 #define COMMAND_ROM_C 0x08
+
+esp_err_t init_reset_display_pin(void);
+esp_err_t set_i2c(void);
+esp_err_t display_send_command(uint8_t);
+esp_err_t display_send_data(uint8_t);
+esp_err_t set_cursor(uint8_t, uint8_t);
+esp_err_t display_write_char(char);
+esp_err_t display_write_string(const char *);
+esp_err_t display_init(void);
