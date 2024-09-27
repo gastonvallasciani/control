@@ -91,11 +91,81 @@ esp_err_t display_write_string(const char *str)
     return ESP_OK;
 }
 
-esp_err_t display_init(void)
+esp_err_t display_clean_arrow(void)
+{
+    set_cursor(1, 5);
+    display_write_string(" ");
+    return ESP_OK;
+}
+
+esp_err_t display_clean_power_and_bar(void)
+{
+    uint8_t i;
+    for (i = 0; i < 16; i++)
+    {
+        set_cursor(1, i);
+        display_write_string(" ");
+    }
+    return ESP_OK;
+}
+
+esp_err_t display_power_bar(uint8_t power)
+{
+    uint8_t full_bars = 0;
+    uint8_t minor_bars = 0;
+    uint8_t pixel_bars = 0;
+    uint8_t i, j;
+    if (power > 100)
+    {
+        power = 100;
+    }
+    if (power < 0)
+    {
+        power = 0;
+    }
+    pixel_bars = power / 2;
+    full_bars = pixel_bars / 5;
+    minor_bars = pixel_bars % 5;
+
+    // imprimo las barras completas
+    for (i = 6; i < 6 + full_bars; i++)
+    {
+        set_cursor(1, i);
+        display_send_data(FIVE_BAR);
+    }
+    // imprimo la barra incompleta restante
+    switch (minor_bars)
+    {
+    case 1:
+        set_cursor(1, 6 + full_bars);
+        display_send_data(ONE_BAR);
+        break;
+    case 2:
+        set_cursor(1, 6 + full_bars);
+        display_send_data(TWO_BAR);
+        break;
+    case 3:
+        set_cursor(1, 6 + full_bars);
+        display_send_data(THREE_BAR);
+        break;
+    case 4:
+        set_cursor(1, 6 + full_bars);
+        display_send_data(FOUR_BAR);
+        break;
+    default:
+        break;
+    }
+
+    return ESP_OK;
+}
+
+esp_err_t display_set_screen(uint8_t power)
 {
     char *master = "MASTER";
     char *lumenar = "LUMENAR";
-    char *numero = "100%";
+    char numero[6];
+    sprintf(numero, "%u%%", power);
+
     // hago secuencia de reset
     init_reset_display_pin();
     gpio_set_level(RESET_PIN_DISPLAY, 0);
@@ -106,6 +176,7 @@ esp_err_t display_init(void)
     vTaskDelay(100 / portTICK_PERIOD_MS);
     gpio_set_level(RESET_PIN_DISPLAY, 1);
     vTaskDelay(500 / portTICK_PERIOD_MS);
+    // comandos para configurar el display
     display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
     display_send_command(COMMAND_4LINES);
     display_send_command(COMMAND_BOTTOM_VIEW); //
@@ -120,27 +191,56 @@ esp_err_t display_init(void)
     vTaskDelay(100 / portTICK_PERIOD_MS);
     display_send_command(COMMAND_SHIFT_SCROLL_ALL_LINES); //
     display_send_command(COMMAND_DISPLAY_SHIFT_RIGHT);
+    // aca defino que el display sea con dos lineas grandes
     display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
     display_send_command(COMMAND_2LINES);
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0_DH1);
+    // limpio todo lo de la linea de datos
+    display_clean_arrow();
+    display_clean_power_and_bar();
+    // escribo
     set_cursor(0, 0);
-    display_write_string(master);
+    display_write_string(master); // escribo master
     set_cursor(0, 9);
-    display_write_string(lumenar);
+    display_write_string(lumenar); // escribo lumenar
     set_cursor(1, 0);
-    display_write_string(numero);
+    display_write_string(numero); // escribo el valor de potencia
+    // selecciono la ROM A para la flecha
     display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
     display_send_command(COMMAND_ROM_SELECT);
     display_send_data(COMMAND_ROM_A);
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0_DH1);
-    set_cursor(1, 5);
-    display_send_data(0xDE);
-    int i;
-    for (i = 7; i < 16; i++)
-    {
-        set_cursor(1, i);
-        display_send_data(0x1F);
-    }
+    // muestro la barra de potencia
+    display_power_bar(power);
 
+    return ESP_OK;
+}
+
+esp_err_t display_set_power(uint8_t power, arrow_t arrow)
+{
+    // limpio todo lo de la linea de datos
+    display_clean_arrow();
+    char numero[6];
+    if (arrow == UP)
+    {
+        set_cursor(1, 5);
+        display_send_data(0xDE); // flecha arriba
+    }
+    else if (arrow == DOWN)
+    {
+        set_cursor(1, 5);
+        display_send_data(0xE0); // flecha abajo
+    }
+    vTaskDelay(700 / portTICK_PERIOD_MS); // doy tiempo para que se vea la barra
+    display_clean_power_and_bar();
+    if (power > 100)
+    {
+        power = 100;
+    }
+    sprintf(numero, "%u%%", power);
+    set_cursor(1, 0);
+    display_write_string(numero);
+    display_power_bar(power);
+    display_clean_arrow();
     return ESP_OK;
 }
