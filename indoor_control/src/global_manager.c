@@ -17,6 +17,7 @@
 #include "../include/flora_vege_manager.h"
 #include "../include/pwm_manager.h"
 #include "../include/led_manager.h"
+#include "../include/nv_flash_manager.h"
 
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
@@ -31,6 +32,7 @@ static global_manager_t global_manager_info;
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
 static void global_manager_task(void* arg);
+static uint8_t nv_init_pwm_digital_value(void);
 
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
@@ -39,6 +41,29 @@ static void global_manager_task(void* arg);
 //------------------------------------------------------------------------------
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
+//------------------------------------------------------------------------------
+static uint8_t nv_init_pwm_digital_value(void)
+{
+    uint32_t value;
+    uint8_t ret_value;
+
+    if (read_uint32_from_flash(PWM_DIGITAL_VALUE_KEY, &value))
+    {
+#ifdef DEBUG_MODULE
+        printf("PWM_DIGITAL_VALUE READ: %lu \n", value);
+#endif
+
+        ret_value = (uint8_t)value;
+    }
+    else
+    {
+#ifdef DEBUG_MODULE
+        printf("PWM_DIGITAL_VALUE READING FAILED \n");
+#endif
+        ret_value = 0;
+    }
+    return(ret_value);
+}
 //------------------------------------------------------------------------------
 device_mode_t global_manager_find_device_mode(void)
 {
@@ -76,20 +101,29 @@ static void global_manager_task(void* arg)
 {
     uint8_t pwm_manual_value = 0, pwm_value_bkp = 0;
     int8_t pwm_diff = 0;
+    uint8_t pwm_digital_value = nv_init_pwm_digital_value();
+
+    global_manager_set_pwm_digital_percentage(pwm_digital_value);
+    
     if(is_jp3_teclas_connected() == false)
     {
-        global_manager_get_pwm_manual_percentage(&pwm_manual_value);
+        global_manager_get_pwm_analog_percentage(&pwm_manual_value);
         pwm_manager_turn_on_pwm(pwm_manual_value);
         led_manager_pwm_output(pwm_manual_value);
 
         pwm_value_bkp = pwm_manual_value;
+    }
+    else if (is_jp3_teclas_connected() == true)
+    {
+        pwm_manager_turn_on_pwm(pwm_digital_value);
+        led_manager_pwm_output(pwm_digital_value);
     }
 
     while(true)
     {
         if(is_jp3_teclas_connected() == false)
         {
-            global_manager_get_pwm_manual_percentage(&pwm_manual_value);
+            global_manager_get_pwm_analog_percentage(&pwm_manual_value);
             
             pwm_diff = (int8_t)pwm_manual_value - (int8_t)pwm_value_bkp;
             
@@ -114,6 +148,10 @@ void global_manager_init(void)
     device_mode_t device_mode;
     global_manager_semaph = xSemaphoreCreateBinary(); 
 
+    led_manager_init();
+    pwm_manager_init();
+    button_manager_init();
+
     xTaskCreate(global_manager_task, "global_manager_task", 
         configMINIMAL_STACK_SIZE*4, NULL, configMAX_PRIORITIES-2, NULL);
 
@@ -131,22 +169,15 @@ void global_manager_init(void)
 
     pote_input_manager_init();
 
-    led_manager_init();
-
     flora_vege_manager_init();
-
-    button_manager_init();
-
-    pwm_manager_init();
-
 }
 //------------------------------------------------------------------------------
 
-uint8_t global_manager_set_pwm_manual_percentage(uint8_t pwm_manual_per_value)
+uint8_t global_manager_set_pwm_analog_percentage(uint8_t pwm_analog_per_value)
 {
     if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {     
-        global_manager_info.pwm_manual_percent_power = pwm_manual_per_value;
+        global_manager_info.pwm_analog_percent_power = pwm_analog_per_value;
         xSemaphoreGive(global_manager_semaph);
         return 1; 
     }
@@ -154,11 +185,36 @@ uint8_t global_manager_set_pwm_manual_percentage(uint8_t pwm_manual_per_value)
     return 0;
 }
 //------------------------------------------------------------------------------
-uint8_t global_manager_get_pwm_manual_percentage(uint8_t* pwm_manual_per_value)
+uint8_t global_manager_get_pwm_analog_percentage(uint8_t* pwm_analog_per_value)
 {
     if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {
-        *pwm_manual_per_value = global_manager_info.pwm_manual_percent_power;
+        *pwm_analog_per_value = global_manager_info.pwm_analog_percent_power;
+        xSemaphoreGive(global_manager_semaph);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+
+uint8_t global_manager_set_pwm_digital_percentage(uint8_t pwm_digital_per_value)
+{
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {     
+        global_manager_info.pwm_digital_percent_power = pwm_digital_per_value;
+        xSemaphoreGive(global_manager_semaph);
+        return 1; 
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_get_pwm_digital_percentage(uint8_t* pwm_digital_per_value)
+{
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        *pwm_digital_per_value = global_manager_info.pwm_digital_percent_power;
         xSemaphoreGive(global_manager_semaph);
         return 1;
     }

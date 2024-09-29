@@ -36,9 +36,13 @@
 #define S_OUT GPIO_NUM_18
 
 // JUMPERS 
-#define JP1_DSPY GPIO_NUM_4
+//#define JP1_DSPY GPIO_NUM_4
 #define JP2_RELOJ GPIO_NUM_16 
-#define JP3_TECLAS GPIO_NUM_17
+//#define JP3_TECLAS GPIO_NUM_17
+
+#define JP1_DSPY GPIO_NUM_17
+#define JP3_TECLAS GPIO_NUM_4
+
 #define J1 GPIO_NUM_5
 
 // DISPLAY

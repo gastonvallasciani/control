@@ -11,9 +11,11 @@
 // FLASH KEYs
 // Tamaño maximo de key 15 caracteres
 #define RELE_VEGE_STATUS_KEY "rele_vege_key\0"
+#define PWM_DIGITAL_VALUE_KEY "pwm_dig_key\0"
 
 // DEFAULT VALUES
 #define RELE_VEGE_STATUS_DEFAULT 0 // OFF
+#define PWM_DIGITAL_VALUE_DEFAULT 0 // pwm value configurado pro tecla. Rango: 0-100
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 

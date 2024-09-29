@@ -64,6 +64,7 @@ uint8_t is_jp2_reloj_connected(void)
 uint8_t is_jp3_teclas_connected(void)
 {
     uint8_t status = gpio_get_level(JP3_TECLAS);
+
     if(status)
         return 0;
     else

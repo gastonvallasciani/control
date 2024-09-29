@@ -63,7 +63,7 @@ void flora_vege_manager_turn_on(void)
     // Cuando el pwm se maneja por potenciometro y no por teclas
     if(!is_jp3_teclas_connected())
     {
-        global_manager_get_pwm_manual_percentage(&pwm_manual_value);
+        global_manager_get_pwm_analog_percentage(&pwm_manual_value);
         pwm_manager_turn_off_pwm();
         vTaskDelay(100 / portTICK_PERIOD_MS);
         gpio_set_level(S_VEGE, 1);
@@ -86,7 +86,7 @@ void flora_vege_manager_turn_off(void)
     // Cuando el pwm se maneja por potenciometro y no por teclas
     if(!is_jp3_teclas_connected())
     {
-        global_manager_get_pwm_manual_percentage(&pwm_manual_value);
+        global_manager_get_pwm_analog_percentage(&pwm_manual_value);
         pwm_manager_turn_off_pwm();
         vTaskDelay(100 / portTICK_PERIOD_MS);
         gpio_set_level(S_VEGE, 0);

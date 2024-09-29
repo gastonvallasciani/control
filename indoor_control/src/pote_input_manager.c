@@ -133,7 +133,7 @@ static void analog_input_manager_task(void* arg)
                             per_pwm = ((90 * (val - (max_pote_reference / 10))) / (max_pote_reference - (max_pote_reference / 10))) + 10;
                         }
 
-                        global_manager_set_pwm_manual_percentage((uint8_t)per_pwm);
+                        global_manager_set_pwm_analog_percentage((uint8_t)per_pwm);
                         #ifdef DEBUG_MODULE
                             printf("Valor ADC channel 5: %d \n", val);
                             printf("Valor per_pwm: %d \n", per_pwm);

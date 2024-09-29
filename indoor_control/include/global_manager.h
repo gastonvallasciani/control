@@ -38,7 +38,8 @@ typedef struct{
 
 typedef struct{
     device_mode_t device_mode;
-    uint8_t pwm_manual_percent_power;
+    uint8_t pwm_analog_percent_power;
+    uint8_t pwm_digital_percent_power;
     global_manager_nv_t nv_info;
 }global_manager_t;
 //------------------- DECLARACION DE DATOS EXTERNOS ----------------------------
@@ -48,8 +49,8 @@ typedef struct{
 //------------------------------------------------------------------------------
 void global_manager_init(void);
 
-uint8_t global_manager_set_pwm_manual_percentage(uint8_t pwm_manual_per_value);
-uint8_t global_manager_get_pwm_manual_percentage(uint8_t* pwm_manual_per_value);
+uint8_t global_manager_set_pwm_analog_percentage(uint8_t pwm_analog_per_value);
+uint8_t global_manager_get_pwm_analog_percentage(uint8_t* pwm_analog_per_value);
 
 uint8_t global_manager_set_pwm_mode(pwm_mode_t pwm_mode);
 uint8_t global_manager_get_pwm_mode(pwm_mode_t* pwm_mode);
@@ -59,5 +60,8 @@ uint8_t global_manager_get_device_mode(device_mode_t *device_mode);
 
 uint8_t global_manager_set_flora_vege_status(flora_vege_status_t flora_vege_status);
 uint8_t global_manager_get_flora_vege_status(flora_vege_status_t* flora_vege_status);
+
+uint8_t global_manager_set_pwm_digital_percentage(uint8_t pwm_digital_per_value);
+uint8_t global_manager_get_pwm_digital_percentage(uint8_t* pwm_digital_per_value);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* GLOBAL_MANAGER_H__ */

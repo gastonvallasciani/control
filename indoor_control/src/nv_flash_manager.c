@@ -34,6 +34,7 @@ static void first_time_flash(void);
 static void first_time_flash(void)
 {
     init_parameter_in_flash_uint32(RELE_VEGE_STATUS_KEY, RELE_VEGE_STATUS_DEFAULT);
+    init_parameter_in_flash_uint32(PWM_DIGITAL_VALUE_KEY, PWM_DIGITAL_VALUE_DEFAULT);
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------
