@@ -8,6 +8,9 @@
 #include "../include/nv_flash_manager.h"
 #include "../include/global_manager.h"
 
+
+
+
 #define PHASE_NUMBER 1
 
 void app_main() 
@@ -21,6 +24,7 @@ void app_main()
     printf("Project: Indoor control \n");
     get_version(version, &version_len);
     printf("Phase: %d, Version number: %s \n", PHASE_NUMBER, version);
+
     
     while(true)
     {

@@ -18,6 +18,8 @@
 #include "../include/pwm_manager.h"
 #include "../include/led_manager.h"
 #include "../include/nv_flash_manager.h"
+#include "../include/display_manager.h"
+#include "../include/display_dogs164.h"
 
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
@@ -110,13 +112,14 @@ static void global_manager_task(void* arg)
         global_manager_get_pwm_analog_percentage(&pwm_manual_value);
         pwm_manager_turn_on_pwm(pwm_manual_value);
         led_manager_pwm_output(pwm_manual_value);
-
+        display_set_screen(pwm_manual_value);
         pwm_value_bkp = pwm_manual_value;
     }
     else if (is_jp3_teclas_connected() == true)
     {
         pwm_manager_turn_on_pwm(pwm_digital_value);
         led_manager_pwm_output(pwm_digital_value);
+        display_set_screen(pwm_digital_value);
     }
 
     while(true)
@@ -134,6 +137,14 @@ static void global_manager_task(void* arg)
                 #endif  
                 pwm_manager_update_pwm(pwm_manual_value);
                 led_manager_pwm_output(pwm_manual_value);
+                if(pwm_value_bkp < pwm_manual_value)
+                {
+                    display_set_power(pwm_manual_value, ARROW_UP);
+                }
+                else 
+                {
+                    display_set_power(pwm_manual_value, ARROW_DOWN);
+                }
                 pwm_value_bkp = pwm_manual_value;
             }
         }
@@ -161,6 +172,7 @@ void global_manager_init(void)
         assert(0);
 
     jumpers_manager_init();
+    display_manager_init();
 
     device_mode = global_manager_find_device_mode();
     global_manager_set_device_mode(device_mode);
