@@ -217,6 +217,8 @@ esp_err_t display_set_screen(uint8_t power)
 
 esp_err_t display_set_power(uint8_t power, arrow_t arrow)
 {
+    static uint8_t last_power = 0xFF; // Guardar el valor previo del power
+
     // limpio todo lo de la linea de datos
     display_clean_arrow();
     char numero[6];
@@ -231,15 +233,22 @@ esp_err_t display_set_power(uint8_t power, arrow_t arrow)
         display_send_data(0xE0); // flecha abajo
     }
     vTaskDelay(500 / portTICK_PERIOD_MS); // doy tiempo para que se vea la barra
-    display_clean_power_and_bar();
-    if (power > 100)
+    
+    // Si el valor de power ha cambiado, actualiza la barra y el número
+    if (power != last_power)
     {
-        power = 100;
+        display_clean_power_and_bar();
+        if (power > 100)
+        {
+            power = 100;
+        }
+        sprintf(numero, "%u%%", power);
+        set_cursor(1, 0);
+        display_write_string(numero);
+        display_power_bar(power);
+        last_power = power;
     }
-    sprintf(numero, "%u%%", power);
-    set_cursor(1, 0);
-    display_write_string(numero);
-    display_power_bar(power);
     display_clean_arrow();
+
     return ESP_OK;
 }

@@ -2,6 +2,8 @@
 #define DISPLAY_MANAGER_H__
 //------------------- INCLUDES -------------------------------------------------
 //------------------------------------------------------------------------------
+#include "../include/display_dogs164.h"
+
 //------------------- MACROS Y DEFINES -----------------------------------------
 //------------------------------------------------------------------------------
 
@@ -14,6 +16,7 @@
 //------------------- DECLARACION DE FUNCIONES EXTERNAS ------------------------
 //------------------------------------------------------------------------------
 void display_manager_init(void);
-
+void display_manager_start(uint8_t pwm_value);
+void display_manager_refresh(uint8_t pwm_value, arrow_t arrow_orientation);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* DISPLAY_MANAGER_H__ */

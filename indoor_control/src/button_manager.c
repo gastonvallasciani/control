@@ -20,7 +20,7 @@
 #include "../include/led_manager.h"
 #include "../include/pwm_manager.h"
 #include "../include/jumpers_manager.h"
-#include "../include/display_dogs164.h"
+#include "../include/display_manager.h"
 
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
@@ -285,7 +285,7 @@ void button_event_manager_task(void * pvParameters)
                         pwm_digital_per_value--;
                     }
                     printf("Boton PWM DW presionado, pwm digital value: %d \n", pwm_digital_per_value);
-                    display_set_power(pwm_digital_per_value, ARROW_DOWN);
+                    display_manager_refresh(pwm_digital_per_value, ARROW_DOWN);
                     global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
                     pwm_manager_turn_on_pwm(pwm_digital_per_value);
                     led_manager_pwm_output(pwm_digital_per_value);
@@ -301,7 +301,7 @@ void button_event_manager_task(void * pvParameters)
                         pwm_digital_per_value++;
                     }
                     printf("Boton PWM UP presionado, pwm digital value: %d \n", pwm_digital_per_value);
-                    display_set_power(pwm_digital_per_value, ARROW_UP);
+                    display_manager_refresh(pwm_digital_per_value, ARROW_UP);
                     global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
                     pwm_manager_turn_on_pwm(pwm_digital_per_value);
                     led_manager_pwm_output(pwm_digital_per_value);

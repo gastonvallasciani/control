@@ -10,8 +10,8 @@
 
 // PIN DEFINITIONS - Micro PWM v.0.1
 // LED DEFINITIONS
-#define LED_PWM GPIO_NUM_13 // ex GPIO_NUM_34
-#define LED_FLORA GPIO_NUM_19 // exGPIO_NUM_35
+#define LED_PWM GPIO_NUM_13 
+#define LED_FLORA GPIO_NUM_19 
 #define LED_VEGE GPIO_NUM_32
 
 // ADC POTE
@@ -21,7 +21,7 @@
 #define BT_DW GPIO_NUM_27
 #define BT_UP GPIO_NUM_14
 #define BT_VE_FLO GPIO_NUM_12
-#define BT_FUT GPIO_NUM_13
+#define BT_FUT GPIO_NUM_39
 
 // I2C
 #define I2C_SDA GPIO_NUM_21
@@ -36,11 +36,8 @@
 #define S_OUT GPIO_NUM_18
 
 // JUMPERS 
-//#define JP1_DSPY GPIO_NUM_4
-#define JP2_RELOJ GPIO_NUM_16 
-//#define JP3_TECLAS GPIO_NUM_17
-
-#define JP1_DSPY GPIO_NUM_17
+#define JP1_DSPY GPIO_NUM_35 // usa pull up externo
+#define JP2_RELOJ GPIO_NUM_34 // usa pull up externo
 #define JP3_TECLAS GPIO_NUM_4
 
 #define J1 GPIO_NUM_5

@@ -1,3 +1,6 @@
+#ifndef DISPLAY_DOGS164_H__
+#define DISPLAY_DOGS164_H__
+
 #include <stdio.h>
 #include <string.h>
 
@@ -94,3 +97,5 @@ esp_err_t display_set_power(uint8_t, arrow_t);
 esp_err_t display_power_bar(uint8_t);
 esp_err_t display_clean_arrow(void);
 esp_err_t display_clean_power_and_bar(void);
+
+#endif /* DISPLAY_DOGS164_H__ */
