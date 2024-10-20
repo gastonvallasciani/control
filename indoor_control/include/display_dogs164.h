@@ -1,3 +1,6 @@
+#ifndef DISPLAY_DOGS164_H__
+#define DISPLAY_DOGS164_H__
+
 #include <stdio.h>
 #include <string.h>
 
@@ -78,8 +81,8 @@
 
 typedef enum
 {
-    UP,
-    DOWN
+    ARROW_UP,
+    ARROW_DOWN
 } arrow_t;
 
 esp_err_t init_reset_display_pin(void);
@@ -94,3 +97,6 @@ esp_err_t display_set_power(uint8_t, arrow_t);
 esp_err_t display_power_bar(uint8_t);
 esp_err_t display_clean_arrow(void);
 esp_err_t display_clean_power_and_bar(void);
+esp_err_t display_set_screen_full_start(uint8_t,uint8_t,uint8_t);
+
+#endif /* DISPLAY_DOGS164_H__ */

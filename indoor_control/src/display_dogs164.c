@@ -7,7 +7,8 @@
 #include "driver/i2c.h"
 #include "esp_log.h"
 
-#include "display_dogs164.h"
+#include "../include/display_dogs164.h"
+// #include "../include/board_def.h"
 
 #define RESET_PIN_DISPLAY 13
 
@@ -114,15 +115,12 @@ esp_err_t display_power_bar(uint8_t power)
     uint8_t full_bars = 0;
     uint8_t minor_bars = 0;
     uint8_t pixel_bars = 0;
-    uint8_t i, j;
+    uint8_t i;
     if (power > 100)
     {
         power = 100;
     }
-    if (power < 0)
-    {
-        power = 0;
-    }
+
     pixel_bars = power / 2;
     full_bars = pixel_bars / 5;
     minor_bars = pixel_bars % 5;
@@ -218,29 +216,127 @@ esp_err_t display_set_screen(uint8_t power)
 
 esp_err_t display_set_power(uint8_t power, arrow_t arrow)
 {
+    static uint8_t last_power = 0xFF; // Guardar el valor previo del power
+
     // limpio todo lo de la linea de datos
     display_clean_arrow();
     char numero[6];
-    if (arrow == UP)
+    if (arrow == ARROW_UP)
     {
         set_cursor(1, 5);
         display_send_data(0xDE); // flecha arriba
     }
-    else if (arrow == DOWN)
+    else if (arrow == ARROW_DOWN)
     {
         set_cursor(1, 5);
         display_send_data(0xE0); // flecha abajo
     }
-    vTaskDelay(700 / portTICK_PERIOD_MS); // doy tiempo para que se vea la barra
-    display_clean_power_and_bar();
-    if (power > 100)
+    vTaskDelay(500 / portTICK_PERIOD_MS); // doy tiempo para que se vea la barra
+
+    // Si el valor de power ha cambiado, actualiza la barra y el número
+    if (power != last_power)
     {
-        power = 100;
+        display_clean_power_and_bar();
+        if (power > 100)
+        {
+            power = 100;
+        }
+        sprintf(numero, "%u%%", power);
+        set_cursor(1, 0);
+        display_write_string(numero);
+        display_power_bar(power);
+        last_power = power;
     }
-    sprintf(numero, "%u%%", power);
-    set_cursor(1, 0);
-    display_write_string(numero);
-    display_power_bar(power);
     display_clean_arrow();
+
+    return ESP_OK;
+}
+
+esp_err_t display_set_screen_full_start(uint8_t power, uint8_t h, uint8_t m)
+{ // en los argumentos de la funcion falta si auto o manual y si vege o flora, que variable?
+    char *phy = "PHY";
+    char *lumenar = "LUMENAR";
+    char *ppf = "PPF";
+    char *p = "P";
+    char *w = "W";
+    char *vege = "VEGE";
+    char *flora = "FLORA";
+    char *automatic = "AUTO";
+    char *manual = "MAN";
+    char *ddots = ":";
+    char hour[4];
+    char min[4];
+    char numero[6];
+
+    sprintf(numero, "%u%%", power);
+    sprintf(hour, "%u", h);
+    sprintf(min, "%u", m);
+
+    init_reset_display_pin();
+    gpio_set_level(RESET_PIN_DISPLAY, 0);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    gpio_set_level(RESET_PIN_DISPLAY, 1);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    gpio_set_level(RESET_PIN_DISPLAY, 0);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    gpio_set_level(RESET_PIN_DISPLAY, 1);
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+
+    display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
+    display_send_command(COMMAND_4LINES);
+    display_send_command(COMMAND_BOTTOM_VIEW); //
+    display_send_command(COMMAND_BS1_1);       //
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS1);
+    display_send_command(COMMAND_BS0_1); //
+    display_send_command(COMMAND_FOLLOWER_CONTROL_DOGS164);
+    display_send_command(COMMAND_POWER_CONTROL_DOGS164);
+    display_send_command(COMMAND_CONTRAST_DEFAULT_DOGS164);
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
+    display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
+    display_send_command(COMMAND_CLEAR_DISPLAY);
+    display_send_command(COMMAND_ENTRY_MODE_SET | ENTRY_MODE_LEFT_TO_RIGHT);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    // display_send_command(COMMAND_SHIFT_SCROLL_ALL_LINES); //
+    // display_send_command(COMMAND_DISPLAY_SHIFT_RIGHT);
+    // display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
+    // display_send_command(COMMAND_3LINES_BOTTOM);
+    // display_send_command(COMMAND_8BIT_4LINES_RE0_IS0_DH1);
+    display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
+    display_send_command(COMMAND_ROM_SELECT);
+    display_send_data(COMMAND_ROM_A);
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0_DH1);
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
+
+    set_cursor(0, 0);
+    display_write_string(phy);
+    set_cursor(0, 9);
+    display_write_string(lumenar);
+    set_cursor(1, 0);
+    display_write_string(numero); // escribo el valor de potencia
+    set_cursor(2, 0);
+    display_write_string(ppf);
+    set_cursor(2, 10);
+    display_write_string(p);
+    set_cursor(2, 15);
+    display_write_string(w);
+    set_cursor(3, 0);
+    display_write_string(flora);
+    set_cursor(3, 6);
+    display_write_string(manual);
+    set_cursor(3, 13);
+    display_write_string(ddots);
+    set_cursor(3, 11);
+    display_write_string(hour);
+    set_cursor(3, 14);
+    display_write_string(min);
+
+    // selecciono la ROM A para la flecha
+    /*display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
+    display_send_command(COMMAND_ROM_SELECT);
+    display_send_data(COMMAND_ROM_A);
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0_DH1);*/
+    // muestro la barra de potencia
+    display_power_bar(power);
+
     return ESP_OK;
 }

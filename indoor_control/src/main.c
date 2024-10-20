@@ -36,16 +36,16 @@ void app_main()
     ESP_LOGI(TAG, "Inicializando I2C");
     ESP_ERROR_CHECK(set_i2c()); // inicio el i2c
     ESP_LOGI(TAG, "Inicializando DISPLAY");
-    display_set_screen(100); // funcion de inicio de pantalla con el valor de potencia
+    display_set_screen_full_start(67, 13, 55); // funcion de inicio de pantalla con el valor de potencia
     ESP_LOGI(TAG, "Termina inicializacion del DISPLAY");
-    display_set_power(75, DOWN); // funcion de ejemplo con el nuevo valor de potencia y si disminuye o aumenta
+    /*display_set_power(75, ARROW_DOWN); // funcion de ejemplo con el nuevo valor de potencia y si disminuye o aumenta
     vTaskDelay(1000 / portTICK_PERIOD_MS);
-    display_set_power(30, DOWN);
+    display_set_power(30, ARROW_DOWN);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
-    display_set_power(10, DOWN);
+    display_set_power(10, ARROW_DOWN);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
-    display_set_power(90, UP);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    display_set_power(90, ARROW_UP);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);*/
 
     while (true)
     {
