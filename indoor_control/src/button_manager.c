@@ -6,6 +6,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
+#include "freertos/timers.h"
+
 #include "driver/gpio.h"
 #include "sdkconfig.h"
 #include "esp_log.h"
@@ -22,6 +24,8 @@
 #include "../include/jumpers_manager.h"
 #include "../include/display_manager.h"
 
+
+
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define QUEUE_ELEMENT_QUANTITY 20
@@ -30,6 +34,9 @@
 #define TIEMPO_PULSADO_MS 3000
 
 #define DEBUG_MODULE
+#define PWM_BUTTON_REPEAT_INTERVAL_MS 500 // Intervalo para repetir el evento
+#define BUTTON_DEBOUNCE_TIME_MS 50 // Tiempo de anti-rebote
+
 //------------------------------TYPEDEF-----------------------------------------
 //------------------------------------------------------------------------------
 typedef enum{
@@ -40,6 +47,8 @@ typedef enum{
     PWM_UP_BUTTON_PUSHED,
     FABRIC_RESET,
     CALIBRATE_POTE,
+    BOTON_PRESIONADO,
+    BOTON_LIBERADO,
 }cmds_t;
 
 typedef struct{
@@ -50,9 +59,12 @@ typedef struct{
 static QueueHandle_t button_manager_queue;
 
 volatile int64_t start_time_flora_vege = 0;
-volatile int64_t start_time_pwm_down = 0;
-volatile int64_t start_time_pwm_up = 0;
 
+static TimerHandle_t pwm_down_timer;
+static TimerHandle_t pwm_up_timer;
+
+static int64_t last_time_pwm_down = 0;
+static int64_t last_time_pwm_up = 0;
 //--------------------DECLARACION DE FUNCIONES INTERNAS-------------------------
 //------------------------------------------------------------------------------
 static void button_event_manager_task(void * pvParameters);
@@ -64,6 +76,10 @@ static void pwm_button_up_interrupt(void *arg);
 static flora_vege_status_t nv_init_flora_vege_status(void);
 static void nv_save_flora_vege_status(flora_vege_status_t flora_vege_status);
 static void nv_save_pwm_digital_value(uint8_t pwm_dig_value);
+
+static void pwm_up_timer_callback(TimerHandle_t xTimer);
+static void pwm_down_timer_callback(TimerHandle_t xTimer);
+
 //--------------------DEFINICION DE DATOS INTERNOS------------------------------
 //------------------------------------------------------------------------------
 
@@ -130,7 +146,7 @@ static void config_buttons_isr(void)
     
     config.pin_bit_mask = (1ULL << BT_DW);
     config.mode = GPIO_MODE_INPUT;
-    config.pull_up_en = GPIO_PULLDOWN_ENABLE;
+    config.pull_up_en = GPIO_PULLUP_ENABLE;
     config.pull_down_en = GPIO_PULLDOWN_DISABLE;
     config.intr_type = GPIO_INTR_ANYEDGE;
     gpio_config(&config);
@@ -138,7 +154,7 @@ static void config_buttons_isr(void)
 
     config.pin_bit_mask = (1ULL << BT_UP);
     config.mode = GPIO_MODE_INPUT;
-    config.pull_up_en = GPIO_PULLDOWN_ENABLE;
+    config.pull_up_en = GPIO_PULLUP_ENABLE;
     config.pull_down_en = GPIO_PULLDOWN_DISABLE;
     config.intr_type = GPIO_INTR_ANYEDGE;
     gpio_config(&config);
@@ -171,56 +187,66 @@ static void IRAM_ATTR vege_button_interrupt(void *arg)
     }
 }
 //------------------------------------------------------------------------------
-static void pwm_button_down_interrupt(void *arg)
-{
+static void pwm_down_timer_callback(TimerHandle_t xTimer) {
     button_events_t ev;
-    int64_t time_now = esp_timer_get_time();
-
-    if(gpio_get_level(BT_DW) == 0)
-    {
-        start_time_pwm_down = time_now;
-    }
-    else 
-    {
-        if (start_time_pwm_down != 0)
-        {
-            int64_t diff = time_now - start_time_pwm_down;
-
-            if (diff > 30000)  // 30ms seconds expressed in microseconds
-            {
-                ev.cmd = PWM_DOWN_BUTTON_PUSHED;
-                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
-            }
-            start_time_pwm_down = 0;
-        }
-    }
-
+    ev.cmd = PWM_DOWN_BUTTON_PUSHED;
+    xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
 }
 //------------------------------------------------------------------------------
-static void pwm_button_up_interrupt(void *arg)
+static IRAM_ATTR void pwm_button_down_interrupt(void *arg)
 {
-    button_events_t ev;
     int64_t time_now = esp_timer_get_time();
-
-    if(gpio_get_level(BT_UP) == 0)
-    {
-        start_time_pwm_up = time_now;
-    }
-    else 
-    {
-        if (start_time_pwm_up != 0)
-        {
-            int64_t diff = time_now - start_time_pwm_up;
-
-            if (diff > 30000)  // 30ms seconds expressed in microseconds
-            {
-                ev.cmd = PWM_UP_BUTTON_PUSHED;
-                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+    
+    if (gpio_get_level(BT_DW) == 0) { // Botón presionado
+        if (time_now - last_time_pwm_down > pdMS_TO_TICKS(BUTTON_DEBOUNCE_TIME_MS)) {
+            last_time_pwm_down = time_now;
+            // Iniciar el temporizador si no está ya iniciado
+            if (pwm_down_timer == NULL) {
+                pwm_down_timer = xTimerCreate("PWM Up Timer", 
+                                             pdMS_TO_TICKS(PWM_BUTTON_REPEAT_INTERVAL_MS), 
+                                             pdTRUE, NULL, pwm_down_timer_callback);
             }
-            start_time_pwm_up = 0;
+            xTimerStart(pwm_down_timer, 0);
+        }
+    } else { // Botón liberado
+        if (pwm_down_timer != NULL) {
+            xTimerStop(pwm_down_timer, 0);
+            pwm_down_timer = 0;
         }
     }
+    
 }
+//------------------------------------------------------------------------------
+static void pwm_up_timer_callback(TimerHandle_t xTimer) {
+    button_events_t ev;
+    ev.cmd = PWM_UP_BUTTON_PUSHED;
+    xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+}
+//------------------------------------------------------------------------------
+static IRAM_ATTR void pwm_button_up_interrupt(void *arg)
+{
+    int64_t time_now = esp_timer_get_time();
+    
+    if (gpio_get_level(BT_UP) == 0) { // Botón presionado
+        if (time_now - last_time_pwm_up > pdMS_TO_TICKS(BUTTON_DEBOUNCE_TIME_MS)) {
+            last_time_pwm_up = time_now;
+            // Iniciar el temporizador si no está ya iniciado
+            if (pwm_up_timer == NULL) {
+                pwm_up_timer = xTimerCreate("PWM Up Timer", 
+                                             pdMS_TO_TICKS(PWM_BUTTON_REPEAT_INTERVAL_MS), 
+                                             pdTRUE, NULL, pwm_up_timer_callback);
+            }
+            xTimerStart(pwm_up_timer, 0);           
+        }
+    } else { // Botón liberado
+        if (pwm_up_timer != NULL) {
+            xTimerStop(pwm_up_timer, 0);
+            pwm_up_timer = 0;
+        }
+    }
+    
+}
+
 //------------------------------------------------------------------------------
 void button_event_manager_task(void * pvParameters)
 {
@@ -249,6 +275,12 @@ void button_event_manager_task(void * pvParameters)
         {
             switch(button_ev.cmd)
             {
+                case BOTON_PRESIONADO:
+                    printf("BOTON PRESIONADO\n");
+                    break;
+                case BOTON_LIBERADO:
+                    printf("BOTON LIBERADO\n ");
+                    break;
                 case CMD_UNDEFINED:
                     break;
                 case VEGE_BUTTON_PUSHED:
