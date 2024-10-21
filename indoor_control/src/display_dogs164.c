@@ -254,7 +254,7 @@ esp_err_t display_set_power(uint8_t power, arrow_t arrow)
 
 esp_err_t display_set_screen_full_start(uint8_t power, uint8_t h, uint8_t m)
 { // en los argumentos de la funcion falta si auto o manual y si vege o flora, que variable?
-    char *phy = "PHY";
+    char *phy = "PHY-03";
     char *lumenar = "LUMENAR";
     char *ppf = "PPF";
     char *p = "P";
@@ -267,10 +267,13 @@ esp_err_t display_set_screen_full_start(uint8_t power, uint8_t h, uint8_t m)
     char hour[4];
     char min[4];
     char numero[6];
+    char numeroppf[6];
+    float ppfn = power * 2.97;
 
     sprintf(numero, "%u%%", power);
     sprintf(hour, "%u", h);
     sprintf(min, "%u", m);
+    sprintf(numeroppf, "%.f", ppfn);
 
     init_reset_display_pin();
     gpio_set_level(RESET_PIN_DISPLAY, 0);
@@ -315,6 +318,10 @@ esp_err_t display_set_screen_full_start(uint8_t power, uint8_t h, uint8_t m)
     display_write_string(numero); // escribo el valor de potencia
     set_cursor(2, 0);
     display_write_string(ppf);
+    set_cursor(2, 4);
+    display_write_string(numeroppf);
+    set_cursor(2, 3);
+    display_write_string(ddots);
     set_cursor(2, 10);
     display_write_string(p);
     set_cursor(2, 15);
@@ -330,13 +337,72 @@ esp_err_t display_set_screen_full_start(uint8_t power, uint8_t h, uint8_t m)
     set_cursor(3, 14);
     display_write_string(min);
 
-    // selecciono la ROM A para la flecha
-    /*display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
-    display_send_command(COMMAND_ROM_SELECT);
-    display_send_data(COMMAND_ROM_A);
-    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0_DH1);*/
     // muestro la barra de potencia
     display_power_bar(power);
+
+    return ESP_OK;
+}
+
+esp_err_t display_set_screen_config(uint8_t hi, uint8_t mi, uint8_t hf, uint8_t mf)
+{
+    char *phy = "PHY-03";
+    char *lumenar = "LUMENAR";
+    char *hora = "Hora";
+    char *ini = "ini";
+    char *fin = "fin";
+    char *dia = "Dia";
+    char *si = "Si";
+    char *no = "No";
+    char *automatic = "AUTO";
+    char *manual = "MANUAL";
+    char *ddots = ":";
+    char houri[4];
+    char hourf[4];
+    char mini[4];
+    char minf[4];
+
+    sprintf(houri, "%u", hi);
+    sprintf(mini, "%u", mi);
+    sprintf(hourf, "%u", hf);
+    sprintf(minf, "%u", mf);
+
+    display_send_command(COMMAND_CLEAR_DISPLAY);
+    set_cursor(0, 0);
+    display_write_string(phy);
+    set_cursor(0, 9);
+    display_write_string(lumenar);
+    set_cursor(1, 0);
+    display_write_string(hora);
+    set_cursor(2, 0);
+    display_write_string(hora);
+    set_cursor(3, 0);
+    display_write_string(dia);
+    set_cursor(3, 4);
+    display_send_data(0xDF); // flecha hacia la derecha
+    set_cursor(3, 5);
+    display_write_string(si);
+    set_cursor(3, 8);
+    display_write_string(manual);
+    set_cursor(1, 7);
+    display_write_string(ini);
+    set_cursor(2, 7);
+    display_write_string(fin);
+    set_cursor(1, 10);
+    display_send_data(0xDF);
+    set_cursor(2, 10);
+    display_send_data(0xDF);
+    set_cursor(1, 11);
+    display_write_string(houri);
+    set_cursor(2, 11);
+    display_write_string(hourf);
+    set_cursor(1, 13);
+    display_write_string(ddots);
+    set_cursor(2, 13);
+    display_write_string(ddots);
+    set_cursor(1, 14);
+    display_write_string(mini);
+    set_cursor(2, 14);
+    display_write_string(minf);
 
     return ESP_OK;
 }

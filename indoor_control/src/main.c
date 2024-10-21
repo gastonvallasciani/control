@@ -32,6 +32,7 @@ static esp_err_t blink_led(void)
 
 void app_main()
 {
+    bool state = false;
     init_led_pin();
     ESP_LOGI(TAG, "Inicializando I2C");
     ESP_ERROR_CHECK(set_i2c()); // inicio el i2c
@@ -51,6 +52,16 @@ void app_main()
     {
         ESP_LOGI("wait", "...");
         blink_led();
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(3500 / portTICK_PERIOD_MS);
+        if (state == false)
+        {
+            display_set_screen_config(14, 30, 20, 30);
+            state = true;
+        }
+        else
+        {
+            display_set_screen_full_start(67, 13, 55);
+            state = false;
+        }
     }
 }
