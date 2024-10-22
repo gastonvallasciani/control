@@ -158,7 +158,7 @@ esp_err_t display_power_bar(uint8_t power)
     return ESP_OK;
 }
 
-esp_err_t display_set_screen(uint8_t power)
+esp_err_t display_set_screen(uint8_t power, char vege_flora)
 {
     char *master = "MASTER";
     char *lumenar = "LUMENAR";
@@ -195,7 +195,7 @@ esp_err_t display_set_screen(uint8_t power)
     display_send_command(COMMAND_2LINES);
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0_DH1);
     // limpio todo lo de la linea de datos
-    display_clean_arrow();
+    //display_clean_arrow();
     display_clean_power_and_bar();
     // escribo
     set_cursor(0, 0);
@@ -212,28 +212,19 @@ esp_err_t display_set_screen(uint8_t power)
     // muestro la barra de potencia
     display_power_bar(power);
 
+    set_cursor(1, 4);
+    display_write_char(vege_flora);
+
     return ESP_OK;
 }
 
-esp_err_t display_set_power(uint8_t power, arrow_t arrow)
+esp_err_t display_set_power(uint8_t power, char vege_flora)
 {
     static uint8_t last_power = 0xFF; // Guardar el valor previo del power
 
     // limpio todo lo de la linea de datos
-    display_clean_arrow();
     char numero[6];
-    if (arrow == ARROW_UP)
-    {
-        set_cursor(1, 5);
-        display_send_data(0xDE); // flecha arriba
-    }
-    else if (arrow == ARROW_DOWN)
-    {
-        set_cursor(1, 5);
-        display_send_data(0xE0); // flecha abajo
-    }
-    vTaskDelay(500 / portTICK_PERIOD_MS); // doy tiempo para que se vea la barra
-    
+  
     // Si el valor de power ha cambiado, actualiza la barra y el número
     if (power != last_power)
     {
@@ -248,7 +239,17 @@ esp_err_t display_set_power(uint8_t power, arrow_t arrow)
         display_power_bar(power);
         last_power = power;
     }
-    display_clean_arrow();
+
+    set_cursor(1, 4);
+    display_write_char(vege_flora);
+
+    return ESP_OK;
+}
+
+esp_err_t display_set_vege_flora(char vege_flora)
+{
+    set_cursor(1, 4);
+    display_write_char(vege_flora);
 
     return ESP_OK;
 }

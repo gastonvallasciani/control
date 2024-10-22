@@ -16,7 +16,8 @@
 //------------------- DECLARACION DE FUNCIONES EXTERNAS ------------------------
 //------------------------------------------------------------------------------
 void display_manager_init(void);
-void display_manager_start(uint8_t pwm_value);
-void display_manager_refresh(uint8_t pwm_value, arrow_t arrow_orientation);
+void display_manager_start(uint8_t pwm_value, char vege_flora);
+void display_manager_refresh(uint8_t pwm_value, char vege_flora);
+void display_manager_refreshvege_flora(char vege_flora);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* DISPLAY_MANAGER_H__ */

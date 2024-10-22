@@ -103,22 +103,30 @@ static void global_manager_task(void* arg)
     uint8_t pwm_manual_value = 0, pwm_value_bkp = 0;
     int8_t pwm_diff = 0;
     uint8_t pwm_digital_value = nv_init_pwm_digital_value();
+    flora_vege_status_t flora_vege_status;
 
     global_manager_set_pwm_digital_percentage(pwm_digital_value);
+    global_manager_get_flora_vege_status(&flora_vege_status);
     
     if(is_jp3_teclas_connected() == false)
     {
         global_manager_get_pwm_analog_percentage(&pwm_manual_value);
         pwm_manager_turn_on_pwm(pwm_manual_value);
         led_manager_pwm_output(pwm_manual_value);
-        display_manager_start(pwm_manual_value);
+        if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
+            display_manager_start(pwm_manual_value, 'V');
+        else
+            display_manager_start(pwm_manual_value, 'F');
         pwm_value_bkp = pwm_manual_value;
     }
     else if (is_jp3_teclas_connected() == true)
     {
         pwm_manager_turn_on_pwm(pwm_digital_value);
         led_manager_pwm_output(pwm_digital_value);
-        display_manager_start(pwm_digital_value);
+        if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
+            display_manager_start(pwm_digital_value, 'V');
+        else
+            display_manager_start(pwm_digital_value, 'F');
     }
 
     while(true)
@@ -126,6 +134,7 @@ static void global_manager_task(void* arg)
         if(is_jp3_teclas_connected() == false)
         {
             global_manager_get_pwm_analog_percentage(&pwm_manual_value);
+            global_manager_get_flora_vege_status(&flora_vege_status);
             
             pwm_diff = (int8_t)pwm_manual_value - (int8_t)pwm_value_bkp;
             
@@ -136,14 +145,13 @@ static void global_manager_task(void* arg)
                 #endif  
                 pwm_manager_update_pwm(pwm_manual_value);
                 led_manager_pwm_output(pwm_manual_value);
-                if(pwm_value_bkp < pwm_manual_value)
-                {
-                    display_manager_refresh(pwm_manual_value, ARROW_UP);
-                }
-                else 
-                {
-                    display_manager_refresh(pwm_manual_value, ARROW_DOWN);
-                }
+
+                if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
+                    display_manager_refresh(pwm_manual_value, 'V');
+                else
+                    display_manager_refresh(pwm_manual_value, 'F');
+
+    
                 pwm_value_bkp = pwm_manual_value;
             }
         }

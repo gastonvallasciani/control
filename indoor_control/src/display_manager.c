@@ -25,13 +25,14 @@ static const char *TAG = "I2C";
 typedef enum{
     CMD_UNDEFINED = 0,
     START_DISPLAY = 1,
-    UPDATE_DISPLAY = 2
+    UPDATE_DISPLAY = 2,
+    UPDATE_VEGE_FLORA_ON_SCREEN = 3,
 } display_event_cmds_t;
 
 typedef struct{
     uint8_t pwm_value;
     display_event_cmds_t cmd;
-    arrow_t arrow_orientation;
+    char  vege_flora;
 } display_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
@@ -61,10 +62,14 @@ static void display_manager_task(void *arg)
             case CMD_UNDEFINED:
                 break;
             case START_DISPLAY:
-                display_set_screen(display_ev.pwm_value);
+                display_set_screen(display_ev.pwm_value, display_ev.vege_flora);
                 break;
             case UPDATE_DISPLAY:
-                display_set_power(display_ev.pwm_value, display_ev.arrow_orientation);
+                display_set_power(display_ev.pwm_value, display_ev.vege_flora);
+                break;
+            case UPDATE_VEGE_FLORA_ON_SCREEN:
+                display_set_vege_flora(display_ev.vege_flora);
+
                 break;
             default:
                 break;
@@ -86,24 +91,36 @@ void display_manager_init(void)
 
 }
 //------------------------------------------------------------------------------
-void display_manager_start(uint8_t pwm_value)
+void display_manager_start(uint8_t pwm_value, char vege_flora)
 {
     display_event_t display_ev;
 
     display_ev.cmd = START_DISPLAY;
     display_ev.pwm_value = pwm_value;
+    display_ev.vege_flora = vege_flora;
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
 //------------------------------------------------------------------------------
-void display_manager_refresh(uint8_t pwm_value, arrow_t arrow_orientation)
+void display_manager_refresh(uint8_t pwm_value, char vege_flora)
 {
     display_event_t display_ev;
 
     display_ev.cmd = UPDATE_DISPLAY;
     display_ev.pwm_value = pwm_value;
-    display_ev.arrow_orientation = arrow_orientation;
+    display_ev.vege_flora = vege_flora;
     
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
+//------------------------------------------------------------------------------
+void display_manager_refreshvege_flora(char vege_flora)
+{
+    display_event_t display_ev;
+
+    display_ev.cmd = UPDATE_VEGE_FLORA_ON_SCREEN;
+    display_ev.vege_flora = vege_flora;
+    
+    xQueueSend(display_manager_queue, &display_ev, 10);
+}
+
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------

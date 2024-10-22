@@ -294,6 +294,8 @@ void button_event_manager_task(void * pvParameters)
                         flora_vege_status = FLORA_VEGE_OUTPUT_ENABLE;
                         flora_vege_manager_turn_on();
                         led_manager_rele_vege_on();
+                        display_manager_refreshvege_flora('V');
+
                     }
                     else if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
                     {
@@ -304,6 +306,7 @@ void button_event_manager_task(void * pvParameters)
                         flora_vege_status = FLORA_VEGE_OUTPUT_DISABLE;
                         flora_vege_manager_turn_off();
                         led_manager_rele_vege_off();
+                        display_manager_refreshvege_flora('F');
                     }
                     nv_save_flora_vege_status(flora_vege_status);
                     break;
@@ -322,7 +325,10 @@ void button_event_manager_task(void * pvParameters)
                     }
                     
                     printf("Boton PWM DW presionado, pwm digital value: %d \n", pwm_digital_per_value);
-                    display_manager_refresh(pwm_digital_per_value, ARROW_DOWN);
+                    if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
+                        display_manager_refresh(pwm_digital_per_value, 'V');
+                    else
+                        display_manager_refresh(pwm_digital_per_value, 'F');
                     global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
                     pwm_manager_turn_on_pwm(pwm_digital_per_value);
                     led_manager_pwm_output(pwm_digital_per_value);
@@ -343,7 +349,10 @@ void button_event_manager_task(void * pvParameters)
                         pwm_digital_per_value++;
                     }
                     printf("Boton PWM UP presionado, pwm digital value: %d \n", pwm_digital_per_value);
-                    display_manager_refresh(pwm_digital_per_value, ARROW_UP);
+                    if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
+                        display_manager_refresh(pwm_digital_per_value, 'V');
+                    else
+                        display_manager_refresh(pwm_digital_per_value, 'F');
                     global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
                     pwm_manager_turn_on_pwm(pwm_digital_per_value);
                     led_manager_pwm_output(pwm_digital_per_value);
