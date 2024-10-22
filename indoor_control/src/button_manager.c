@@ -312,10 +312,15 @@ void button_event_manager_task(void * pvParameters)
                 {
                     
                     global_manager_get_pwm_digital_percentage(&pwm_digital_per_value);
-                    if(pwm_digital_per_value > 0)
+                    if(pwm_digital_per_value > 10)
                     {
                         pwm_digital_per_value--;
                     }
+                    else if(pwm_digital_per_value == 10)
+                    {
+                        pwm_digital_per_value = 0;
+                    }
+                    
                     printf("Boton PWM DW presionado, pwm digital value: %d \n", pwm_digital_per_value);
                     display_manager_refresh(pwm_digital_per_value, ARROW_DOWN);
                     global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
@@ -328,7 +333,12 @@ void button_event_manager_task(void * pvParameters)
                 if (is_jp3_teclas_connected() == true)
                 {
                     global_manager_get_pwm_digital_percentage(&pwm_digital_per_value);
-                    if(pwm_digital_per_value < 100)
+                    
+                    if(pwm_digital_per_value == 0)
+                    {
+                        pwm_digital_per_value = 10;
+                    }
+                    else if(pwm_digital_per_value < 100)
                     {
                         pwm_digital_per_value++;
                     }
