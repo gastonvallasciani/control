@@ -120,7 +120,7 @@ static void analog_input_manager_task(void* arg)
                         val = val / adc_vec_length;
                         index = 0;
 
-                        //per_pwm = (val*100) / max_pote_reference;
+                        /*//per_pwm = (val*100) / max_pote_reference;
                         //per_pwm = ((90*(val-25)) / (max_pote_reference - 25)) + 10;
                         if (val < 1) {
                             // Si el valor del ADC es menor a las cuentas de 5 mV, PWM es 0
@@ -131,11 +131,26 @@ static void analog_input_manager_task(void* arg)
                         } else {
                             // A partir del 10% del rango, el PWM sigue la curva lineal hasta 100%
                             per_pwm = ((90 * (val - (max_pote_reference / 10))) / (max_pote_reference - (max_pote_reference / 10))) + 10;
+                        }*/
+
+                        float Vpote = (val * 1.1) / max_pote_reference; // Ajustar según tu referencia de ADC
+
+                        // Implementación de la nueva lógica de ajuste de PWM
+                        if (Vpote < 0.03) {
+                            // Si el voltaje es menor a 0.03V, el PWM es 0
+                            per_pwm = 0;
+                        } else if (Vpote >= 0.03 && Vpote < 1.0) {
+                            // Si el voltaje está entre 0.03V y 1V, PWM varía entre 10% y 99%
+                            per_pwm = ((Vpote - 0.03) / (1.0 - 0.03)) * 89 + 10;
+                        } else if (Vpote >= 1.0) {
+                            // Si el voltaje es mayor o igual a 1V, el PWM es 100%
+                            per_pwm = 100;
                         }
 
                         global_manager_set_pwm_analog_percentage((uint8_t)per_pwm);
                         #ifdef DEBUG_MODULE
-                            printf("Valor ADC channel 5: %d \n", val);
+                            printf("Valor ADC: %d \n", val);
+                            printf("Voltaje Pote: %.2f V \n", Vpote);
                             printf("Valor per_pwm: %d \n", per_pwm);
                         #endif
                     }

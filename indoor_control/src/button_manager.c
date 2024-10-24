@@ -34,7 +34,7 @@
 #define TIEMPO_PULSADO_MS 3000
 
 #define DEBUG_MODULE
-#define PWM_BUTTON_REPEAT_INTERVAL_MS 500 // Intervalo para repetir el evento
+#define PWM_BUTTON_REPEAT_INTERVAL_MS 400 // Intervalo para repetir el evento
 #define BUTTON_DEBOUNCE_TIME_MS 50 // Tiempo de anti-rebote
 
 //------------------------------TYPEDEF-----------------------------------------
@@ -196,9 +196,10 @@ static void pwm_down_timer_callback(TimerHandle_t xTimer) {
 static IRAM_ATTR void pwm_button_down_interrupt(void *arg)
 {
     int64_t time_now = esp_timer_get_time();
+    button_events_t ev;
     
     if (gpio_get_level(BT_DW) == 0) { // Botón presionado
-        if (time_now - last_time_pwm_down > pdMS_TO_TICKS(BUTTON_DEBOUNCE_TIME_MS)) {
+        if (time_now - last_time_pwm_down > pdMS_TO_TICKS(50)) {
             last_time_pwm_down = time_now;
             // Iniciar el temporizador si no está ya iniciado
             if (pwm_down_timer == NULL) {
@@ -207,7 +208,7 @@ static IRAM_ATTR void pwm_button_down_interrupt(void *arg)
                                              pdTRUE, NULL, pwm_down_timer_callback);
             }
             xTimerStart(pwm_down_timer, 0);
-        }
+        }  
     } else { // Botón liberado
         if (pwm_down_timer != NULL) {
             xTimerStop(pwm_down_timer, 0);
@@ -226,9 +227,10 @@ static void pwm_up_timer_callback(TimerHandle_t xTimer) {
 static IRAM_ATTR void pwm_button_up_interrupt(void *arg)
 {
     int64_t time_now = esp_timer_get_time();
-    
+    button_events_t ev;
+
     if (gpio_get_level(BT_UP) == 0) { // Botón presionado
-        if (time_now - last_time_pwm_up > pdMS_TO_TICKS(BUTTON_DEBOUNCE_TIME_MS)) {
+        if (time_now - last_time_pwm_up > pdMS_TO_TICKS(50)) {
             last_time_pwm_up = time_now;
             // Iniciar el temporizador si no está ya iniciado
             if (pwm_up_timer == NULL) {

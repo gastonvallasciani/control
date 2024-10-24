@@ -158,7 +158,7 @@ static void set_rele_vege_off_indicator(void)
     printf("Led flora ON \n");
 #endif
     gpio_set_level(LED_VEGE, LED_OFF);
-    gpio_set_level(LED_FLORA, LED_VEGE);
+    gpio_set_level(LED_FLORA, LED_ON);
 }
 //------------------------------------------------------------------------------
 static void led_manager_task(void *arg)

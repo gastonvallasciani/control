@@ -10,6 +10,7 @@
         "display_manager.h": "c",
         "stdio.h": "c",
         "task.h": "c",
-        "queue.h": "c"
+        "queue.h": "c",
+        "gpio.h": "c"
     }
 }

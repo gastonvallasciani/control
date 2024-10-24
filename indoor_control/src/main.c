@@ -7,7 +7,7 @@
 #include "../include/jumpers_manager.h"
 #include "../include/nv_flash_manager.h"
 #include "../include/global_manager.h"
-
+#include "../include/s_run_manager.h"
 
 
 
@@ -20,6 +20,8 @@ void app_main()
 
     nv_flash_manager_init();
     global_manager_init();
+    s_run_manager_init();
+
 
     printf("Project: Indoor control \n");
     get_version(version, &version_len);
