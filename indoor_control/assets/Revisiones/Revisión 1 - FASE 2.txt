@@ -1,0 +1,29 @@
+Revisión 1
+
+versión 2.1 
+
+Actualizaciones realizadas sobre la fase 2:
+
+
+- Cambio el número de versión a 2.1.
+- Aumento y disminucion automático de pwm al mantener apretado sus respectivas teclas. Antes aumentaba o disminuia de 1 unidad.
+-  Agrego que se incremento o decreomento solo 1% de pwm si se presiono la tecla de up/down por menos
+	de 1 segundo.
+- Se cambia la flechita del display por el estado V o F (Vege o Flora) según como este configrado el equipo.
+- Se resuelve el problema del refresco del display con el pote. 
+- Se agrega la actualizacion del estado V/F en el display cuando cambia de estado de Vege a Flora y viceversa.
+
+- El PWM no llegaba al 100% (queda en 99%) la tensión en la pata del ADC es de 1,21v
+	La medición actual del Vpote es: 0,92v = 10% ; 1,01 =99%
+	la tensión en la pata del ADC llega a 1,21v con pote al mango.
+	Se ajusto según lo siguiente:
+	Que si: 	
+		Vpote 	< 0,03v  	PWM=0
+	    Vpote 	≥0,03v  a <1v 	PWM=10-99% (saltar de 0 al 10%)
+		Vpote	≥1v		PWM=100%
+- Se agregó a pedid de Nestor (No estaba definido previamente): 
+Por favor agregar “por ahora” que la salida S.out este en 1 si PWM >0
+Luego funcionara con los 4 timer para activación y desactivación de S.OUT
+- La salida SRUN (pata 10) no hay actividad.... RESUELTO - Se me habia pasado de largo
+RUN: titila con una det. Secuencia, indica que está corriendo el programa.
+- La salida LED_Flora (pata 31) no hay actividad… RESUELTO estaba mal la funcion set_rele_vege_off_indicator(void) nunca encendia el led.
