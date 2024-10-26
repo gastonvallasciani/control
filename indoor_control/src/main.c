@@ -32,12 +32,13 @@ static esp_err_t blink_led(void)
 
 void app_main()
 {
-    bool state = false;
+    char v = 'V';
+    uint8_t i = 1;
     init_led_pin();
     ESP_LOGI(TAG, "Inicializando I2C");
     ESP_ERROR_CHECK(set_i2c()); // inicio el i2c
     ESP_LOGI(TAG, "Inicializando DISPLAY");
-    display_set_screen_full_start(67, 13, 55); // funcion de inicio de pantalla con el valor de potencia
+    display_init();
     ESP_LOGI(TAG, "Termina inicializacion del DISPLAY");
     /*display_set_power(75, ARROW_DOWN); // funcion de ejemplo con el nuevo valor de potencia y si disminuye o aumenta
     vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -53,15 +54,20 @@ void app_main()
         ESP_LOGI("wait", "...");
         blink_led();
         vTaskDelay(3500 / portTICK_PERIOD_MS);
-        if (state == false)
+        if (i == 1)
         {
-            display_set_screen_config(14, 30, 20, 30);
-            state = true;
+            display_set_screen_one(99, v, 13, 55);
+            i = 2;
+        }
+        else if (i == 2)
+        {
+            display_set_screen_two();
+            i = 3;
         }
         else
         {
-            display_set_screen_full_start(67, 13, 55);
-            state = false;
+            display_set_screen_three();
+            i = 1;
         }
     }
 }

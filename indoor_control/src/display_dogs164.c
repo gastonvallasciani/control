@@ -252,18 +252,17 @@ esp_err_t display_set_power(uint8_t power, arrow_t arrow)
     return ESP_OK;
 }
 
-esp_err_t display_set_screen_full_start(uint8_t power, uint8_t h, uint8_t m)
+esp_err_t display_set_screen_one(uint8_t power, char vege_flora, uint8_t h, uint8_t m)
 { // en los argumentos de la funcion falta si auto o manual y si vege o flora, que variable?
     char *phy = "PHY-03";
     char *lumenar = "LUMENAR";
     char *ppf = "PPF";
     char *p = "P";
     char *w = "W";
-    char *vege = "VEGE";
-    char *flora = "FLORA";
     char *automatic = "AUTO";
     char *manual = "MAN";
     char *ddots = ":";
+    char *dia = "DIA";
     char hour[4];
     char min[4];
     char numero[6];
@@ -274,6 +273,139 @@ esp_err_t display_set_screen_full_start(uint8_t power, uint8_t h, uint8_t m)
     sprintf(hour, "%u", h);
     sprintf(min, "%u", m);
     sprintf(numeroppf, "%.f", ppfn);
+
+    display_send_command(COMMAND_CLEAR_DISPLAY);
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
+    // primera fila
+    set_cursor(0, 0);
+    display_write_string(phy); // pongo el phy-03
+    set_cursor(0, 9);
+    display_write_string(lumenar); // pongo la marca lumenar
+    // segunda fila
+    set_cursor(1, 0);
+    display_write_string(numero); // escribo el valor de potencia
+    set_cursor(1, 5);
+    display_write_char(vege_flora); // escribo la letra si es vege o flora
+    display_power_bar(power);       // muestro la barra de potencia
+    // tercera fila
+    set_cursor(2, 0);
+    display_write_string(ppf); // escribo la palabra ppf
+    set_cursor(2, 3);
+    display_write_string(ddots); // escribo los dos puntos
+    set_cursor(2, 4);
+    display_write_string(numeroppf); // escribo el numero del ppf
+    set_cursor(2, 9);
+    display_write_string(p); // escribo la letra P de la potencia total
+    set_cursor(2, 11);
+    display_write_string("0000"); // los 4 digitos de la potencia total (pueden ser 5?)
+    set_cursor(2, 15);
+    display_write_string(w); // escribo la W de la unidad de potencia
+    // cuarta fila
+    set_cursor(3, 0);
+    display_write_string(dia);
+    set_cursor(3, 3);
+    display_write_string(ddots);
+    set_cursor(3, 4);
+    display_write_string("NO");
+    set_cursor(3, 7);
+    display_write_string(manual);
+    set_cursor(3, 11);
+    display_write_string(hour);
+    set_cursor(3, 13);
+    display_write_string(ddots);
+    set_cursor(3, 14);
+    display_write_string(min);
+
+    return ESP_OK;
+}
+
+esp_err_t display_set_screen_two()
+{
+    // char houri[4];
+    // char hourf[4];
+    // char mini[4];
+    // char minf[4];
+
+    // sprintf(houri, "%u", hi);
+    // sprintf(mini, "%u", mi);
+    // sprintf(hourf, "%u", hf);
+    // sprintf(minf, "%u", mf);
+
+    char *ho = "HORA 1";
+    char *ht = "HORA 2";
+    char *ddots = ":";
+    char *ini = "INI";
+    char *fin = "FIN";
+
+    display_send_command(COMMAND_CLEAR_DISPLAY);
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
+
+    set_cursor(0, 0);
+    display_write_string(ho);
+    set_cursor(0, 7);
+    display_write_string(ini);
+    set_cursor(0, 11);
+    display_write_string("13:00");
+    set_cursor(1, 7);
+    display_write_string(fin);
+    set_cursor(1, 11);
+    display_write_string("14:00");
+
+    set_cursor(2, 0);
+    display_write_string(ht);
+    set_cursor(2, 7);
+    display_write_string(ini);
+    set_cursor(2, 11);
+    display_write_string("13:00");
+    set_cursor(3, 7);
+    display_write_string(fin);
+    set_cursor(3, 11);
+    display_write_string("14:00");
+
+    return ESP_OK;
+}
+
+esp_err_t display_set_screen_three()
+{
+    char *ht = "HORA 3";
+    char *hf = "HORA 4";
+    char *ddots = ":";
+    char *ini = "INI";
+    char *fin = "FIN";
+
+    display_send_command(COMMAND_CLEAR_DISPLAY);
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
+
+    set_cursor(0, 0);
+    display_write_string(ht);
+    set_cursor(0, 7);
+    display_write_string(ini);
+    set_cursor(0, 11);
+    display_write_string("13:00");
+    set_cursor(1, 7);
+    display_write_string(fin);
+    set_cursor(1, 11);
+    display_write_string("14:00");
+
+    set_cursor(2, 0);
+    display_write_string(hf);
+    set_cursor(2, 7);
+    display_write_string(ini);
+    set_cursor(2, 11);
+    display_write_string("13:00");
+    set_cursor(3, 7);
+    display_write_string(fin);
+    set_cursor(3, 11);
+    display_write_string("14:00");
+
+    return ESP_OK;
+}
+
+esp_err_t display_init()
+{
+    char *lumenar = "LUMENAR";
+
+    char *iniciando = "Iniciando...";
 
     init_reset_display_pin();
     gpio_set_level(RESET_PIN_DISPLAY, 0);
@@ -299,110 +431,18 @@ esp_err_t display_set_screen_full_start(uint8_t power, uint8_t h, uint8_t m)
     display_send_command(COMMAND_CLEAR_DISPLAY);
     display_send_command(COMMAND_ENTRY_MODE_SET | ENTRY_MODE_LEFT_TO_RIGHT);
     vTaskDelay(100 / portTICK_PERIOD_MS);
-    // display_send_command(COMMAND_SHIFT_SCROLL_ALL_LINES); //
-    // display_send_command(COMMAND_DISPLAY_SHIFT_RIGHT);
-    // display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
-    // display_send_command(COMMAND_3LINES_BOTTOM);
-    // display_send_command(COMMAND_8BIT_4LINES_RE0_IS0_DH1);
     display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
     display_send_command(COMMAND_ROM_SELECT);
     display_send_data(COMMAND_ROM_A);
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0_DH1);
-    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
-
-    set_cursor(0, 0);
-    display_write_string(phy);
-    set_cursor(0, 9);
+    display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
+    display_send_command(COMMAND_3LINES_MIDDLE);
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0_DH1);
+    set_cursor(1, 4);
     display_write_string(lumenar);
-    set_cursor(1, 0);
-    display_write_string(numero); // escribo el valor de potencia
-    set_cursor(2, 0);
-    display_write_string(ppf);
-    set_cursor(2, 4);
-    display_write_string(numeroppf);
-    set_cursor(2, 3);
-    display_write_string(ddots);
-    set_cursor(2, 10);
-    display_write_string(p);
-    set_cursor(2, 15);
-    display_write_string(w);
-    set_cursor(3, 0);
-    display_write_string(flora);
-    set_cursor(3, 6);
-    display_write_string(manual);
-    set_cursor(3, 13);
-    display_write_string(ddots);
-    set_cursor(3, 11);
-    display_write_string(hour);
-    set_cursor(3, 14);
-    display_write_string(min);
-
-    // muestro la barra de potencia
-    display_power_bar(power);
-
-    return ESP_OK;
-}
-
-esp_err_t display_set_screen_config(uint8_t hi, uint8_t mi, uint8_t hf, uint8_t mf)
-{
-    char *phy = "PHY-03";
-    char *lumenar = "LUMENAR";
-    char *hora = "Hora";
-    char *ini = "ini";
-    char *fin = "fin";
-    char *dia = "Dia";
-    char *si = "Si";
-    char *no = "No";
-    char *automatic = "AUTO";
-    char *manual = "MANUAL";
-    char *ddots = ":";
-    char houri[4];
-    char hourf[4];
-    char mini[4];
-    char minf[4];
-
-    sprintf(houri, "%u", hi);
-    sprintf(mini, "%u", mi);
-    sprintf(hourf, "%u", hf);
-    sprintf(minf, "%u", mf);
-
-    display_send_command(COMMAND_CLEAR_DISPLAY);
-    set_cursor(0, 0);
-    display_write_string(phy);
-    set_cursor(0, 9);
-    display_write_string(lumenar);
-    set_cursor(1, 0);
-    display_write_string(hora);
-    set_cursor(2, 0);
-    display_write_string(hora);
-    set_cursor(3, 0);
-    display_write_string(dia);
-    set_cursor(3, 4);
-    display_send_data(0xDF); // flecha hacia la derecha
-    set_cursor(3, 5);
-    display_write_string(si);
-    set_cursor(3, 8);
-    display_write_string(manual);
-    set_cursor(1, 7);
-    display_write_string(ini);
-    set_cursor(2, 7);
-    display_write_string(fin);
-    set_cursor(1, 10);
-    display_send_data(0xDF);
-    set_cursor(2, 10);
-    display_send_data(0xDF);
-    set_cursor(1, 11);
-    display_write_string(houri);
-    set_cursor(2, 11);
-    display_write_string(hourf);
-    set_cursor(1, 13);
-    display_write_string(ddots);
-    set_cursor(2, 13);
-    display_write_string(ddots);
-    set_cursor(1, 14);
-    display_write_string(mini);
-    set_cursor(2, 14);
-    display_write_string(minf);
+    vTaskDelay(400 / portTICK_PERIOD_MS);
+    set_cursor(2, 2);
+    display_write_string(iniciando);
 
     return ESP_OK;
 }
