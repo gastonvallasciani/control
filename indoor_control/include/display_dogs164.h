@@ -97,7 +97,7 @@ esp_err_t display_set_power(uint8_t, arrow_t);
 esp_err_t display_power_bar(uint8_t);
 esp_err_t display_clean_arrow(void);
 esp_err_t display_clean_power_and_bar(void);
-esp_err_t display_set_screen_one(uint8_t, char, uint8_t, uint8_t);
+esp_err_t display_set_screen_one(uint8_t, char, bool, bool, uint8_t, uint8_t);
 esp_err_t display_set_screen_two(void);
 esp_err_t display_set_screen_three(void);
 esp_err_t display_init(void);

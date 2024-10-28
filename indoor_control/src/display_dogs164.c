@@ -252,8 +252,11 @@ esp_err_t display_set_power(uint8_t power, arrow_t arrow)
     return ESP_OK;
 }
 
-esp_err_t display_set_screen_one(uint8_t power, char vege_flora, uint8_t h, uint8_t m)
+esp_err_t display_set_screen_one(uint8_t power, char vege_flora, bool dia, bool modo, uint8_t h, uint8_t m)
 { // en los argumentos de la funcion falta si auto o manual y si vege o flora, que variable?
+  // bool dia, 1 si, 0 no.
+  // bool modo, 1 manual, 0 auto.
+  // para el tiempo, uso la time.h. revisar como es la estructura.
     char *phy = "PHY-03";
     char *lumenar = "LUMENAR";
     char *ppf = "PPF";
@@ -262,7 +265,7 @@ esp_err_t display_set_screen_one(uint8_t power, char vege_flora, uint8_t h, uint
     char *automatic = "AUTO";
     char *manual = "MAN";
     char *ddots = ":";
-    char *dia = "DIA";
+    char *dias = "DIA";
     char hour[4];
     char min[4];
     char numero[6];
@@ -296,13 +299,13 @@ esp_err_t display_set_screen_one(uint8_t power, char vege_flora, uint8_t h, uint
     display_write_string(numeroppf); // escribo el numero del ppf
     set_cursor(2, 9);
     display_write_string(p); // escribo la letra P de la potencia total
-    set_cursor(2, 11);
-    display_write_string("0000"); // los 4 digitos de la potencia total (pueden ser 5?)
+    set_cursor(2, 10);
+    display_write_string("00000"); // los 4 digitos de la potencia total (pueden ser 5?)
     set_cursor(2, 15);
     display_write_string(w); // escribo la W de la unidad de potencia
     // cuarta fila
     set_cursor(3, 0);
-    display_write_string(dia);
+    display_write_string(dias);
     set_cursor(3, 3);
     display_write_string(ddots);
     set_cursor(3, 4);
@@ -331,33 +334,54 @@ esp_err_t display_set_screen_two()
     // sprintf(hourf, "%u", hf);
     // sprintf(minf, "%u", mf);
 
-    char *ho = "HORA 1";
-    char *ht = "HORA 2";
+    char *h1 = "H1";
+    char *h2 = "H2";
+    char *h3 = "H3";
+    char *h4 = "H4";
     char *ddots = ":";
-    char *ini = "INI";
-    char *fin = "FIN";
+    char *ini = "i";
+    char *fin = "f";
 
-    display_send_command(COMMAND_CLEAR_DISPLAY);
-    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
+    display_send_command(COMMAND_CLEAR_DISPLAY);       // limpio display
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0); // me aseguro qeu se ponga en 4 lineas
 
     set_cursor(0, 0);
-    display_write_string(ho);
-    set_cursor(0, 7);
+    display_write_string(h1);
+    set_cursor(0, 3);
     display_write_string(ini);
-    set_cursor(0, 11);
+    set_cursor(0, 4);
     display_write_string("13:00");
-    set_cursor(1, 7);
+    set_cursor(0, 10);
+    display_write_string(fin);
+    set_cursor(0, 11);
+    display_write_string("14:00");
+    set_cursor(1, 0);
+    display_write_string(h2);
+    set_cursor(1, 3);
+    display_write_string(ini);
+    set_cursor(1, 4);
+    display_write_string("13:00");
+    set_cursor(1, 10);
     display_write_string(fin);
     set_cursor(1, 11);
     display_write_string("14:00");
-
     set_cursor(2, 0);
-    display_write_string(ht);
-    set_cursor(2, 7);
+    display_write_string(h3);
+    set_cursor(2, 3);
     display_write_string(ini);
-    set_cursor(2, 11);
+    set_cursor(2, 4);
     display_write_string("13:00");
-    set_cursor(3, 7);
+    set_cursor(2, 10);
+    display_write_string(fin);
+    set_cursor(2, 11);
+    display_write_string("14:00");
+    set_cursor(3, 0);
+    display_write_string(h4);
+    set_cursor(3, 3);
+    display_write_string(ini);
+    set_cursor(3, 4);
+    display_write_string("13:00");
+    set_cursor(3, 10);
     display_write_string(fin);
     set_cursor(3, 11);
     display_write_string("14:00");
@@ -367,36 +391,31 @@ esp_err_t display_set_screen_two()
 
 esp_err_t display_set_screen_three()
 {
-    char *ht = "HORA 3";
-    char *hf = "HORA 4";
+    char *pwm = "PWM";
     char *ddots = ":";
-    char *ini = "INI";
-    char *fin = "FIN";
+    char *ini = "i";
+    char *fin = "f";
+    char *total = "Potencia total";
 
     display_send_command(COMMAND_CLEAR_DISPLAY);
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
 
     set_cursor(0, 0);
-    display_write_string(ht);
+    display_write_string(pwm);
     set_cursor(0, 7);
     display_write_string(ini);
-    set_cursor(0, 11);
+    set_cursor(0, 9);
     display_write_string("13:00");
     set_cursor(1, 7);
     display_write_string(fin);
-    set_cursor(1, 11);
+    set_cursor(1, 9);
     display_write_string("14:00");
 
     set_cursor(2, 0);
-    display_write_string(hf);
-    set_cursor(2, 7);
-    display_write_string(ini);
-    set_cursor(2, 11);
-    display_write_string("13:00");
-    set_cursor(3, 7);
-    display_write_string(fin);
-    set_cursor(3, 11);
-    display_write_string("14:00");
+    display_write_string(total);
+
+    set_cursor(3, 8);
+    display_write_string("99999W");
 
     return ESP_OK;
 }

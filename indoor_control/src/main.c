@@ -56,7 +56,7 @@ void app_main()
         vTaskDelay(3500 / portTICK_PERIOD_MS);
         if (i == 1)
         {
-            display_set_screen_one(99, v, 13, 55);
+            display_set_screen_one(99, v, true, true, 13, 55);
             i = 2;
         }
         else if (i == 2)
