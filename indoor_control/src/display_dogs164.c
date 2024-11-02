@@ -8,7 +8,8 @@
 #include "esp_log.h"
 
 #include "../include/display_dogs164.h"
-// #include "../include/board_def.h"
+// #include "../include/display_manager.h"
+//  #include "../include/board_def.h"
 
 #define RESET_PIN_DISPLAY 13
 
@@ -214,24 +215,16 @@ esp_err_t display_set_screen(uint8_t power)
     return ESP_OK;
 }
 
-esp_err_t display_set_power(uint8_t power, arrow_t arrow)
+esp_err_t display_set_power(uint8_t power, char vege_flora)
 {
     static uint8_t last_power = 0xFF; // Guardar el valor previo del power
 
     // limpio todo lo de la linea de datos
     display_clean_arrow();
     char numero[6];
-    if (arrow == ARROW_UP)
-    {
-        set_cursor(1, 5);
-        display_send_data(0xDE); // flecha arriba
-    }
-    else if (arrow == ARROW_DOWN)
-    {
-        set_cursor(1, 5);
-        display_send_data(0xE0); // flecha abajo
-    }
-    vTaskDelay(500 / portTICK_PERIOD_MS); // doy tiempo para que se vea la barra
+
+    set_cursor(1, 5);
+    display_write_char(vege_flora); // flecha arriba
 
     // Si el valor de power ha cambiado, actualiza la barra y el número
     if (power != last_power)
@@ -247,12 +240,84 @@ esp_err_t display_set_power(uint8_t power, arrow_t arrow)
         display_power_bar(power);
         last_power = power;
     }
-    display_clean_arrow();
 
     return ESP_OK;
 }
 
-esp_err_t display_set_screen_one(uint8_t power, char vege_flora, bool dia, bool modo, uint8_t h, uint8_t m)
+/*esp_err_t screen_one_line_one(char *phy, char *lum)
+{
+  return ESP_OK;
+}
+esp_err_t screen_one_line_two()
+{
+  return ESP_OK;
+}
+esp_err_t screen_one_line_three()
+{
+  return ESP_OK;
+}
+esp_err_t screen_one_line_four()
+{
+      return ESP_OK;
+}*/
+
+esp_err_t screen_two_line(uint8_t line, uint8_t h1, uint8_t m1, uint8_t h2, uint8_t m2)
+{
+    char *h = "ER";
+    char *ddots = ":";
+    char *ini = "i";
+    char *fin = "f";
+    char houri[4];
+    char hourf[4];
+    char mini[4];
+    char minf[4];
+
+    switch (line)
+    {
+    case 0:
+        h = "H1";
+        break;
+    case 1:
+        h = "H2";
+        break;
+    case 2:
+        h = "H3";
+        break;
+    case 3:
+        h = "H4";
+        break;
+
+    default:
+        break;
+    }
+
+    sprintf(houri, "%u", h1);
+    sprintf(mini, "%u", m1);
+    sprintf(hourf, "%u", h2);
+    sprintf(minf, "%u", m2);
+
+    set_cursor(line, 0);
+    display_write_string(h);
+    set_cursor(line, 3);
+    display_write_string(ini);
+    set_cursor(line, 4);
+    display_write_string(houri);
+    set_cursor(line, 6);
+    display_write_string(":");
+    set_cursor(line, 7);
+    display_write_string(mini);
+    set_cursor(line, 10);
+    display_write_string(fin);
+    set_cursor(line, 11);
+    display_write_string(hourf);
+    set_cursor(line, 13);
+    display_write_string(":");
+    set_cursor(line, 14);
+    display_write_string(minf);
+    return ESP_OK;
+}
+
+esp_err_t display_set_screen_one(screen_t *screen, uint8_t power, char vege_flora, bool dia, bool modo, uint8_t h, uint8_t m)
 { // en los argumentos de la funcion falta si auto o manual y si vege o flora, que variable?
   // bool dia, 1 si, 0 no.
   // bool modo, 1 manual, 0 auto.
@@ -271,6 +336,8 @@ esp_err_t display_set_screen_one(uint8_t power, char vege_flora, bool dia, bool 
     char numero[6];
     char numeroppf[6];
     float ppfn = power * 2.97;
+
+    *screen = SCREEN_ONE;
 
     sprintf(numero, "%u%%", power);
     sprintf(hour, "%u", h);
@@ -319,77 +386,30 @@ esp_err_t display_set_screen_one(uint8_t power, char vege_flora, bool dia, bool 
     set_cursor(3, 14);
     display_write_string(min);
 
+    /*screen_one_line_one();
+    screen_one_line_two();
+    screen_one_line_three();
+    screen_one_line_four();*/
     return ESP_OK;
 }
 
-esp_err_t display_set_screen_two()
+esp_err_t display_set_screen_two(screen_t *screen)
 {
-    // char houri[4];
-    // char hourf[4];
-    // char mini[4];
-    // char minf[4];
-
-    // sprintf(houri, "%u", hi);
-    // sprintf(mini, "%u", mi);
-    // sprintf(hourf, "%u", hf);
-    // sprintf(minf, "%u", mf);
-
-    char *h1 = "H1";
-    char *h2 = "H2";
-    char *h3 = "H3";
-    char *h4 = "H4";
-    char *ddots = ":";
-    char *ini = "i";
-    char *fin = "f";
 
     display_send_command(COMMAND_CLEAR_DISPLAY);       // limpio display
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0); // me aseguro qeu se ponga en 4 lineas
-
-    set_cursor(0, 0);
-    display_write_string(h1);
-    set_cursor(0, 3);
-    display_write_string(ini);
-    set_cursor(0, 4);
-    display_write_string("13:00");
-    set_cursor(0, 10);
-    display_write_string(fin);
-    set_cursor(0, 11);
-    display_write_string("14:00");
-    set_cursor(1, 0);
-    display_write_string(h2);
-    set_cursor(1, 3);
-    display_write_string(ini);
-    set_cursor(1, 4);
-    display_write_string("13:00");
-    set_cursor(1, 10);
-    display_write_string(fin);
-    set_cursor(1, 11);
-    display_write_string("14:00");
-    set_cursor(2, 0);
-    display_write_string(h3);
-    set_cursor(2, 3);
-    display_write_string(ini);
-    set_cursor(2, 4);
-    display_write_string("13:00");
-    set_cursor(2, 10);
-    display_write_string(fin);
-    set_cursor(2, 11);
-    display_write_string("14:00");
-    set_cursor(3, 0);
-    display_write_string(h4);
-    set_cursor(3, 3);
-    display_write_string(ini);
-    set_cursor(3, 4);
-    display_write_string("13:00");
-    set_cursor(3, 10);
-    display_write_string(fin);
-    set_cursor(3, 11);
-    display_write_string("14:00");
+    *screen = SCREEN_TWO;
+    screen_two_line(0, 14, 10, 16, 30);
+    screen_two_line(1, 14, 10, 16, 30);
+    screen_two_line(2, 14, 10, 16, 30);
+    screen_two_line(3, 14, 10, 16, 30);
 
     return ESP_OK;
 }
 
-esp_err_t display_set_screen_three()
+// struct tm es la estructura de la time.h
+
+esp_err_t display_set_screen_three(screen_t *screen)
 {
     char *pwm = "PWM";
     char *ddots = ":";
@@ -399,7 +419,7 @@ esp_err_t display_set_screen_three()
 
     display_send_command(COMMAND_CLEAR_DISPLAY);
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
-
+    *screen = SCREEN_THREE;
     set_cursor(0, 0);
     display_write_string(pwm);
     set_cursor(0, 7);
@@ -434,7 +454,7 @@ esp_err_t display_init()
     gpio_set_level(RESET_PIN_DISPLAY, 0);
     vTaskDelay(100 / portTICK_PERIOD_MS);
     gpio_set_level(RESET_PIN_DISPLAY, 1);
-    vTaskDelay(500 / portTICK_PERIOD_MS);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 
     display_send_command(COMMAND_8BIT_4LINES_RE1_IS0);
     display_send_command(COMMAND_4LINES);
@@ -462,6 +482,35 @@ esp_err_t display_init()
     vTaskDelay(400 / portTICK_PERIOD_MS);
     set_cursor(2, 2);
     display_write_string(iniciando);
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+
+    return ESP_OK;
+}
+
+esp_err_t clear_line(uint8_t line)
+{
+    char *clear = "                ";
+    set_cursor(line, 0);
+    display_write_string(clear);
+    return ESP_OK;
+}
+
+esp_err_t blink_line(uint8_t line)
+{
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+    clear_line(line);
+    ESP_LOGI("wait", "limpio linea");
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+    // ESP_LOGI("wait", "escribo linea");
+    // screen_two_line(0, 14, 10, 16, 30);
+    // vTaskDelay(600 / portTICK_PERIOD_MS);
+    return ESP_OK;
+}
+
+esp_err_t display_set_vege_flora(char vege_flora)
+{
+    set_cursor(1, 4);
+    display_write_char(vege_flora);
 
     return ESP_OK;
 }

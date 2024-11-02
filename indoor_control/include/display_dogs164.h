@@ -9,6 +9,7 @@
 
 #include "driver/i2c.h"
 #include "esp_log.h"
+// #include "../include/display_manager.h"
 
 #define MODE_COMMAND 0x00
 #define MODE_DATA 0x40
@@ -81,9 +82,10 @@
 
 typedef enum
 {
-    ARROW_UP,
-    ARROW_DOWN
-} arrow_t;
+    SCREEN_ONE,
+    SCREEN_TWO,
+    SCREEN_THREE
+} screen_t;
 
 esp_err_t init_reset_display_pin(void);
 esp_err_t set_i2c(void);
@@ -93,13 +95,17 @@ esp_err_t set_cursor(uint8_t, uint8_t);
 esp_err_t display_write_char(char);
 esp_err_t display_write_string(const char *);
 esp_err_t display_set_screen(uint8_t);
-esp_err_t display_set_power(uint8_t, arrow_t);
+esp_err_t display_set_power(uint8_t, char);
 esp_err_t display_power_bar(uint8_t);
 esp_err_t display_clean_arrow(void);
 esp_err_t display_clean_power_and_bar(void);
-esp_err_t display_set_screen_one(uint8_t, char, bool, bool, uint8_t, uint8_t);
-esp_err_t display_set_screen_two(void);
-esp_err_t display_set_screen_three(void);
+esp_err_t screen_two_line(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
+esp_err_t display_set_screen_one(screen_t *, uint8_t, char, bool, bool, uint8_t, uint8_t);
+esp_err_t display_set_screen_two(screen_t *);
+esp_err_t display_set_screen_three(screen_t *);
 esp_err_t display_init(void);
+esp_err_t clear_line(uint8_t);
+esp_err_t blink_line(uint8_t);
+esp_err_t display_set_vege_flora(char);
 
 #endif /* DISPLAY_DOGS164_H__ */

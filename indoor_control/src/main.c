@@ -3,13 +3,17 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
+#include "sdkconfig.h"
 
 #include "driver/i2c.h"
 #include "esp_log.h"
 
-#include "display_dogs164.h"
+#include "display_manager.h"
 
 #define LED_PIN 18
+
+#define BUTTON 25
 
 // comandos display
 static const char *TAG = "I2C";
@@ -30,31 +34,52 @@ static esp_err_t blink_led(void)
     return ESP_OK;
 }
 
+void setup_gpio_input(gpio_num_t pin)
+{
+    // Configuración del GPIO
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_INTR_DISABLE;        // Sin interrupciones
+    io_conf.mode = GPIO_MODE_INPUT;               // Configuración como entrada
+    io_conf.pin_bit_mask = (1ULL << pin);         // Pin específico
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE; // Sin pull-down
+    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;      // Activar pull-up (si necesario)
+
+    // Aplicar la configuración
+    gpio_config(&io_conf);
+}
+
 void app_main()
 {
-    char v = 'V';
-    uint8_t i = 1;
+    // char v = 'V';
+    // uint8_t i = 1;
     init_led_pin();
-    ESP_LOGI(TAG, "Inicializando I2C");
-    ESP_ERROR_CHECK(set_i2c()); // inicio el i2c
-    ESP_LOGI(TAG, "Inicializando DISPLAY");
-    display_init();
-    ESP_LOGI(TAG, "Termina inicializacion del DISPLAY");
-    /*display_set_power(75, ARROW_DOWN); // funcion de ejemplo con el nuevo valor de potencia y si disminuye o aumenta
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    display_set_power(30, ARROW_DOWN);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    display_set_power(10, ARROW_DOWN);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    display_set_power(90, ARROW_UP);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);*/
+    setup_gpio_input(BUTTON);
+    int pin_value;
+    // ESP_LOGI(TAG, "Inicializando I2C");
+    // ESP_ERROR_CHECK(set_i2c()); // inicio el i2c
+    // ESP_LOGI(TAG, "Inicializando DISPLAY");
+    display_manager_init();
+    display_manager_start(75, 'V');
+    // display_init();
+    // vTaskDelay(2000 / portTICK_PERIOD_MS);
+    // ESP_LOGI(TAG, "Termina inicializacion del DISPLAY");
+    // display_set_screen_two();
+    // vTaskDelay(2000 / portTICK_PERIOD_MS);
 
     while (true)
     {
-        ESP_LOGI("wait", "...");
+        // ESP_LOGI("wait", "...");
         blink_led();
-        vTaskDelay(3500 / portTICK_PERIOD_MS);
-        if (i == 1)
+        vTaskDelay(250 / portTICK_PERIOD_MS);
+        pin_value = gpio_get_level(BUTTON);
+        if (pin_value == 0)
+        {
+            display_manager_change_screen(75, 'V');
+        }
+
+        // blink_line(2);
+        // display_set_screen_two();
+        /*if (i == 1)
         {
             display_set_screen_one(99, v, true, true, 13, 55);
             i = 2;
@@ -68,6 +93,6 @@ void app_main()
         {
             display_set_screen_three();
             i = 1;
-        }
+        }*/
     }
 }
