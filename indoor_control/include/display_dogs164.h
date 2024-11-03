@@ -87,6 +87,12 @@ typedef enum
     SCREEN_THREE
 } screen_t;
 
+typedef enum
+{
+    NORMAL,
+    CONFIG
+} sstate_t;
+
 esp_err_t init_reset_display_pin(void);
 esp_err_t set_i2c(void);
 esp_err_t display_send_command(uint8_t);

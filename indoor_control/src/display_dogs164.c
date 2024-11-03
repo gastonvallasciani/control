@@ -103,7 +103,12 @@ esp_err_t display_clean_arrow(void)
 esp_err_t display_clean_power_and_bar(void)
 {
     uint8_t i;
-    for (i = 0; i < 16; i++)
+    for (i = 0; i < 4; i++)
+    {
+        set_cursor(1, i);
+        display_write_string(" ");
+    }
+    for (i = 6; i < 16; i++)
     {
         set_cursor(1, i);
         display_write_string(" ");
@@ -220,11 +225,10 @@ esp_err_t display_set_power(uint8_t power, char vege_flora)
     static uint8_t last_power = 0xFF; // Guardar el valor previo del power
 
     // limpio todo lo de la linea de datos
-    display_clean_arrow();
     char numero[6];
 
     set_cursor(1, 5);
-    display_write_char(vege_flora); // flecha arriba
+    display_write_char(vege_flora);
 
     // Si el valor de power ha cambiado, actualiza la barra y el número
     if (power != last_power)

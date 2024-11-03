@@ -13,7 +13,11 @@
 
 #define LED_PIN 18
 
-#define BUTTON 25
+#define BUTTON1 25
+
+#define BUTTON2 14
+
+#define BUTTON3 35
 
 // comandos display
 static const char *TAG = "I2C";
@@ -48,13 +52,36 @@ void setup_gpio_input(gpio_num_t pin)
     gpio_config(&io_conf);
 }
 
+uint8_t read_button(uint8_t button)
+{
+    static int last_state = 1; // Estado anterior del botón (1 = no presionado)
+    int current_state = gpio_get_level(button);
+
+    if (current_state != last_state)
+    {
+        vTaskDelay(50 / portTICK_PERIOD_MS);    // Esperar el tiempo de antirrebote
+        current_state = gpio_get_level(button); // Leer el estado nuevamente
+    }
+    /*if (current_state == last_state)
+    {
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+    }*/
+
+    last_state = current_state;
+    return current_state;
+}
+
 void app_main()
 {
     // char v = 'V';
-    // uint8_t i = 1;
+    uint8_t i = 1;
     init_led_pin();
-    setup_gpio_input(BUTTON);
-    int pin_value;
+    setup_gpio_input(BUTTON1);
+    setup_gpio_input(BUTTON2);
+    setup_gpio_input(BUTTON3);
+    uint8_t button1;
+    uint8_t button2;
+    uint8_t button3;
     // ESP_LOGI(TAG, "Inicializando I2C");
     // ESP_ERROR_CHECK(set_i2c()); // inicio el i2c
     // ESP_LOGI(TAG, "Inicializando DISPLAY");
@@ -70,12 +97,28 @@ void app_main()
     {
         // ESP_LOGI("wait", "...");
         blink_led();
-        vTaskDelay(250 / portTICK_PERIOD_MS);
-        pin_value = gpio_get_level(BUTTON);
-        if (pin_value == 0)
+        button1 = read_button(BUTTON1);
+        button3 = read_button(BUTTON3);
+        if (button1 == 0)
         {
+
             display_manager_change_screen(75, 'V');
         }
+        if (button3 == 0)
+        {
+            if (i == 1)
+            {
+                i = 2;
+                display_manager_refresh(75, 'V');
+            }
+            else
+            {
+                i = 1;
+                display_manager_refresh(20, 'F');
+            }
+        }
+
+        vTaskDelay(150 / portTICK_PERIOD_MS);
 
         // blink_line(2);
         // display_set_screen_two();
