@@ -20,6 +20,7 @@
 #include "../include/nv_flash_manager.h"
 #include "../include/display_manager.h"
 #include "../include/s_out_manager.h"
+#include "../include/current_time_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE
@@ -171,6 +172,8 @@ void global_manager_init(void)
     button_manager_init();
     display_manager_init();
     s_out_manager_init();
+    current_time_manager_init();
+
 
     xTaskCreate(global_manager_task, "global_manager_task", 
         configMINIMAL_STACK_SIZE*4, NULL, configMAX_PRIORITIES-2, NULL);

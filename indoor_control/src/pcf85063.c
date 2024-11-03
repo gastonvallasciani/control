@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <time.h>
+#include <string.h>
+
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -151,7 +153,7 @@ static void i2c_master_init(void)
 static void pcf85063_task(void* arg)
 {
     pcf85063_event_t ev;
-    i2c_master_init();
+    //i2c_master_init();
 
     vTaskDelay(3000 / portTICK_PERIOD_MS);
 
@@ -211,8 +213,13 @@ static uint8_t pcf85063_wait_get_current_time_response(struct tm *current_time)
 {
     pcf85063_event_t resp_ev;
 
+    memset(&resp_ev.current_time, 0, sizeof(resp_ev.current_time));
+
     if(xQueueReceive(response_queue, &resp_ev, TIMEOUT_MS / portTICK_PERIOD_MS)) 
     {
+        /*printf("resp ev Time: %02d-%02d-%02d %02d:%02d:%02d\n", 
+            resp_ev.current_time.tm_year + 1900, resp_ev.current_time.tm_mon + 1, resp_ev.current_time.tm_mday, 
+            resp_ev.current_time.tm_hour, resp_ev.current_time.tm_min, resp_ev.current_time.tm_sec);*/
         *current_time = resp_ev.current_time;
         return 1;
     } 
