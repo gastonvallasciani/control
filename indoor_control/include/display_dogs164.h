@@ -90,8 +90,9 @@ typedef enum
 typedef enum
 {
     NORMAL,
-    CONFIG
-} sstate_t;
+    CONFIG_LINE,
+    CONFIG_PARAM
+} display_state_t;
 
 esp_err_t init_reset_display_pin(void);
 esp_err_t set_i2c(void);

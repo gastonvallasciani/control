@@ -29,8 +29,11 @@ typedef enum
     START_DISPLAY = 1,
     UPDATE_DISPLAY = 2,
     UPDATE_VEGE_FLORA_ON_SCREEN = 3,
-    CHANGE_SCREEN = 4,
-    CONFIG = 5
+    DOWN = 4,
+    UP = 5,
+    VF = 6,
+    AUX = 7,
+    AUXT = 8
 } display_event_cmds_t;
 
 typedef struct
@@ -85,38 +88,104 @@ static void display_manager_task(void *arg)
             case UPDATE_VEGE_FLORA_ON_SCREEN:
                 display_set_vege_flora(display_ev.vege_flora);
                 break;
-            case CHANGE_SCREEN:
-                if (screen == SCREEN_ONE)
+            case AUX: // BOTON AUX 1 TOQUE
+                switch (state)
                 {
-                    display_set_screen_two(&screen);
-                    ESP_LOGI(TAG, "Pantalla %u", screen);
-                }
-                else if (screen == SCREEN_TWO)
-                {
-                    display_set_screen_three(&screen);
-                    ESP_LOGI(TAG, "Pantalla %u", screen);
-                }
-                else // screen = SCREEN_THREE
-                {
-                    display_set_screen_one(&screen, display_ev.pwm_value, display_ev.vege_flora, true, true, 10, 10);
-                    ESP_LOGI(TAG, "Pantalla %u", screen);
-                }
-                break;
-            case CONFIG:
-                if (screen == SCREEN_ONE)
-                {
-                    display_set_screen_two(&screen);
-                }
-                else if (screen == SCREEN_TWO)
-                {
-                    display_set_screen_three(&screen);
-                }
-                else // screen = SCREEN_THREE
-                {
-                    display_set_screen_one(&screen, display_ev.pwm_value, display_ev.vege_flora, true, true, 10, 10);
-                }
-                break;
+                case NORMAL:
+                    if (screen == SCREEN_ONE)
+                    {
+                        display_set_screen_two(&screen);
+                        ESP_LOGI(TAG, "Pantalla %u", screen);
+                    }
+                    else if (screen == SCREEN_TWO)
+                    {
+                        display_set_screen_three(&screen);
+                        ESP_LOGI(TAG, "Pantalla %u", screen);
+                    }
+                    else // screen = SCREEN_THREE
+                    {
+                        display_set_screen_one(&screen, display_ev.pwm_value, display_ev.vege_flora, true, true, 10, 10);
+                        ESP_LOGI(TAG, "Pantalla %u", screen);
+                    }
+                    break;
+                case CONFIG_LINE:
+                    // la funcion que entra a la linea titilante
+                    break;
+                case CONFIG_PARAM:
+                    // la funcion que me hace salir de la linea y vuelve titilante
+                    break;
 
+                default:
+                    break;
+                }
+
+                break;
+            case AUXT: // boton AUX 3 segundos
+
+                if (screen == SCREEN_ONE)
+                {
+                    // funcion que entra en modo configuracion a la pantalla
+                }
+                else if (screen == SCREEN_TWO)
+                {
+                    // funcion que entra en modo configuracion a la pantalla
+                }
+                else // screen = SCREEN_THREE
+                {
+                    // funcion que entra en modo configuracion a la pantalla
+                }
+                break;
+            case VF:
+                switch (state)
+                {
+                case NORMAL:
+                    display_set_vege_flora(display_ev.vege_flora);
+                    break;
+                case CONFIG_LINE:
+                    // aca no hace nada
+                    break;
+                case CONFIG_PARAM:
+                    // funcion para ir al siguiente numero a modificar
+                    break;
+
+                default:
+                    break;
+                }
+                break;
+            case DOWN:
+                switch (state)
+                {
+                case NORMAL:
+                    // bajo pwm
+                    break;
+                case CONFIG_LINE:
+                    // bajo linea titilante en config
+                    break;
+                case CONFIG_PARAM:
+                    // bajo numero a configurar
+                    break;
+
+                default:
+                    break;
+                }
+                break;
+            case UP:
+                switch (state)
+                {
+                case NORMAL:
+                    // subo pwm
+                    break;
+                case CONFIG_LINE:
+                    // subo linea titilante en config
+                    break;
+                case CONFIG_PARAM:
+                    // subo numero a configurar
+                    break;
+
+                default:
+                    break;
+                }
+                break;
             default:
                 break;
             }
@@ -167,7 +236,7 @@ void display_manager_refreshvege_flora(char vege_flora)
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
 //------------------------------------------------------------------------------
-void display_manager_change_screen(uint8_t pwm_value, char vege_flora)
+/*void display_manager_change_screen(uint8_t pwm_value, char vege_flora)
 {
     display_event_t display_ev;
 
@@ -183,6 +252,50 @@ void display_manager_config_screen()
     display_event_t display_ev;
 
     display_ev.cmd = CONFIG;
+    // display_ev.pwm_value = pwm_value;
+    // display_ev.vege_flora = vege_flora;
+
+    xQueueSend(display_manager_queue, &display_ev, 10);
+}*/
+
+void display_manager_down()
+{
+    display_event_t display_ev;
+
+    display_ev.cmd = DOWN;
+    // display_ev.pwm_value = pwm_value;
+    // display_ev.vege_flora = vege_flora;
+
+    xQueueSend(display_manager_queue, &display_ev, 10);
+}
+
+void display_manager_up()
+{
+    display_event_t display_ev;
+
+    display_ev.cmd = UP;
+    // display_ev.pwm_value = pwm_value;
+    // display_ev.vege_flora = vege_flora;
+
+    xQueueSend(display_manager_queue, &display_ev, 10);
+}
+
+void display_manager_aux()
+{
+    display_event_t display_ev;
+
+    display_ev.cmd = AUX;
+    // display_ev.pwm_value = pwm_value;
+    // display_ev.vege_flora = vege_flora;
+
+    xQueueSend(display_manager_queue, &display_ev, 10);
+}
+
+void display_manager_auxt()
+{
+    display_event_t display_ev;
+
+    display_ev.cmd = AUXT;
     // display_ev.pwm_value = pwm_value;
     // display_ev.vege_flora = vege_flora;
 

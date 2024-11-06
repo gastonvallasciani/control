@@ -13,11 +13,11 @@
 
 #define LED_PIN 18
 
-#define BUTTON1 25
+#define BUTTON_DOWN 25
 
-#define BUTTON2 14
+#define BUTTON_VF 14
 
-#define BUTTON3 35
+#define BUTTON_AUX 35
 
 // comandos display
 static const char *TAG = "I2C";
@@ -76,9 +76,9 @@ void app_main()
     // char v = 'V';
     uint8_t i = 1;
     init_led_pin();
-    setup_gpio_input(BUTTON1);
-    setup_gpio_input(BUTTON2);
-    setup_gpio_input(BUTTON3);
+    setup_gpio_input(BUTTON_DOWN);
+    setup_gpio_input(BUTTON_VF);
+    setup_gpio_input(BUTTON_AUX);
     uint8_t button1;
     uint8_t button2;
     uint8_t button3;
@@ -97,8 +97,9 @@ void app_main()
     {
         // ESP_LOGI("wait", "...");
         blink_led();
-        button1 = read_button(BUTTON1);
-        button3 = read_button(BUTTON3);
+        button1 = read_button(BUTTON_DOWN);
+        button2 = read_button(BUTTON_VF);
+        button3 = read_button(BUTTON_AUX);
         if (button1 == 0)
         {
 
