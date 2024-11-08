@@ -27,13 +27,11 @@ typedef enum
 {
     CMD_UNDEFINED = 0,
     START_DISPLAY = 1,
-    UPDATE_DISPLAY = 2,
-    UPDATE_VEGE_FLORA_ON_SCREEN = 3,
-    DOWN = 4,
-    UP = 5,
-    VF = 6,
-    AUX = 7,
-    AUXT = 8
+    DOWN = 2,
+    UP = 3,
+    VF = 4,
+    AUX = 5,
+    AUXT = 6
 } display_event_cmds_t;
 
 typedef struct
@@ -81,12 +79,6 @@ static void display_manager_task(void *arg)
                 display_init();
                 display_set_screen_one(&screen, display_ev.pwm_value, display_ev.vege_flora, true, true, 10, 10);
                 // display_set_screen(display_ev.pwm_value, display_ev.vege_flora);
-                break;
-            case UPDATE_DISPLAY:
-                display_set_power(display_ev.pwm_value, display_ev.vege_flora);
-                break;
-            case UPDATE_VEGE_FLORA_ON_SCREEN:
-                display_set_vege_flora(display_ev.vege_flora);
                 break;
             case AUX: // BOTON AUX 1 TOQUE
                 switch (state)
@@ -156,7 +148,7 @@ static void display_manager_task(void *arg)
                 switch (state)
                 {
                 case NORMAL:
-                    // bajo pwm
+                    display_set_power(display_ev.pwm_value, display_ev.vege_flora);
                     break;
                 case CONFIG_LINE:
                     // bajo linea titilante en config
@@ -173,7 +165,7 @@ static void display_manager_task(void *arg)
                 switch (state)
                 {
                 case NORMAL:
-                    // subo pwm
+                    display_set_power(display_ev.pwm_value, display_ev.vege_flora);
                     break;
                 case CONFIG_LINE:
                     // subo linea titilante en config
@@ -215,38 +207,7 @@ void display_manager_start(uint8_t pwm_value, char vege_flora)
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
 //------------------------------------------------------------------------------
-void display_manager_refresh(uint8_t pwm_value, char vege_flora)
-{
-    display_event_t display_ev;
-
-    display_ev.cmd = UPDATE_DISPLAY;
-    display_ev.pwm_value = pwm_value;
-    display_ev.vege_flora = vege_flora;
-
-    xQueueSend(display_manager_queue, &display_ev, 10);
-}
-//------------------------------------------------------------------------------
-void display_manager_refreshvege_flora(char vege_flora)
-{
-    display_event_t display_ev;
-
-    display_ev.cmd = UPDATE_VEGE_FLORA_ON_SCREEN;
-    display_ev.vege_flora = vege_flora;
-
-    xQueueSend(display_manager_queue, &display_ev, 10);
-}
-//------------------------------------------------------------------------------
-/*void display_manager_change_screen(uint8_t pwm_value, char vege_flora)
-{
-    display_event_t display_ev;
-
-    display_ev.cmd = CHANGE_SCREEN;
-    display_ev.pwm_value = pwm_value;
-    display_ev.vege_flora = vege_flora;
-
-    xQueueSend(display_manager_queue, &display_ev, 10);
-}
-
+/*
 void display_manager_config_screen()
 {
     display_event_t display_ev;

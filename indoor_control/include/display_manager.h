@@ -17,8 +17,9 @@
 //------------------------------------------------------------------------------
 void display_manager_init(void);
 void display_manager_start(uint8_t pwm_value, char vege_flora);
-void display_manager_refresh(uint8_t pwm_value, char vege_flora);
-void display_manager_refreshvege_flora(char vege_flora);
-void display_manager_change_screen(uint8_t pwm_value, char vege_flora);
+void display_manager_down();
+void display_manager_up();
+void display_manager_aux();
+void display_manager_auxt();
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* DISPLAY_MANAGER_H__ */

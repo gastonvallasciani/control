@@ -100,24 +100,24 @@ void app_main()
         button1 = read_button(BUTTON_DOWN);
         button2 = read_button(BUTTON_VF);
         button3 = read_button(BUTTON_AUX);
-        if (button1 == 0)
-        {
-
-            display_manager_change_screen(75, 'V');
-        }
         if (button3 == 0)
         {
-            if (i == 1)
-            {
-                i = 2;
-                display_manager_refresh(75, 'V');
-            }
-            else
-            {
-                i = 1;
-                display_manager_refresh(20, 'F');
-            }
+
+            display_manager_aux();
         }
+        /* if (button2 == 0)
+         {
+             if (i == 1)
+             {
+                 i = 2;
+                 display_manager_refresh(75, 'V');
+             }
+             else
+             {
+                 i = 1;
+                 display_manager_refresh(20, 'F');
+             }
+         }*/
 
         vTaskDelay(150 / portTICK_PERIOD_MS);
 
