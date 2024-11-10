@@ -73,10 +73,6 @@ static void vege_button_interrupt(void *arg);
 static void pwm_button_down_interrupt(void *arg);
 static void pwm_button_up_interrupt(void *arg);
 
-static flora_vege_status_t nv_init_flora_vege_status(void);
-static void nv_save_flora_vege_status(flora_vege_status_t flora_vege_status);
-static void nv_save_pwm_digital_value(uint8_t pwm_dig_value);
-
 static void pwm_up_timer_callback(TimerHandle_t xTimer);
 static void pwm_down_timer_callback(TimerHandle_t xTimer);
 
@@ -87,48 +83,6 @@ static void pwm_down_timer_callback(TimerHandle_t xTimer);
 //------------------------------------------------------------------------------
 
 //--------------------DEFINICION DE FUNCIONES INTERNAS--------------------------
-//------------------------------------------------------------------------------
-static flora_vege_status_t nv_init_flora_vege_status(void)
-{
-    uint32_t value;
-    flora_vege_status_t ret_value;
-
-    if (read_uint32_from_flash(RELE_VEGE_STATUS_KEY, &value))
-    {
-#ifdef DEBUG_MODULE
-        printf("RELE VEGE STATUS READ: %lu \n", value);
-#endif
-
-        if (value == 1)
-        {
-            ret_value = FLORA_VEGE_OUTPUT_ENABLE;
-        }
-        else
-        {
-            ret_value = FLORA_VEGE_OUTPUT_DISABLE;
-        }
-    }
-    else
-    {
-#ifdef DEBUG_MODULE
-        printf("RELE VEGE STATUS READING FAILED \n");
-#endif
-        ret_value = FLORA_VEGE_OUTPUT_DISABLE;
-    }
-    return(ret_value);
-}
-
-//------------------------------------------------------------------------------
-static void nv_save_flora_vege_status(flora_vege_status_t flora_vege_status)
-{
-    write_parameter_on_flash_uint32(RELE_VEGE_STATUS_KEY, (uint32_t)flora_vege_status);
-}
-//------------------------------------------------------------------------------
-
-static void nv_save_pwm_digital_value(uint8_t pwm_dig_value)
-{
-    write_parameter_on_flash_uint32(PWM_DIGITAL_VALUE_KEY, (uint32_t)pwm_dig_value);
-}
 //------------------------------------------------------------------------------
 static void config_buttons_isr(void)
 {
@@ -196,7 +150,6 @@ static void pwm_down_timer_callback(TimerHandle_t xTimer) {
 static IRAM_ATTR void pwm_button_down_interrupt(void *arg)
 {
     int64_t time_now = esp_timer_get_time();
-    button_events_t ev;
     
     if (gpio_get_level(BT_DW) == 0) { // Botón presionado
         if (time_now - last_time_pwm_down > pdMS_TO_TICKS(50)) {
@@ -227,7 +180,6 @@ static void pwm_up_timer_callback(TimerHandle_t xTimer) {
 static IRAM_ATTR void pwm_button_up_interrupt(void *arg)
 {
     int64_t time_now = esp_timer_get_time();
-    button_events_t ev;
 
     if (gpio_get_level(BT_UP) == 0) { // Botón presionado
         if (time_now - last_time_pwm_up > pdMS_TO_TICKS(50)) {
@@ -253,24 +205,12 @@ static IRAM_ATTR void pwm_button_up_interrupt(void *arg)
 void button_event_manager_task(void * pvParameters)
 {
     button_events_t button_ev;    
-    flora_vege_status_t flora_vege_status = nv_init_flora_vege_status();
+    flora_vege_status_t flora_vege_status;
     uint8_t pwm_digital_per_value = 0;
+    pwm_mode_t pwm_mode;
 
-    #ifdef DEBUG_MODULE
-        printf("flora_vege_status: %d \n", flora_vege_status);
-    #endif
-
-    config_buttons_isr();
-
-    global_manager_set_flora_vege_status(flora_vege_status);
-
-    if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
-    {
-        flora_vege_manager_turn_on();
-        led_manager_rele_vege_on();
-    }
+    config_buttons_isr();    
     
-
     while(true)
     {
         if(xQueueReceive(button_manager_queue, &button_ev, portMAX_DELAY) == pdTRUE)
@@ -294,8 +234,7 @@ void button_event_manager_task(void * pvParameters)
                         #endif
                         global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_ENABLE);
                         flora_vege_status = FLORA_VEGE_OUTPUT_ENABLE;
-                        flora_vege_manager_turn_on();
-                        led_manager_rele_vege_on();
+                        flora_vege_turn_on();
                         display_manager_refreshvege_flora('V');
 
                     }
@@ -306,11 +245,9 @@ void button_event_manager_task(void * pvParameters)
                         #endif
                         global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_DISABLE);
                         flora_vege_status = FLORA_VEGE_OUTPUT_DISABLE;
-                        flora_vege_manager_turn_off();
-                        led_manager_rele_vege_off();
+                        flora_vege_turn_off();
                         display_manager_refreshvege_flora('F');
                     }
-                    nv_save_flora_vege_status(flora_vege_status);
                     break;
                 case PWM_DOWN_BUTTON_PUSHED:
                 if (is_jp3_teclas_connected() == true)
@@ -332,9 +269,12 @@ void button_event_manager_task(void * pvParameters)
                     else
                         display_manager_refresh(pwm_digital_per_value, 'F');
                     global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
-                    pwm_manager_turn_on_pwm(pwm_digital_per_value);
-                    led_manager_pwm_output(pwm_digital_per_value);
-                    nv_save_pwm_digital_value(pwm_digital_per_value);
+                    global_manager_get_pwm_mode(&pwm_mode);  
+                    if(pwm_mode == PWM_MANUAL)
+                    {
+                        pwm_manager_turn_on_pwm(pwm_digital_per_value);
+                        led_manager_pwm_output(pwm_digital_per_value);
+                    }
                 }
                 break;
                 case PWM_UP_BUTTON_PUSHED:
@@ -356,9 +296,12 @@ void button_event_manager_task(void * pvParameters)
                     else
                         display_manager_refresh(pwm_digital_per_value, 'F');
                     global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
-                    pwm_manager_turn_on_pwm(pwm_digital_per_value);
-                    led_manager_pwm_output(pwm_digital_per_value);
-                    nv_save_pwm_digital_value(pwm_digital_per_value);
+                    global_manager_get_pwm_mode(&pwm_mode); 
+                    if(pwm_mode == PWM_MANUAL)
+                    {
+                        pwm_manager_turn_on_pwm(pwm_digital_per_value);
+                        led_manager_pwm_output(pwm_digital_per_value);
+                    }
                 }
                 break;
                 case FABRIC_RESET:

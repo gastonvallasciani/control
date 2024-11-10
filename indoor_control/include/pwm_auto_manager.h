@@ -1,33 +1,41 @@
-#ifndef PWM_MANAGER_H__
-#define PWM_MANAGER_H__
+#ifndef PWM_AUTO_MANAGER_H__
+#define PWM_AUTO_MANAGER_H__
 //------------------- INCLUDES -------------------------------------------------
 //------------------------------------------------------------------------------
-#include <stdint.h>
+#include <time.h>
+#include <stdbool.h>
 //------------------- MACROS Y DEFINES -----------------------------------------
 //------------------------------------------------------------------------------
 
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
+typedef enum{
+    SIMUL_DAY_OFF = 0,
+    SIMUL_DAY_ON = 1,
+    SIMUL_DAY_UNDEFINED = 2,
+}simul_day_status_t;
 
+typedef enum{
+    PWM_OUTPUT_OFF = 0,
+    PWM_OUTPUT_ON = 1,
+}pwm_output_status_t;
+
+typedef struct{
+    struct tm current_time;
+    pwm_output_status_t output_status;
+    bool update_output_percent_power;
+    bool update_calendar; 
+    struct tm turn_on_time;
+    struct tm turn_off_time;
+    simul_day_status_t simul_day_status;
+    uint8_t percent_power;
+}pwm_auto_info_t;
 //------------------- DECLARACION DE DATOS EXTERNOS ----------------------------
 //------------------------------------------------------------------------------
 
 //------------------- DECLARACION DE FUNCIONES EXTERNAS ------------------------
 //------------------------------------------------------------------------------
-
-/// @brief Inits pwm module. Must be call in main function.
-/// @param  
-void pwm_manager_init(void);
-void pwm_manager_turn_on_pwm(uint8_t pwm_power_percent);
-void pwm_manager_turn_off_pwm(void);
-void pwm_manager_update_pwm(uint8_t pwm_power_percent);
-
-
-void pwm_manager_turn_on_pwm_simul_day_on(uint8_t pwm_power_percent);
-void pwm_manager_turn_off_pwm_simul_day_on(uint8_t duty_cycle);
-void pwm_manager_resume_fading_state_function(void);
-void pwm_manager_only_turn_off_pwm(void);
-uint8_t is_fading_in_progress(void);
-
+void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable);
+void turn_off_fading_status(void);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
-#endif /* LED_MANAGER_H__ */
+#endif /* PWM_AUTO_MANAGER_H__ */

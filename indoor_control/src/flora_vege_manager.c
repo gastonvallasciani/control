@@ -14,6 +14,7 @@
 #include "../include/pwm_manager.h"
 #include "../include/jumpers_manager.h"
 #include "../include/global_manager.h"
+#include "../include/led_manager.h"
 
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
@@ -25,7 +26,8 @@
 
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
-
+static void flora_vege_manager_turn_on(void);
+static void flora_vege_manager_turn_off(void);
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
 
@@ -37,23 +39,7 @@
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
 //------------------------------------------------------------------------------
-
-//------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
-//------------------------------------------------------------------------------
-void flora_vege_manager_init(void)
-{
-    gpio_config_t io_conf;
-    io_conf.intr_type = GPIO_INTR_DISABLE; // desactivar interrupción
-    io_conf.mode = GPIO_MODE_OUTPUT; // establecer en modo salida
-    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL; // configurar pin
-    io_conf.pull_down_en = 0; // desactivar pull-down
-    io_conf.pull_up_en = 0; // desactivar pull-up
-    gpio_config(&io_conf);
-
-    gpio_set_level(S_VEGE, 0);
-}
-//------------------------------------------------------------------------------
-void flora_vege_manager_turn_on(void)
+static void flora_vege_manager_turn_on(void)
 {
     uint8_t pwm_manual_value = 0;
     #ifdef DEBUG_MODULE
@@ -77,7 +63,7 @@ void flora_vege_manager_turn_on(void)
     
 }
 //------------------------------------------------------------------------------
-void flora_vege_manager_turn_off(void)
+static void flora_vege_manager_turn_off(void)
 {
     uint8_t pwm_manual_value = 0;
     #ifdef DEBUG_MODULE
@@ -97,6 +83,32 @@ void flora_vege_manager_turn_off(void)
     {
         gpio_set_level(S_VEGE, 0);
     }
+}
+//------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
+//------------------------------------------------------------------------------
+void flora_vege_manager_init(void)
+{
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_INTR_DISABLE; // desactivar interrupción
+    io_conf.mode = GPIO_MODE_OUTPUT; // establecer en modo salida
+    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL; // configurar pin
+    io_conf.pull_down_en = 0; // desactivar pull-down
+    io_conf.pull_up_en = 0; // desactivar pull-up
+    gpio_config(&io_conf);
+
+    gpio_set_level(S_VEGE, 0);
+}
+//------------------------------------------------------------------------------
+void flora_vege_turn_on(void)
+{
+    flora_vege_manager_turn_on();
+    led_manager_rele_vege_on();
+}
+//------------------------------------------------------------------------------
+void flora_vege_turn_off(void)
+{
+    flora_vege_manager_turn_off();
+    led_manager_rele_vege_off();
 }
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------

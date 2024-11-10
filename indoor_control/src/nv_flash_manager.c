@@ -33,8 +33,24 @@ static void first_time_flash(void);
 //------------------------------------------------------------------------------
 static void first_time_flash(void)
 {
+    struct tm time_info_default;
+
+    time_info_default.tm_year = 123;
+    time_info_default.tm_mon = 6;
+    time_info_default.tm_mday = 8;
+    time_info_default.tm_hour = 13;
+    time_info_default.tm_min = 30;
+    time_info_default.tm_sec = 30;
+
     init_parameter_in_flash_uint32(RELE_VEGE_STATUS_KEY, RELE_VEGE_STATUS_DEFAULT);
     init_parameter_in_flash_uint32(PWM_DIGITAL_VALUE_KEY, PWM_DIGITAL_VALUE_DEFAULT);
+    init_parameter_in_flash_uint32(PWM_MODE_KEY, PWM_MODE_DEFAULT);
+    init_parameter_in_flash_uint32(SIMUL_DAY_STATUS_KEY, PWM_SIMUL_DAY_STATUS_DEFAULT);
+    init_date_parameter_in_flash(PWM_DATE_ON_KEY, time_info_default);
+    time_info_default.tm_hour++;
+    init_date_parameter_in_flash(PWM_DATE_OFF_KEY, time_info_default);
+    init_parameter_in_flash_uint32(PWM_PERCENT_POWER_KEY, PWM_PERCENT_POWER_DEFAULT);
+
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------

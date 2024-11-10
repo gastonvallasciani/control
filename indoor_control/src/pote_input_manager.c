@@ -104,7 +104,7 @@ static void analog_input_manager_task(void* arg)
         else
         {
             global_manager_get_pwm_mode(&pwm_mode);
-            if(pwm_mode == MANUAL)
+            if(pwm_mode == PWM_MANUAL)
             {
                 ret = adc_oneshot_read(adc2_handle, ADC_POTE_INPUT, &adc_read_value[index]);
                 if(ret == ESP_OK)

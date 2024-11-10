@@ -16,7 +16,7 @@
 //------------------------------------------------------------------------------
 void flora_vege_manager_init(void);
 
-void flora_vege_manager_turn_on(void);
-void flora_vege_manager_turn_off(void);
+void flora_vege_turn_on(void);
+void flora_vege_turn_off(void);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* FLORA_VEGE_MANAGER_H__ */

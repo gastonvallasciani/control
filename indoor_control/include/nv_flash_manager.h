@@ -12,10 +12,20 @@
 // Tamaño maximo de key 15 caracteres
 #define RELE_VEGE_STATUS_KEY "rele_vege_key\0"
 #define PWM_DIGITAL_VALUE_KEY "pwm_dig_key\0"
+#define PWM_MODE_KEY "pwm_mode_key\0" 
+#define SIMUL_DAY_STATUS_KEY "sim_day_key\0"
+#define PWM_DATE_ON_KEY "pwm_on_key\0" 
+#define PWM_DATE_OFF_KEY "pwm_off_key\0"
+#define PWM_PERCENT_POWER_KEY "pwm_power_key\0"
 
 // DEFAULT VALUES
 #define RELE_VEGE_STATUS_DEFAULT 0 // OFF
 #define PWM_DIGITAL_VALUE_DEFAULT 0 // pwm value configurado pro tecla. Rango: 0-100
+#define PWM_MODE_DEFAULT 0 // PWM_MANUAL 
+#define PWM_SIMUL_DAY_STATUS_DEFAULT 0 // SIMUL_DAY_OFF
+#define PWM_PERCENT_POWER_DEFAULT 50 // 50 percent
+
+
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 
