@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -106,13 +107,13 @@ esp_err_t display_set_power(uint8_t, char);
 esp_err_t display_power_bar(uint8_t);
 esp_err_t display_clean_arrow(void);
 esp_err_t display_clean_power_and_bar(void);
-esp_err_t screen_two_line(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
-esp_err_t display_set_screen_one(screen_t *, uint8_t, char, bool, bool, uint8_t, uint8_t);
-esp_err_t display_set_screen_two(screen_t *);
-esp_err_t display_set_screen_three(screen_t *);
+esp_err_t screen_one_line_three(struct tm, bool, bool);
+esp_err_t screen_two_line(uint8_t, struct tm, struct tm);
+esp_err_t screen_three_line(uint8_t, int, struct tm, struct tm);
+esp_err_t display_set_screen_one(screen_t *, uint8_t, char, bool, bool, struct tm);
+esp_err_t display_set_screen_two(screen_t *, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm);
+esp_err_t display_set_screen_three(screen_t *, struct tm, struct tm, int);
 esp_err_t display_init(void);
-esp_err_t clear_line(uint8_t);
-esp_err_t blink_line(uint8_t);
 esp_err_t display_set_vege_flora(char);
 
 #endif /* DISPLAY_DOGS164_H__ */

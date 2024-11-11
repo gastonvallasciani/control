@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/timers.h"
 
 #include "driver/i2c.h"
 #include "esp_log.h"
@@ -248,198 +250,10 @@ esp_err_t display_set_power(uint8_t power, char vege_flora)
     return ESP_OK;
 }
 
-/*esp_err_t screen_one_line_one(char *phy, char *lum)
+esp_err_t display_set_vege_flora(char vege_flora)
 {
-  return ESP_OK;
-}
-esp_err_t screen_one_line_two()
-{
-  return ESP_OK;
-}
-esp_err_t screen_one_line_three()
-{
-  return ESP_OK;
-}
-esp_err_t screen_one_line_four()
-{
-      return ESP_OK;
-}*/
-
-esp_err_t screen_two_line(uint8_t line, uint8_t h1, uint8_t m1, uint8_t h2, uint8_t m2)
-{
-    char *h = "ER";
-    char *ddots = ":";
-    char *ini = "i";
-    char *fin = "f";
-    char houri[4];
-    char hourf[4];
-    char mini[4];
-    char minf[4];
-
-    switch (line)
-    {
-    case 0:
-        h = "H1";
-        break;
-    case 1:
-        h = "H2";
-        break;
-    case 2:
-        h = "H3";
-        break;
-    case 3:
-        h = "H4";
-        break;
-
-    default:
-        break;
-    }
-
-    sprintf(houri, "%u", h1);
-    sprintf(mini, "%u", m1);
-    sprintf(hourf, "%u", h2);
-    sprintf(minf, "%u", m2);
-
-    set_cursor(line, 0);
-    display_write_string(h);
-    set_cursor(line, 3);
-    display_write_string(ini);
-    set_cursor(line, 4);
-    display_write_string(houri);
-    set_cursor(line, 6);
-    display_write_string(":");
-    set_cursor(line, 7);
-    display_write_string(mini);
-    set_cursor(line, 10);
-    display_write_string(fin);
-    set_cursor(line, 11);
-    display_write_string(hourf);
-    set_cursor(line, 13);
-    display_write_string(":");
-    set_cursor(line, 14);
-    display_write_string(minf);
-    return ESP_OK;
-}
-
-esp_err_t display_set_screen_one(screen_t *screen, uint8_t power, char vege_flora, bool dia, bool modo, uint8_t h, uint8_t m)
-{ // en los argumentos de la funcion falta si auto o manual y si vege o flora, que variable?
-  // bool dia, 1 si, 0 no.
-  // bool modo, 1 manual, 0 auto.
-  // para el tiempo, uso la time.h. revisar como es la estructura.
-    char *phy = "PHY-03";
-    char *lumenar = "LUMENAR";
-    char *ppf = "PPF";
-    char *p = "P";
-    char *w = "W";
-    char *automatic = "AUTO";
-    char *manual = "MAN";
-    char *ddots = ":";
-    char *dias = "DIA";
-    char hour[4];
-    char min[4];
-    char numero[6];
-    char numeroppf[6];
-    float ppfn = power * 2.97;
-
-    *screen = SCREEN_ONE;
-
-    sprintf(numero, "%u%%", power);
-    sprintf(hour, "%u", h);
-    sprintf(min, "%u", m);
-    sprintf(numeroppf, "%.f", ppfn);
-
-    display_send_command(COMMAND_CLEAR_DISPLAY);
-    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
-    // primera fila
-    set_cursor(0, 0);
-    display_write_string(phy); // pongo el phy-03
-    set_cursor(0, 9);
-    display_write_string(lumenar); // pongo la marca lumenar
-    // segunda fila
-    set_cursor(1, 0);
-    display_write_string(numero); // escribo el valor de potencia
-    set_cursor(1, 5);
-    display_write_char(vege_flora); // escribo la letra si es vege o flora
-    display_power_bar(power);       // muestro la barra de potencia
-    // tercera fila
-    set_cursor(2, 0);
-    display_write_string(ppf); // escribo la palabra ppf
-    set_cursor(2, 3);
-    display_write_string(ddots); // escribo los dos puntos
-    set_cursor(2, 4);
-    display_write_string(numeroppf); // escribo el numero del ppf
-    set_cursor(2, 9);
-    display_write_string(p); // escribo la letra P de la potencia total
-    set_cursor(2, 10);
-    display_write_string("00000"); // los 4 digitos de la potencia total (pueden ser 5?)
-    set_cursor(2, 15);
-    display_write_string(w); // escribo la W de la unidad de potencia
-    // cuarta fila
-    set_cursor(3, 0);
-    display_write_string(dias);
-    set_cursor(3, 3);
-    display_write_string(ddots);
-    set_cursor(3, 4);
-    display_write_string("NO");
-    set_cursor(3, 7);
-    display_write_string(manual);
-    set_cursor(3, 11);
-    display_write_string(hour);
-    set_cursor(3, 13);
-    display_write_string(ddots);
-    set_cursor(3, 14);
-    display_write_string(min);
-
-    /*screen_one_line_one();
-    screen_one_line_two();
-    screen_one_line_three();
-    screen_one_line_four();*/
-    return ESP_OK;
-}
-
-esp_err_t display_set_screen_two(screen_t *screen)
-{
-
-    display_send_command(COMMAND_CLEAR_DISPLAY);       // limpio display
-    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0); // me aseguro qeu se ponga en 4 lineas
-    *screen = SCREEN_TWO;
-    screen_two_line(0, 14, 10, 16, 30);
-    screen_two_line(1, 14, 10, 16, 30);
-    screen_two_line(2, 14, 10, 16, 30);
-    screen_two_line(3, 14, 10, 16, 30);
-
-    return ESP_OK;
-}
-
-// struct tm es la estructura de la time.h
-
-esp_err_t display_set_screen_three(screen_t *screen)
-{
-    char *pwm = "PWM";
-    char *ddots = ":";
-    char *ini = "i";
-    char *fin = "f";
-    char *total = "Potencia total";
-
-    display_send_command(COMMAND_CLEAR_DISPLAY);
-    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
-    *screen = SCREEN_THREE;
-    set_cursor(0, 0);
-    display_write_string(pwm);
-    set_cursor(0, 7);
-    display_write_string(ini);
-    set_cursor(0, 9);
-    display_write_string("13:00");
-    set_cursor(1, 7);
-    display_write_string(fin);
-    set_cursor(1, 9);
-    display_write_string("14:00");
-
-    set_cursor(2, 0);
-    display_write_string(total);
-
-    set_cursor(3, 8);
-    display_write_string("99999W");
+    set_cursor(1, 4);
+    display_write_char(vege_flora);
 
     return ESP_OK;
 }
@@ -491,30 +305,294 @@ esp_err_t display_init()
     return ESP_OK;
 }
 
-esp_err_t clear_line(uint8_t line)
+esp_err_t display_set_screen_one(screen_t *screen, uint8_t power, char vege_flora, bool dia, bool modo, struct tm time)
+{ // en los argumentos de la funcion falta si auto o manual y si vege o flora, que variable?
+  // bool dia, 1 si, 0 no.
+  // bool modo, 1 manual, 0 auto.
+  // para el tiempo, uso la time.h. revisar como es la estructura.
+    char *phy = "PHY-03";
+    char *lumenar = "LUMENAR";
+    char *ppf = "PPF";
+    char *p = "P";
+    char *w = "W";
+    char *automatic = "AUTO";
+    char *manual = "MAN";
+    char *ddots = ":";
+    char *dias = "DIA";
+    char hour[4];
+    char min[4];
+    char numero[6];
+    char numeroppf[6];
+    float ppfn = power * 2.97;
+
+    *screen = SCREEN_ONE;
+
+    sprintf(numero, "%u%%", power);
+    sprintf(hour, "%u", time.tm_hour);
+    sprintf(min, "%u", time.tm_min);
+    sprintf(numeroppf, "%.f", ppfn);
+
+    display_send_command(COMMAND_CLEAR_DISPLAY);
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
+    // primera fila
+    set_cursor(0, 0);
+    display_write_string(phy); // pongo el phy-03
+    set_cursor(0, 9);
+    display_write_string(lumenar); // pongo la marca lumenar
+    // segunda fila
+    set_cursor(1, 0);
+    display_write_string(numero); // escribo el valor de potencia
+    set_cursor(1, 5);
+    display_write_char(vege_flora); // escribo la letra si es vege o flora
+    display_power_bar(power);       // muestro la barra de potencia
+    // tercera fila
+    set_cursor(2, 0);
+    display_write_string(ppf); // escribo la palabra ppf
+    set_cursor(2, 3);
+    display_write_string(ddots); // escribo los dos puntos
+    set_cursor(2, 4);
+    display_write_string(numeroppf); // escribo el numero del ppf
+    set_cursor(2, 9);
+    display_write_string(p); // escribo la letra P de la potencia total
+    set_cursor(2, 10);
+    display_write_string("00000"); // los 4 digitos de la potencia total (pueden ser 5?)
+    set_cursor(2, 15);
+    display_write_string(w); // escribo la W de la unidad de potencia
+    // cuarta fila
+    set_cursor(3, 0);
+    display_write_string(dias);
+    set_cursor(3, 3);
+    display_write_string(ddots);
+    set_cursor(3, 4);
+    display_write_string("NO");
+    set_cursor(3, 7);
+    display_write_string(manual);
+    set_cursor(3, 11);
+    display_write_string(hour);
+    set_cursor(3, 13);
+    display_write_string(ddots);
+    set_cursor(3, 14);
+    display_write_string(min);
+
+    /*screen_one_line_one();
+    screen_one_line_two();
+    screen_one_line_three();
+    screen_one_line_four();*/
+    return ESP_OK;
+}
+
+esp_err_t screen_one_line_three(struct tm time, bool dia, bool modo)
 {
-    char *clear = "                ";
+    char *dia_m;
+    char *modo_m;
+    char hour[4];
+    char min[4];
+    if (dia == true)
+    {
+        dia_m = "SI";
+    }
+    else
+    {
+        dia_m = "NO";
+    }
+    if (modo == true)
+    {
+        modo_m = "MAN";
+    }
+    else
+    {
+        modo_m = "AUTO";
+    }
+
+    sprintf(hour, "%u", time.tm_hour);
+    sprintf(min, "%u", time.tm_min);
+    set_cursor(3, 0);
+    display_write_string("DIA");
+    set_cursor(3, 3);
+    display_write_string(":");
+    set_cursor(3, 4);
+    display_write_string(dia_m);
+    set_cursor(3, 7);
+    display_write_string(modo_m);
+    set_cursor(3, 11);
+    display_write_string(hour);
+    set_cursor(3, 13);
+    display_write_string(":");
+    set_cursor(3, 14);
+    display_write_string(min);
+    return ESP_OK;
+}
+
+esp_err_t screen_two_line(uint8_t line, struct tm time_i, struct tm time_f)
+{
+    char *h = "ER";
+    char *ini = "i";
+    char *fin = "f";
+    char houri[4];
+    char hourf[4];
+    char mini[4];
+    char minf[4];
+
+    switch (line)
+    {
+    case 0:
+        h = "H1";
+        break;
+    case 1:
+        h = "H2";
+        break;
+    case 2:
+        h = "H3";
+        break;
+    case 3:
+        h = "H4";
+        break;
+
+    default:
+        break;
+    }
+
+    sprintf(houri, "%u", time_i.tm_hour);
+    sprintf(mini, "%u", time_i.tm_min);
+    sprintf(hourf, "%u", time_f.tm_hour);
+    sprintf(minf, "%u", time_f.tm_min);
+
     set_cursor(line, 0);
-    display_write_string(clear);
+    display_write_string(h);
+    set_cursor(line, 3);
+    display_write_string(ini);
+    set_cursor(line, 4);
+    display_write_string(houri);
+    set_cursor(line, 6);
+    display_write_string(":");
+    set_cursor(line, 7);
+    display_write_string(mini);
+    set_cursor(line, 10);
+    display_write_string(fin);
+    set_cursor(line, 11);
+    display_write_string(hourf);
+    set_cursor(line, 13);
+    display_write_string(":");
+    set_cursor(line, 14);
+    display_write_string(minf);
     return ESP_OK;
 }
 
-esp_err_t blink_line(uint8_t line)
+esp_err_t display_set_screen_two(screen_t *screen, struct tm time_i1, struct tm time_i2, struct tm time_i3, struct tm time_i4, struct tm time_f1, struct tm time_f2, struct tm time_f3, struct tm time_f4)
 {
-    vTaskDelay(500 / portTICK_PERIOD_MS);
-    clear_line(line);
-    ESP_LOGI("wait", "limpio linea");
-    vTaskDelay(500 / portTICK_PERIOD_MS);
-    // ESP_LOGI("wait", "escribo linea");
-    // screen_two_line(0, 14, 10, 16, 30);
-    // vTaskDelay(600 / portTICK_PERIOD_MS);
+
+    display_send_command(COMMAND_CLEAR_DISPLAY);       // limpio display
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0); // me aseguro qeu se ponga en 4 lineas
+    *screen = SCREEN_TWO;
+    screen_two_line(0, time_i1, time_f1);
+    screen_two_line(1, time_i2, time_f2);
+    screen_two_line(2, time_i3, time_f3);
+    screen_two_line(3, time_i4, time_f4);
+
     return ESP_OK;
 }
 
-esp_err_t display_set_vege_flora(char vege_flora)
+esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct tm time_pwmf, int fpower)
 {
-    set_cursor(1, 4);
-    display_write_char(vege_flora);
+    char *pwm = "PWM";
+    char *ini = "i";
+    char *fin = "f";
+    char *total = "Potencia total";
+    char houri[4];
+    char hourf[4];
+    char mini[4];
+    char minf[4];
+    char fpowerc[6];
+
+    display_send_command(COMMAND_CLEAR_DISPLAY);
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
+    *screen = SCREEN_THREE;
+
+    sprintf(houri, "%u", time_pwmi.tm_hour);
+    sprintf(mini, "%u", time_pwmi.tm_min);
+    sprintf(hourf, "%u", time_pwmf.tm_hour);
+    sprintf(minf, "%u", time_pwmf.tm_min);
+    sprintf(fpowerc, "%u", fpower);
+
+    set_cursor(0, 0);
+    display_write_string(pwm);
+    set_cursor(0, 7);
+    display_write_string(ini);
+    set_cursor(0, 9);
+    display_write_string(houri);
+    set_cursor(0, 11);
+    display_write_string(":");
+    set_cursor(0, 12);
+    display_write_string(mini);
+    set_cursor(1, 7);
+    display_write_string(fin);
+    set_cursor(1, 9);
+    display_write_string(hourf);
+    set_cursor(1, 11);
+    display_write_string(":");
+    set_cursor(1, 12);
+    display_write_string(minf);
+    set_cursor(2, 0);
+    display_write_string(total);
+    set_cursor(3, 8);
+    display_write_string(fpowerc);
+    set_cursor(3, 13);
+    display_write_string("W");
+
+    return ESP_OK;
+}
+
+esp_err_t screen_three_line(uint8_t line, int fpower, struct tm time_i, struct tm time_f)
+{
+    char *pwm = "PWM";
+    char *ini = "i";
+    char *fin = "f";
+    char houri[4];
+    char hourf[4];
+    char mini[4];
+    char minf[4];
+    char fpowerc[6];
+
+    sprintf(houri, "%u", time_i.tm_hour);
+    sprintf(mini, "%u", time_i.tm_min);
+    sprintf(hourf, "%u", time_f.tm_hour);
+    sprintf(minf, "%u", time_f.tm_min);
+    sprintf(fpowerc, "%u", fpower);
+
+    switch (line)
+    {
+    case 0:
+        set_cursor(0, 0);
+        display_write_string(pwm);
+        set_cursor(0, 7);
+        display_write_string(ini);
+        set_cursor(0, 9);
+        display_write_string(houri);
+        set_cursor(0, 11);
+        display_write_string(":");
+        set_cursor(0, 12);
+        display_write_string(mini);
+        break;
+    case 1:
+        set_cursor(1, 7);
+        display_write_string(fin);
+        set_cursor(1, 9);
+        display_write_string(hourf);
+        set_cursor(1, 11);
+        display_write_string(":");
+        set_cursor(1, 12);
+        display_write_string(minf);
+        break;
+    case 3:
+        set_cursor(3, 8);
+        display_write_string(fpowerc);
+        set_cursor(3, 13);
+        display_write_string("W");
+        break;
+
+    default:
+        break;
+    }
 
     return ESP_OK;
 }
