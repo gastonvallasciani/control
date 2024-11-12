@@ -34,7 +34,7 @@
 #define TIEMPO_PULSADO_MS 3000
 
 #define DEBUG_MODULE
-#define PWM_BUTTON_REPEAT_INTERVAL_MS 400 // Intervalo para repetir el evento
+#define PWM_BUTTON_REPEAT_INTERVAL_MS 100 // Intervalo para repetir el evento
 #define BUTTON_DEBOUNCE_TIME_MS 50 // Tiempo de anti-rebote
 
 //------------------------------TYPEDEF-----------------------------------------
@@ -334,7 +334,9 @@ void button_event_manager_task(void * pvParameters)
                     global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
                     pwm_manager_turn_on_pwm(pwm_digital_per_value);
                     led_manager_pwm_output(pwm_digital_per_value);
+
                     nv_save_pwm_digital_value(pwm_digital_per_value);
+
                 }
                 break;
                 case PWM_UP_BUTTON_PUSHED:
@@ -359,6 +361,7 @@ void button_event_manager_task(void * pvParameters)
                     pwm_manager_turn_on_pwm(pwm_digital_per_value);
                     led_manager_pwm_output(pwm_digital_per_value);
                     nv_save_pwm_digital_value(pwm_digital_per_value);
+           
                 }
                 break;
                 case FABRIC_RESET:
