@@ -34,7 +34,7 @@
 #define TIEMPO_PULSADO_MS 3000
 
 #define DEBUG_MODULE
-#define PWM_BUTTON_REPEAT_INTERVAL_MS 400 // Intervalo para repetir el evento
+#define PWM_BUTTON_REPEAT_INTERVAL_MS 100 // Intervalo para repetir el evento
 #define BUTTON_DEBOUNCE_TIME_MS 50 // Tiempo de anti-rebote
 
 //------------------------------TYPEDEF-----------------------------------------
