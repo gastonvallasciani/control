@@ -1,7 +1,7 @@
 //--------------------INCLUDES--------------------------------------------------
 //------------------------------------------------------------------------------
 #include <stdint.h>
-
+#include "freertos/FreeRTOSConfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/timers.h"
@@ -26,7 +26,7 @@ static const char *TAG = "I2C";
 
 // variables del timer
 TimerHandle_t timer;
-int interval = 400; // 500ms de timer
+int interval = 600; // ms de timer
 int timerid = 1;
 bool clear;
 
@@ -96,7 +96,35 @@ static void display_manager_task(void *arg)
     clear = pdFALSE;
     set_timer();
 
-    // aca asgianr valores a todas las variables globales del display
+    // aca asgianar valores a todas las variables globales del display
+
+    time_device.tm_hour = 12;
+    time_device.tm_min = 35;
+    time_i1.tm_hour = 12;
+    time_i1.tm_min = 35;
+    time_f1.tm_hour = 12;
+    time_f1.tm_min = 35;
+    time_i2.tm_hour = 12;
+    time_i2.tm_min = 35;
+    time_f2.tm_hour = 12;
+    time_f2.tm_min = 35;
+    time_i3.tm_hour = 12;
+    time_i3.tm_min = 35;
+    time_f3.tm_hour = 12;
+    time_f3.tm_min = 35;
+    time_i4.tm_hour = 12;
+    time_i4.tm_min = 35;
+    time_f4.tm_hour = 12;
+    time_f4.tm_min = 35;
+    time_pwmi.tm_hour = 12;
+    time_pwmi.tm_min = 35;
+    time_pwmf.tm_hour = 12;
+    time_pwmf.tm_min = 35;
+    power = 78;
+    fpower = 99999;
+    vegeflora = 'V';
+    dia = pdTRUE;
+    modo = pdTRUE;
     while (true)
     {
         if (xQueueReceive(display_manager_queue, &display_ev, portMAX_DELAY) == pdTRUE)
@@ -151,7 +179,7 @@ static void display_manager_task(void *arg)
                     // aca tengo que entrar a la primera linea titilante en la pantanlla en la que este
                     state = CONFIG_LINE;
                     line = 0;
-                    display_blink_manager(screen, line, 3); // con esta veo que pantalla estoy
+                    display_blink_manager(screen, 3); // con esta veo que pantalla estoy
 
                     break;
                 case CONFIG_LINE:
@@ -223,7 +251,8 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_LINE:
                     stop_timer();
-                    display_blink_manager(screen, line, 0); // 0 es down
+                    ESP_LOGI("CONFIG_LINE", "line es %u", line);
+                    display_blink_manager(screen, 0); // 0 es down
 
                     break;
                 case CONFIG_PARAM:
@@ -242,7 +271,7 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_LINE:
                     stop_timer();
-                    display_blink_manager(screen, line, 1); // 1 es up
+                    display_blink_manager(screen, 1); // 1 es up
 
                     break;
                 case CONFIG_PARAM:
@@ -277,7 +306,7 @@ void display_manager_start(uint8_t pwm_value, char vege_flora)
     display_event_t display_ev;
 
     display_ev.cmd = START_DISPLAY;
-    display_ev.pwm_value = pwm_value;
+    display_ev.pwm_value = power;
     display_ev.vege_flora = vege_flora;
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
@@ -331,13 +360,13 @@ void display_manager_auxt()
     display_event_t display_ev;
 
     display_ev.cmd = AUXT;
-    // display_ev.pwm_value = pwm_value;
+    // display_ev.pwm_value = power;
     // display_ev.vege_flora = vege_flora;
 
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
 
-esp_err_t display_blink_manager(screen_t screen, uint8_t line, uint8_t cmd)
+esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
 {
     switch (screen)
     {
@@ -388,6 +417,7 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t line, uint8_t cmd)
         else if (line == 3)
         {
             // blink renglon 4
+            ESP_LOGI("CONFIG_LINE", "line es %u", line);
             start_timer();
         }
 
@@ -433,11 +463,13 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t line, uint8_t cmd)
     return ESP_OK;
 }
 
-esp_err_t clear_line(uint8_t line)
+esp_err_t clear_line(uint8_t linee)
 {
-    char *clear = "                ";
-    set_cursor(line, 0);
-    display_write_string(clear);
+    ESP_LOGI("TIMER", "Entro a clear_line");
+    char *clearr = "                ";
+    set_cursor(linee, 0);
+    display_write_string(clearr);
+    ESP_LOGI("TIMER", "salgo de clear_line");
     return ESP_OK;
 }
 
@@ -446,14 +478,19 @@ void blink_callback(TimerHandle_t timer)
     ESP_LOGI("TIMER", "Entro al callback");
     if (clear == pdFALSE)
     {
+        ESP_LOGI("TIMER", "Entro al clear del callback");
         clear_line(line);
+        clear = pdTRUE;
+        ESP_LOGI("TIMER", "Salgo del clear del callback");
     }
     else
     {
         switch (screen)
         {
+            ESP_LOGI("TIMER", "Entro al switch del callback");
         case SCREEN_ONE:
             screen_one_line_three(time_device, dia, modo);
+            clear = pdFALSE;
             break;
         case SCREEN_TWO:
             if (line == 0)
@@ -472,20 +509,22 @@ void blink_callback(TimerHandle_t timer)
             {
                 screen_two_line(line, time_i4, time_f4);
             }
-
+            clear = pdFALSE;
             break;
         case SCREEN_THREE:
             screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            clear = pdFALSE;
             break;
         default:
             break;
         }
+        ESP_LOGI("TIMER", "Salgo del switch del callback");
     }
+    ESP_LOGI("TIMER", "Salgo del callback");
 }
 
 esp_err_t set_timer()
 {
-    ESP_LOGI("TIMER", "Inicializo timer");
     timer = xTimerCreate("timer", pdMS_TO_TICKS(interval), pdTRUE, (void *)timerid, blink_callback);
     if (timer == NULL)
     {
@@ -517,6 +556,7 @@ esp_err_t stop_timer()
     {
         printf("Error al detener el temporizador de FreeRTOS.\n");
     }
+    ESP_LOGI("TIMER", "Paro el timer");
     return ESP_OK;
 }
 

@@ -102,22 +102,20 @@ void app_main()
         button3 = read_button(BUTTON_AUX);
         if (button3 == 0)
         {
+            ESP_LOGI("Button", "Apreto boton 3");
 
             display_manager_aux();
         }
-        /* if (button2 == 0)
-         {
-             if (i == 1)
-             {
-                 i = 2;
-                 display_manager_refresh(75, 'V');
-             }
-             else
-             {
-                 i = 1;
-                 display_manager_refresh(20, 'F');
-             }
-         }*/
+        if (button2 == 0)
+        {
+            ESP_LOGI("Button", "Apreto boton 2");
+            display_manager_auxt();
+        }
+        if (button1 == 0)
+        {
+            ESP_LOGI("Button", "Apreto boton 1");
+            display_manager_down();
+        }
 
         vTaskDelay(150 / portTICK_PERIOD_MS);
 

@@ -83,9 +83,9 @@
 
 typedef enum
 {
-    SCREEN_ONE,
-    SCREEN_TWO,
-    SCREEN_THREE
+    SCREEN_ONE = 1,
+    SCREEN_TWO = 2,
+    SCREEN_THREE = 3
 } screen_t;
 
 typedef enum

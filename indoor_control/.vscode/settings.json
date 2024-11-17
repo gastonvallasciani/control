@@ -6,6 +6,7 @@
         "string.h": "c",
         "freertos.h": "c",
         "timers.h": "c",
-        "queue.h": "c"
+        "queue.h": "c",
+        "freertosconfig.h": "c"
     }
 }

@@ -383,6 +383,7 @@ esp_err_t display_set_screen_one(screen_t *screen, uint8_t power, char vege_flor
 
 esp_err_t screen_one_line_three(struct tm time, bool dia, bool modo)
 {
+    ESP_LOGI("TIMER", "Entro al screen one line three");
     char *dia_m;
     char *modo_m;
     char hour[4];
@@ -420,11 +421,13 @@ esp_err_t screen_one_line_three(struct tm time, bool dia, bool modo)
     display_write_string(":");
     set_cursor(3, 14);
     display_write_string(min);
+    ESP_LOGI("TIMER", "Salgo del screen one line three");
     return ESP_OK;
 }
 
 esp_err_t screen_two_line(uint8_t line, struct tm time_i, struct tm time_f)
 {
+    ESP_LOGI("TIMER", "Entro al screen two line");
     char *h = "ER";
     char *ini = "i";
     char *fin = "f";
@@ -475,6 +478,7 @@ esp_err_t screen_two_line(uint8_t line, struct tm time_i, struct tm time_f)
     display_write_string(":");
     set_cursor(line, 14);
     display_write_string(minf);
+    ESP_LOGI("TIMER", "Salgo del screen two line");
     return ESP_OK;
 }
 
