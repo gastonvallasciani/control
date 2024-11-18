@@ -154,13 +154,14 @@ static void display_manager_task(void *arg)
                     else // screen = SCREEN_THREE
                     {
 
-                        display_set_screen_one(&screen, 80, "V", true, true, time_device);
+                        display_set_screen_one(&screen, power, vegeflora, true, true, time_device);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     break;
                 case CONFIG_LINE:
                     state = CONFIG_PARAM;
                     // la funcion que entra a la linea titilante
+                    display_param_manager();
                     break;
                 case CONFIG_PARAM:
                     state = CONFIG_LINE;
@@ -188,7 +189,7 @@ static void display_manager_task(void *arg)
                     stop_timer();
                     if (screen == SCREEN_ONE)
                     {
-                        display_set_screen_one(&screen, display_ev.pwm_value, display_ev.vege_flora, true, true, time_device);
+                        display_set_screen_one(&screen, power, vegeflora, true, true, time_device);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     else if (screen == SCREEN_TWO)
@@ -208,7 +209,7 @@ static void display_manager_task(void *arg)
                     stop_timer();
                     if (screen == SCREEN_ONE)
                     {
-                        display_set_screen_one(&screen, display_ev.pwm_value, display_ev.vege_flora, true, true, time_device);
+                        display_set_screen_one(&screen, power, vegeflora, true, true, time_device);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     else if (screen == SCREEN_TWO)
@@ -372,11 +373,13 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
     {
     case SCREEN_ONE:
         // en esta pantalla solo se modifica la ultima linea
+        display_set_screen_one(&screen, power, vegeflora, true, true, time_device);
         line = 3;
         start_timer();
         break;
     case SCREEN_TWO:
         // chequeo si vino up o down
+        display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
         if (cmd == 0) // es down
         {
             if (line == 0)
@@ -423,34 +426,27 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
 
         break;
     case SCREEN_THREE:
+        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
         if (cmd == 0) // es down
         {
             if (line == 0)
             {
-                line = 3; // voy a la ultima linea
+                line = 1; // voy a la ultima linea
             }
-            else if (line == 3)
+            else if (line == 1)
             {
-                line = 1;
-            }
-            else
-            {
-                --line; // voy a la anterior linea
+                line = 0;
             }
         }
         else if (cmd == 1) // es up
         {
-            if (line == 3)
+            if (line == 0)
             {
-                line = 0; // voy a la primera linea
+                line = 1; // voy a la primera linea
             }
-            else if (line == 1)
+            else if (line == 0)
             {
-                line = 3;
-            }
-            else
-            {
-                ++line; // voy a la siguiente linea
+                line = 1;
             }
         }
         start_timer();
@@ -569,5 +565,24 @@ esp_err_t reset_timer()
     return ESP_OK;
 }
 
+esp_err_t display_param_manager()
+{
+    switch (screen)
+    {
+    case SCREEN_ONE:
+        /* code */
+        break;
+    case SCREEN_TWO:
+        /* code */
+        break;
+    case SCREEN_THREE:
+        /* code */
+        break;
+
+    default:
+        break;
+    }
+    return ESP_OK;
+}
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------

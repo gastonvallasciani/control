@@ -374,10 +374,6 @@ esp_err_t display_set_screen_one(screen_t *screen, uint8_t power, char vege_flor
     set_cursor(3, 14);
     display_write_string(min);
 
-    /*screen_one_line_one();
-    screen_one_line_two();
-    screen_one_line_three();
-    screen_one_line_four();*/
     return ESP_OK;
 }
 
@@ -501,7 +497,7 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct
     char *pwm = "PWM";
     char *ini = "i";
     char *fin = "f";
-    char *total = "Potencia total";
+    char *total = "POT.TOTAL";
     char houri[4];
     char hourf[4];
     char mini[4];
@@ -520,27 +516,23 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct
 
     set_cursor(0, 0);
     display_write_string(pwm);
-    set_cursor(0, 7);
-    display_write_string(ini);
-    set_cursor(0, 9);
+    set_cursor(0, 4);
     display_write_string(houri);
-    set_cursor(0, 11);
+    set_cursor(0, 6);
     display_write_string(":");
-    set_cursor(0, 12);
+    set_cursor(0, 7);
     display_write_string(mini);
-    set_cursor(1, 7);
-    display_write_string(fin);
-    set_cursor(1, 9);
+    set_cursor(0, 11);
     display_write_string(hourf);
-    set_cursor(1, 11);
+    set_cursor(0, 13);
     display_write_string(":");
-    set_cursor(1, 12);
+    set_cursor(0, 14);
     display_write_string(minf);
-    set_cursor(2, 0);
+    set_cursor(1, 0);
     display_write_string(total);
-    set_cursor(3, 8);
+    set_cursor(1, 10);
     display_write_string(fpowerc);
-    set_cursor(3, 13);
+    set_cursor(1, 15);
     display_write_string("W");
 
     return ESP_OK;
@@ -549,8 +541,7 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct
 esp_err_t screen_three_line(uint8_t line, int fpower, struct tm time_i, struct tm time_f)
 {
     char *pwm = "PWM";
-    char *ini = "i";
-    char *fin = "f";
+    char *total = "POT.TOTAL";
     char houri[4];
     char hourf[4];
     char mini[4];
@@ -568,32 +559,27 @@ esp_err_t screen_three_line(uint8_t line, int fpower, struct tm time_i, struct t
     case 0:
         set_cursor(0, 0);
         display_write_string(pwm);
-        set_cursor(0, 7);
-        display_write_string(ini);
-        set_cursor(0, 9);
+        set_cursor(0, 4);
         display_write_string(houri);
-        set_cursor(0, 11);
+        set_cursor(0, 6);
         display_write_string(":");
-        set_cursor(0, 12);
+        set_cursor(0, 7);
         display_write_string(mini);
-        break;
-    case 1:
-        set_cursor(1, 7);
-        display_write_string(fin);
-        set_cursor(1, 9);
+        set_cursor(0, 11);
         display_write_string(hourf);
-        set_cursor(1, 11);
+        set_cursor(0, 13);
         display_write_string(":");
-        set_cursor(1, 12);
+        set_cursor(0, 14);
         display_write_string(minf);
         break;
-    case 3:
-        set_cursor(3, 8);
+    case 1:
+        set_cursor(1, 0);
+        display_write_string(total);
+        set_cursor(1, 10);
         display_write_string(fpowerc);
-        set_cursor(3, 13);
+        set_cursor(1, 15);
         display_write_string("W");
         break;
-
     default:
         break;
     }
