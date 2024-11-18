@@ -261,6 +261,9 @@ static void display_manager_task(void *arg)
                 case CONFIG_LINE:
                     stop_timer();
                     ESP_LOGI("CONFIG_LINE", "line es %u", line);
+                    param_one = 1;
+                    param_two = 1;
+                    param_three = 1;
                     display_blink_manager(screen, 0); // 0 es down
 
                     break;
@@ -282,6 +285,9 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_LINE:
                     stop_timer();
+                    param_one = 1;
+                    param_two = 1;
+                    param_three = 1;
                     display_blink_manager(screen, 1); // 1 es up
 
                     break;
@@ -581,75 +587,245 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
     switch (screen)
     {
     case SCREEN_ONE:
-        if (cmd == DOWN)
+        display_set_screen_one(&screen, power, vegeflora, dia, modo, time_device);
+        if (cmd == VF || param_one == 1)
         {
-            if (param_one == 1)
-            {
-                param_one = 6;
-            }
-            else
-            {
-                param_one--;
-            }
+            screen_one_param();
         }
-        if (cmd == UP)
+        else if (cmd == UP)
         {
-            if (param_one == 6)
-            {
-                param_one = 1;
-            }
-            else
-            {
-                param_one++;
-            }
+            // aca subo el numero o cambio el estado
         }
-        if (param_one == 1)
+        else // cmd == DOWN
         {
-            screen_one_line_three(time_device, dia, modo);
-            set_cursor(3, 4);
-            display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
-        }
-        if (param_one == 2)
-        {
-            screen_one_line_three(time_device, dia, modo);
-            set_cursor(3, 7);
-            display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
-        }
-        if (param_one == 3)
-        {
-            screen_one_line_three(time_device, dia, modo);
-            set_cursor(3, 11);
-            display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
-        }
-        if (param_one == 4)
-        {
-            screen_one_line_three(time_device, dia, modo);
-            set_cursor(3, 12);
-            display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
-        }
-        if (param_one == 5)
-        {
-            screen_one_line_three(time_device, dia, modo);
-            set_cursor(3, 14);
-            display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
-        }
-        if (param_one == 6)
-        {
-            screen_one_line_three(time_device, dia, modo);
-            set_cursor(3, 15);
-            display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
+            // aca subo el numero o cambio el estado
         }
         break;
     case SCREEN_TWO:
-        /* code */
+        display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
+        if (cmd == VF || param_two == 1)
+        {
+            screen_two_param();
+        }
+        else if (cmd == UP)
+        {
+            // aca subo el numero o cambio el estado
+        }
+        else // cmd == DOWN
+        {
+            // aca subo el numero o cambio el estado
+        }
         break;
     case SCREEN_THREE:
-        /* code */
+        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
+        if (cmd == VF || param_three == 1)
+        {
+            screen_three_param();
+        }
+        else if (cmd == UP)
+        {
+            // aca subo el numero o cambio el estado
+        }
+        else // cmd == DOWN
+        {
+            // aca subo el numero o cambio el estado
+        }
         break;
 
     default:
         break;
     }
+    return ESP_OK;
+}
+
+esp_err_t screen_one_param()
+{
+
+    screen_one_line_three(time_device, dia, modo); // escribo linea para que no quede vacia
+    switch (param_one)
+    {
+    case 1:
+        set_cursor(3, 4);
+        break;
+
+    case 2:
+        set_cursor(3, 7);
+        break;
+
+    case 3:
+        set_cursor(3, 11);
+        break;
+
+    case 4:
+        set_cursor(3, 12);
+        break;
+
+    case 5:
+        set_cursor(3, 14);
+        break;
+
+    case 6:
+        set_cursor(3, 15);
+        break;
+
+    default:
+        break;
+    }
+    display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
+    if (param_one == 6)
+    {
+        param_one = 1;
+    }
+    else
+    {
+        param_one++;
+    }
+    return ESP_OK;
+}
+
+esp_err_t screen_two_param()
+{
+
+    switch (line) // escribo la linea para que no quede en blanco
+    {
+    case 0:
+        screen_two_line(line, time_i1, time_f1);
+        break;
+    case 1:
+        screen_two_line(line, time_i2, time_f2);
+        break;
+    case 2:
+        screen_two_line(line, time_i3, time_f3);
+        break;
+    case 3:
+        screen_two_line(line, time_i4, time_f4);
+        break;
+
+    default:
+        break;
+    }
+
+    switch (param_two) // me fijo que parametro modifico
+    {
+    case 1:
+        set_cursor(line, 4);
+        break;
+    case 2:
+        set_cursor(line, 5);
+        break;
+    case 3:
+        set_cursor(line, 7);
+        break;
+    case 4:
+        set_cursor(line, 8);
+        break;
+    case 5:
+        set_cursor(line, 11);
+        break;
+    case 6:
+        set_cursor(line, 12);
+        break;
+    case 7:
+        set_cursor(line, 14);
+        break;
+    case 8:
+        set_cursor(line, 15);
+        break;
+
+    default:
+        break;
+    }
+    display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
+    if (param_two == 8)
+    {
+        param_two = 1;
+    }
+    else
+    {
+        param_two++;
+    }
+    return ESP_OK;
+}
+
+esp_err_t screen_three_param()
+{
+    screen_three_line(line, fpower, time_pwmi, time_pwmf);
+    if (line == 0)
+    {
+        switch (param_three) // me fijo que parametro modifico
+        {
+        case 1:
+            set_cursor(line, 4);
+            break;
+        case 2:
+            set_cursor(line, 5);
+            break;
+        case 3:
+            set_cursor(line, 7);
+            break;
+        case 4:
+            set_cursor(line, 8);
+            break;
+        case 5:
+            set_cursor(line, 11);
+            break;
+        case 6:
+            set_cursor(line, 12);
+            break;
+        case 7:
+            set_cursor(line, 14);
+            break;
+        case 8:
+            set_cursor(line, 15);
+            break;
+
+        default:
+            break;
+        }
+        if (param_three == 8)
+        {
+            param_three = 1;
+        }
+        else
+        {
+            param_three++;
+        }
+    }
+    else // line == 1
+    {
+        switch (param_three) // me fijo que parametro modifico
+        {
+        case 1:
+            set_cursor(line, 10);
+            break;
+        case 2:
+            set_cursor(line, 11);
+            break;
+        case 3:
+            set_cursor(line, 12);
+            break;
+        case 4:
+            set_cursor(line, 13);
+            break;
+        case 5:
+            set_cursor(line, 14);
+            break;
+
+        default:
+            break;
+        }
+        if (param_three == 5)
+        {
+            param_three = 1;
+        }
+        else
+        {
+            param_three++;
+        }
+    }
+
+    display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
+
     return ESP_OK;
 }
 //---------------------------- END OF FILE -------------------------------------
