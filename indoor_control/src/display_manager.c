@@ -48,6 +48,9 @@ char vegeflora;
 bool dia;
 bool modo;
 
+uint8_t param_one;
+uint8_t param_two;
+uint8_t param_three;
 // comandos de las acciones del display
 typedef enum
 {
@@ -125,6 +128,9 @@ static void display_manager_task(void *arg)
     vegeflora = 'V';
     dia = pdTRUE;
     modo = pdTRUE;
+    param_one = 1;
+    param_two = 1;
+    param_three = 1;
     while (true)
     {
         if (xQueueReceive(display_manager_queue, &display_ev, portMAX_DELAY) == pdTRUE)
@@ -160,8 +166,9 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_LINE:
                     state = CONFIG_PARAM;
+                    stop_timer();
                     // la funcion que entra a la linea titilante
-                    display_param_manager();
+                    display_param_manager(AUX); // tengo que pasarle un numero para indicar que boton toqué
                     break;
                 case CONFIG_PARAM:
                     state = CONFIG_LINE;
@@ -238,6 +245,7 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_PARAM:
                     // funcion para ir al siguiente numero a modificar
+                    display_param_manager(VF);
                     break;
 
                 default:
@@ -257,6 +265,8 @@ static void display_manager_task(void *arg)
 
                     break;
                 case CONFIG_PARAM:
+
+                    display_param_manager(DOWN);
                     // bajo numero a configurar
                     break;
 
@@ -276,6 +286,7 @@ static void display_manager_task(void *arg)
 
                     break;
                 case CONFIG_PARAM:
+                    display_param_manager(UP);
                     // subo numero a configurar
                     break;
 
@@ -373,7 +384,7 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
     {
     case SCREEN_ONE:
         // en esta pantalla solo se modifica la ultima linea
-        display_set_screen_one(&screen, power, vegeflora, true, true, time_device);
+        display_set_screen_one(&screen, power, vegeflora, dia, modo, time_device);
         line = 3;
         start_timer();
         break;
@@ -565,12 +576,69 @@ esp_err_t reset_timer()
     return ESP_OK;
 }
 
-esp_err_t display_param_manager()
+esp_err_t display_param_manager(display_event_cmds_t cmd)
 {
     switch (screen)
     {
     case SCREEN_ONE:
-        /* code */
+        if (cmd == DOWN)
+        {
+            if (param_one == 1)
+            {
+                param_one = 6;
+            }
+            else
+            {
+                param_one--;
+            }
+        }
+        if (cmd == UP)
+        {
+            if (param_one == 6)
+            {
+                param_one = 1;
+            }
+            else
+            {
+                param_one++;
+            }
+        }
+        if (param_one == 1)
+        {
+            screen_one_line_three(time_device, dia, modo);
+            set_cursor(3, 4);
+            display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
+        }
+        if (param_one == 2)
+        {
+            screen_one_line_three(time_device, dia, modo);
+            set_cursor(3, 7);
+            display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
+        }
+        if (param_one == 3)
+        {
+            screen_one_line_three(time_device, dia, modo);
+            set_cursor(3, 11);
+            display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
+        }
+        if (param_one == 4)
+        {
+            screen_one_line_three(time_device, dia, modo);
+            set_cursor(3, 12);
+            display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
+        }
+        if (param_one == 5)
+        {
+            screen_one_line_three(time_device, dia, modo);
+            set_cursor(3, 14);
+            display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
+        }
+        if (param_one == 6)
+        {
+            screen_one_line_three(time_device, dia, modo);
+            set_cursor(3, 15);
+            display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
+        }
         break;
     case SCREEN_TWO:
         /* code */
