@@ -15,8 +15,9 @@
 
 //------------------- DECLARACION DE FUNCIONES EXTERNAS ------------------------
 //------------------------------------------------------------------------------
+void get_screen_state(display_state_t *);
 void display_manager_init(void);
-void display_manager_start(uint8_t pwm_value, char vege_flora);
+void display_manager_start(uint8_t, char);
 void display_manager_vf(void);
 void display_manager_down(void);
 void display_manager_up(void);

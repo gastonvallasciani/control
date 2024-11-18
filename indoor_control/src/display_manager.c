@@ -172,7 +172,10 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_PARAM:
                     state = CONFIG_LINE;
+                    // dejo de blinkear el caracter
+                    display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
                     // la funcion que me hace salir de la linea y vuelve titilante
+                    display_blink_manager(screen, 3); // vuelvo al blink line
                     break;
 
                 default:
@@ -308,6 +311,10 @@ static void display_manager_task(void *arg)
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------
+void get_screen_state(display_state_t *state_info)
+{
+    *state_info = state;
+}
 void display_manager_init(void)
 {
     set_i2c();
@@ -828,5 +835,6 @@ esp_err_t screen_three_param()
 
     return ESP_OK;
 }
+
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------
