@@ -114,7 +114,7 @@ void app_main()
         if (button1 == 0)
         {
             ESP_LOGI("Button", "Apreto boton 1");
-            display_manager_vf();
+            display_manager_up();
         }
 
         vTaskDelay(150 / portTICK_PERIOD_MS);

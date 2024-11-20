@@ -160,7 +160,7 @@ static void display_manager_task(void *arg)
                     else // screen = SCREEN_THREE
                     {
 
-                        display_set_screen_one(&screen, power, vegeflora, true, true, time_device);
+                        display_set_screen_one(&screen, power, vegeflora, dia, modo, time_device);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     break;
@@ -199,7 +199,7 @@ static void display_manager_task(void *arg)
                     stop_timer();
                     if (screen == SCREEN_ONE)
                     {
-                        display_set_screen_one(&screen, power, vegeflora, true, true, time_device);
+                        display_set_screen_one(&screen, power, vegeflora, dia, modo, time_device);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     else if (screen == SCREEN_TWO)
@@ -219,7 +219,7 @@ static void display_manager_task(void *arg)
                     stop_timer();
                     if (screen == SCREEN_ONE)
                     {
-                        display_set_screen_one(&screen, power, vegeflora, true, true, time_device);
+                        display_set_screen_one(&screen, power, vegeflora, dia, modo, time_device);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     else if (screen == SCREEN_TWO)
@@ -248,6 +248,7 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_PARAM:
                     // funcion para ir al siguiente numero a modificar
+                    ESP_LOGI("CONFIG_LINE", "Muevo al parametro siguiente");
                     display_param_manager(VF);
                     break;
 
@@ -271,9 +272,9 @@ static void display_manager_task(void *arg)
 
                     break;
                 case CONFIG_PARAM:
-
-                    display_param_manager(DOWN);
                     // bajo numero a configurar
+                    display_param_manager(DOWN);
+
                     break;
 
                 default:
@@ -295,8 +296,10 @@ static void display_manager_task(void *arg)
 
                     break;
                 case CONFIG_PARAM:
-                    display_param_manager(UP);
+                    ESP_LOGI("display_manager", "Entro al config_param del UP");
                     // subo numero a configurar
+                    display_param_manager(UP);
+
                     break;
 
                 default:
@@ -595,24 +598,27 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
     {
     case SCREEN_ONE:
         display_set_screen_one(&screen, power, vegeflora, dia, modo, time_device);
-        if (cmd == VF || param_one == 1)
+        if (cmd == VF || cmd == AUX)
         {
-            screen_one_param();
+            screen_one_param(cmd);
         }
         else if (cmd == UP)
         {
-            // aca subo el numero o cambio el estado
+            ESP_LOGI("PARAM_MANAGER", "Entro a param_modified_one");
+            param_modified_one(UP);
+            ESP_LOGI("PARAM_MANAGER", "Salgo de param_modified_one");
         }
         else // cmd == DOWN
         {
             // aca subo el numero o cambio el estado
+            // param_modified_one(DOWN);
         }
         break;
     case SCREEN_TWO:
         display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
-        if (cmd == VF || param_two == 1)
+        if (cmd == VF || cmd == AUX)
         {
-            screen_two_param();
+            screen_two_param(cmd);
         }
         else if (cmd == UP)
         {
@@ -625,9 +631,9 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
         break;
     case SCREEN_THREE:
         display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
-        if (cmd == VF || param_three == 1)
+        if (cmd == VF || cmd == AUX)
         {
-            screen_three_param();
+            screen_three_param(cmd);
         }
         else if (cmd == UP)
         {
@@ -645,7 +651,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
     return ESP_OK;
 }
 
-esp_err_t screen_one_param()
+esp_err_t screen_one_param(display_event_cmds_t cmd)
 {
 
     screen_one_line_three(time_device, dia, modo); // escribo linea para que no quede vacia
@@ -679,18 +685,22 @@ esp_err_t screen_one_param()
         break;
     }
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
-    if (param_one == 6)
+    if (cmd == VF)
     {
-        param_one = 1;
+        if (param_one == 6)
+        {
+            param_one = 1;
+        }
+        else
+        {
+            param_one++;
+        }
     }
-    else
-    {
-        param_one++;
-    }
+
     return ESP_OK;
 }
 
-esp_err_t screen_two_param()
+esp_err_t screen_two_param(display_event_cmds_t cmd)
 {
 
     switch (line) // escribo la linea para que no quede en blanco
@@ -743,18 +753,21 @@ esp_err_t screen_two_param()
         break;
     }
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
-    if (param_two == 8)
+    if (cmd == AUX)
     {
-        param_two = 1;
-    }
-    else
-    {
-        param_two++;
+        if (param_two == 8)
+        {
+            param_two = 1;
+        }
+        else
+        {
+            param_two++;
+        }
     }
     return ESP_OK;
 }
 
-esp_err_t screen_three_param()
+esp_err_t screen_three_param(display_event_cmds_t cmd)
 {
     screen_three_line(line, fpower, time_pwmi, time_pwmf);
     if (line == 0)
@@ -789,13 +802,16 @@ esp_err_t screen_three_param()
         default:
             break;
         }
-        if (param_three == 8)
+        if (cmd == AUX)
         {
-            param_three = 1;
-        }
-        else
-        {
-            param_three++;
+            if (param_three == 8)
+            {
+                param_three = 1;
+            }
+            else
+            {
+                param_three++;
+            }
         }
     }
     else // line == 1
@@ -821,13 +837,16 @@ esp_err_t screen_three_param()
         default:
             break;
         }
-        if (param_three == 5)
+        if (cmd == AUX)
         {
-            param_three = 1;
-        }
-        else
-        {
-            param_three++;
+            if (param_three == 5)
+            {
+                param_three = 1;
+            }
+            else
+            {
+                param_three++;
+            }
         }
     }
 
@@ -836,5 +855,40 @@ esp_err_t screen_three_param()
     return ESP_OK;
 }
 
+esp_err_t param_modified_one(display_event_cmds_t cmd)
+{
+    ESP_LOGI("param_modified_one", "Param_one vale %u", param_one);
+    if (param_one == 1)
+    {
+        if (dia == pdTRUE)
+        {
+            dia = pdFALSE;
+        }
+        else
+        {
+            dia = pdTRUE;
+        }
+        // aca debo guardarla en la funcion de gaston
+        screen_one_line_three(time_device, dia, modo);
+        set_cursor(3, 4);
+    }
+    if (param_one == 2)
+    {
+        if (modo == pdTRUE)
+        {
+            modo = pdFALSE;
+        }
+        else
+        {
+            modo = pdTRUE;
+        }
+        // aca debo guardarla en la funcion de gaston
+        screen_one_line_three(time_device, dia, modo);
+        set_cursor(3, 7);
+    }
+
+    display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
+    return ESP_OK;
+}
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------

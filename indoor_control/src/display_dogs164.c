@@ -315,15 +315,31 @@ esp_err_t display_set_screen_one(screen_t *screen, uint8_t power, char vege_flor
     char *ppf = "PPF";
     char *p = "P";
     char *w = "W";
-    char *automatic = "AUTO";
-    char *manual = "MAN";
+    char *modo_m = "MAN";
     char *ddots = ":";
-    char *dias = "DIA";
+    char *dia_m = "DIA";
     char hour[4];
     char min[4];
     char numero[6];
     char numeroppf[6];
     float ppfn = power * 2.97;
+
+    if (dia == true)
+    {
+        dia_m = "SI";
+    }
+    else
+    {
+        dia_m = "NO";
+    }
+    if (modo == true)
+    {
+        modo_m = "MAN";
+    }
+    else
+    {
+        modo_m = "AUTO";
+    }
 
     *screen = SCREEN_ONE;
 
@@ -360,13 +376,13 @@ esp_err_t display_set_screen_one(screen_t *screen, uint8_t power, char vege_flor
     display_write_string(w); // escribo la W de la unidad de potencia
     // cuarta fila
     set_cursor(3, 0);
-    display_write_string(dias);
+    display_write_string("DIA");
     set_cursor(3, 3);
     display_write_string(ddots);
     set_cursor(3, 4);
-    display_write_string("NO");
+    display_write_string(dia_m);
     set_cursor(3, 7);
-    display_write_string(manual);
+    display_write_string(modo_m);
     set_cursor(3, 11);
     display_write_string(hour);
     set_cursor(3, 13);
@@ -435,16 +451,16 @@ esp_err_t screen_two_line(uint8_t line, struct tm time_i, struct tm time_f)
     switch (line)
     {
     case 0:
-        h = "H1";
+        h = "T1";
         break;
     case 1:
-        h = "H2";
+        h = "T2";
         break;
     case 2:
-        h = "H3";
+        h = "T3";
         break;
     case 3:
-        h = "H4";
+        h = "T4";
         break;
 
     default:

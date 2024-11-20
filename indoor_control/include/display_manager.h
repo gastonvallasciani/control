@@ -30,8 +30,9 @@ esp_err_t stop_timer(void);
 esp_err_t reset_timer(void);
 esp_err_t clear_line(uint8_t);
 esp_err_t display_param_manager(display_event_cmds_t);
-esp_err_t screen_one_param();
-esp_err_t screen_two_param();
-esp_err_t screen_three_param();
+esp_err_t screen_one_param(display_event_cmds_t);
+esp_err_t screen_two_param(display_event_cmds_t);
+esp_err_t screen_three_param(display_event_cmds_t);
+esp_err_t param_modified_one(display_event_cmds_t);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* DISPLAY_MANAGER_H__ */
