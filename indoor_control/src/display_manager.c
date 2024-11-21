@@ -128,7 +128,7 @@ static void display_manager_task(void *arg)
     vegeflora = 'V';
     dia = pdTRUE;
     modo = pdTRUE;
-    param_one = 1;
+    param_one = 5;
     param_two = 1;
     param_three = 1;
     while (true)
@@ -248,6 +248,8 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_PARAM:
                     // funcion para ir al siguiente numero a modificar
+                    // ACA TENGO QUE GUARDAR EL PARÁMETRO QUE ESTABA MODIFICANDO ANTERIORMENTE
+                    // save_param(); funcion que dado el param, el screen y la linea, se guarda.
                     ESP_LOGI("CONFIG_LINE", "Muevo al parametro siguiente");
                     display_param_manager(VF);
                     break;
@@ -612,6 +614,9 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
         {
             // aca subo el numero o cambio el estado
             // param_modified_one(DOWN);
+            ESP_LOGI("PARAM_MANAGER", "Entro a param_modified_one");
+            param_modified_one(DOWN);
+            ESP_LOGI("PARAM_MANAGER", "Salgo de param_modified_one");
         }
         break;
     case SCREEN_TWO:
@@ -885,6 +890,90 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         // aca debo guardarla en la funcion de gaston
         screen_one_line_three(time_device, dia, modo);
         set_cursor(3, 7);
+    }
+    if (param_one == 3)
+    {
+        if (cmd == UP)
+        {
+            time_device.tm_hour += 10;
+            mktime(&time_device);
+            screen_one_line_three(time_device, dia, modo);
+            ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
+            ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
+            set_cursor(3, 11);
+        }
+        else
+        {
+            time_device.tm_hour -= 10;
+            mktime(&time_device);
+            screen_one_line_three(time_device, dia, modo);
+            ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
+            ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
+            set_cursor(3, 11);
+        }
+    }
+    if (param_one == 4)
+    {
+        if (cmd == UP)
+        {
+            time_device.tm_hour += 1;
+            mktime(&time_device);
+            screen_one_line_three(time_device, dia, modo);
+            ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
+            ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
+            set_cursor(3, 12);
+        }
+        else
+        {
+            time_device.tm_hour -= 1;
+            mktime(&time_device);
+            screen_one_line_three(time_device, dia, modo);
+            ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
+            ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
+            set_cursor(3, 12);
+        }
+    }
+    if (param_one == 5)
+    {
+        if (cmd == UP)
+        {
+            time_device.tm_min += 10;
+            mktime(&time_device);
+            screen_one_line_three(time_device, dia, modo);
+            ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
+            ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
+            set_cursor(3, 14);
+        }
+        else
+        {
+            time_device.tm_min -= 10;
+            mktime(&time_device);
+            screen_one_line_three(time_device, dia, modo);
+            ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
+            ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
+            set_cursor(3, 14);
+        }
+    }
+    if (param_one == 6)
+    {
+        if (cmd == UP)
+        {
+            time_device.tm_min += 1;
+            mktime(&time_device);
+            screen_one_line_three(time_device, dia, modo);
+            ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
+            ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
+            set_cursor(3, 15);
+        }
+        else
+        {
+            time_device.tm_min -= 1;
+            mktime(&time_device);
+            screen_one_line_three(time_device, dia, modo);
+            ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
+            ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
+            set_cursor(3, 15);
+        }
     }
 
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);

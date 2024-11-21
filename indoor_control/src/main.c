@@ -22,6 +22,8 @@
 // comandos display
 static const char *TAG = "I2C";
 
+struct tm time_test;
+
 uint8_t led_level = 0;
 
 static esp_err_t init_led_pin(void)
@@ -74,6 +76,8 @@ uint8_t read_button(uint8_t button)
 void app_main()
 {
     // char v = 'V';
+    time_test.tm_hour = 15;
+    time_test.tm_min = 55;
     uint8_t i = 1;
     init_led_pin();
     setup_gpio_input(BUTTON_DOWN);
@@ -97,6 +101,12 @@ void app_main()
     {
         // ESP_LOGI("wait", "...");
         blink_led();
+        /*ESP_LOGI("time", "la hora vale %u", time_test.tm_hour);
+        ESP_LOGI("time", "los minutos valen %u", time_test.tm_min);
+        time_test.tm_hour += 10;
+        time_test.tm_min += 10;
+        mktime(&time_test);*/
+
         button1 = read_button(BUTTON_DOWN);
         button2 = read_button(BUTTON_VF);
         button3 = read_button(BUTTON_AUX);
@@ -114,7 +124,7 @@ void app_main()
         if (button1 == 0)
         {
             ESP_LOGI("Button", "Apreto boton 1");
-            display_manager_up();
+            display_manager_down();
         }
 
         vTaskDelay(150 / portTICK_PERIOD_MS);
