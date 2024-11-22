@@ -52,23 +52,6 @@ uint8_t param_one;
 uint8_t param_two;
 uint8_t param_three;
 // comandos de las acciones del display
-typedef enum
-{
-    CMD_UNDEFINED = 0,
-    START_DISPLAY = 1,
-    DOWN = 2,
-    UP = 3,
-    VF = 4,
-    AUX = 5,
-    AUXT = 6
-} display_event_cmds_t;
-
-typedef struct
-{
-    uint8_t pwm_value;
-    display_event_cmds_t cmd;
-    char vege_flora;
-} display_event_t;
 
 // variables globales de informacion y posicion
 uint8_t line;
@@ -298,7 +281,8 @@ static void display_manager_task(void *arg)
 
                     break;
                 case CONFIG_PARAM:
-                    ESP_LOGI("display_manager", "Entro al config_param del UP");
+                    ESP_LOGI("UP-CONFIG_PARAM", "Entro al config_param del UP");
+                    ESP_LOGI("UP-CONFIG_PARAM", "param_two es %u", param_two);
                     // subo numero a configurar
                     display_param_manager(UP);
 
@@ -320,6 +304,7 @@ void get_screen_state(display_state_t *state_info)
 {
     *state_info = state;
 }
+//------------------------------------------------------------------------------
 void display_manager_init(void)
 {
     set_i2c();
@@ -627,11 +612,15 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
         }
         else if (cmd == UP)
         {
-            // aca subo el numero o cambio el estado
+            ESP_LOGI("PARAM_MANAGER", "Entro a param_modified_two");
+            param_modified_two(UP);
+            ESP_LOGI("PARAM_MANAGER", "Salgo de param_modified_two");
         }
         else // cmd == DOWN
         {
-            // aca subo el numero o cambio el estado
+            ESP_LOGI("PARAM_MANAGER", "Entro a param_modified_two");
+            param_modified_two(DOWN);
+            ESP_LOGI("PARAM_MANAGER", "Salgo de param_modified_two");
         }
         break;
     case SCREEN_THREE:
@@ -758,7 +747,7 @@ esp_err_t screen_two_param(display_event_cmds_t cmd)
         break;
     }
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
-    if (cmd == AUX)
+    if (cmd == VF)
     {
         if (param_two == 8)
         {
@@ -979,5 +968,186 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
     return ESP_OK;
 }
+
+esp_err_t param_modified_two(display_event_cmds_t cmd)
+{
+    ESP_LOGI("param_modified_two", "Param_two vale %u", param_two);
+
+    switch (line)
+    {
+    case 0:
+        ESP_LOGI("param_modified_two", "line %u", line);
+        ESP_LOGI("param_modified_two", "Entro a param_two_bis");
+        param_two_bis(cmd, &time_i1, &time_f1);
+        ESP_LOGI("param_modified_two", "Salgo de param_two_bis");
+        break;
+    case 1:
+        ESP_LOGI("param_modified_two", "line %u", line);
+        param_two_bis(cmd, &time_i2, &time_f2);
+        break;
+    case 2:
+        ESP_LOGI("param_modified_two", "line %u", line);
+        param_two_bis(cmd, &time_i3, &time_f3);
+        break;
+    case 3:
+        ESP_LOGI("param_modified_two", "line %u", line);
+        param_two_bis(cmd, &time_i4, &time_f4);
+        break;
+
+    default:
+        break;
+    }
+
+    return ESP_OK;
+}
+
+esp_err_t param_two_bis(display_event_cmds_t cmd, struct tm *time_i, struct tm *time_f)
+{
+    if (param_two == 1)
+    {
+        if (cmd == UP)
+        {
+            time_i->tm_hour += 10;
+            mktime(time_i);
+            screen_two_line(line, *time_i, *time_f);
+
+            set_cursor(line, 4);
+        }
+        else
+        {
+            time_i->tm_hour -= 10;
+            mktime(time_i);
+            screen_two_line(line, *time_i, *time_f);
+            set_cursor(line, 4);
+        }
+    }
+    if (param_two == 2)
+    {
+        if (cmd == UP)
+        {
+            time_i->tm_hour += 1;
+            mktime(time_i);
+            screen_two_line(line, *time_i, *time_f);
+
+            set_cursor(line, 5);
+        }
+        else
+        {
+            time_i->tm_hour -= 1;
+            mktime(time_i);
+            screen_two_line(line, *time_i, *time_f);
+            set_cursor(line, 5);
+        }
+    }
+    if (param_two == 3)
+    {
+        if (cmd == UP)
+        {
+            time_i->tm_min += 10;
+            mktime(time_i);
+            screen_two_line(line, *time_i, *time_f);
+            set_cursor(line, 7);
+        }
+        else
+        {
+            time_i->tm_min -= 10;
+            mktime(time_i);
+            screen_two_line(line, *time_i, *time_f);
+            set_cursor(line, 7);
+        }
+    }
+    if (param_two == 4)
+    {
+        if (cmd == UP)
+        {
+            time_i->tm_min += 1;
+            mktime(time_i);
+            screen_two_line(line, *time_i, *time_f);
+
+            set_cursor(line, 8);
+        }
+        else
+        {
+            time_i->tm_min -= 1;
+            mktime(time_i);
+            screen_two_line(line, *time_i, *time_f);
+            set_cursor(line, 8);
+        }
+    }
+    if (param_two == 5)
+    {
+        if (cmd == UP)
+        {
+            time_f->tm_hour += 10;
+            mktime(time_f);
+            screen_two_line(line, *time_i, *time_f);
+
+            set_cursor(line, 11);
+        }
+        else
+        {
+            time_f->tm_hour -= 10;
+            mktime(time_f);
+            screen_two_line(line, *time_i, *time_f);
+            set_cursor(line, 11);
+        }
+    }
+    if (param_two == 6)
+    {
+        if (cmd == UP)
+        {
+            time_f->tm_hour += 1;
+            mktime(time_f);
+            screen_two_line(line, *time_i, *time_f);
+
+            set_cursor(line, 12);
+        }
+        else
+        {
+            time_f->tm_hour -= 1;
+            mktime(time_f);
+            screen_two_line(line, *time_i, *time_f);
+            set_cursor(line, 12);
+        }
+    }
+    if (param_two == 7)
+    {
+        if (cmd == UP)
+        {
+            time_f->tm_min += 10;
+            mktime(time_f);
+            screen_two_line(line, *time_i, *time_f);
+
+            set_cursor(line, 14);
+        }
+        else
+        {
+            time_f->tm_min -= 10;
+            mktime(time_f);
+            screen_two_line(line, *time_i, *time_f);
+            set_cursor(line, 14);
+        }
+    }
+    if (param_two == 8)
+    {
+        if (cmd == UP)
+        {
+            time_f->tm_min += 1;
+            mktime(time_f);
+            screen_two_line(line, *time_i, *time_f);
+
+            set_cursor(line, 15);
+        }
+        else
+        {
+            time_f->tm_min -= 1;
+            mktime(time_f);
+            screen_two_line(line, *time_i, *time_f);
+            set_cursor(line, 15);
+        }
+    }
+    return ESP_OK;
+}
+
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------

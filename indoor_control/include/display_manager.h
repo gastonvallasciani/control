@@ -3,6 +3,24 @@
 //------------------- INCLUDES -------------------------------------------------
 //------------------------------------------------------------------------------
 #include "../include/display_dogs164.h"
+#include <time.h>
+typedef enum
+{
+    CMD_UNDEFINED = 0,
+    START_DISPLAY = 1,
+    DOWN = 2,
+    UP = 3,
+    VF = 4,
+    AUX = 5,
+    AUXT = 6
+} display_event_cmds_t;
+
+typedef struct
+{
+    uint8_t pwm_value;
+    display_event_cmds_t cmd;
+    char vege_flora;
+} display_event_t;
 
 //------------------- MACROS Y DEFINES -----------------------------------------
 //------------------------------------------------------------------------------
@@ -34,5 +52,8 @@ esp_err_t screen_one_param(display_event_cmds_t);
 esp_err_t screen_two_param(display_event_cmds_t);
 esp_err_t screen_three_param(display_event_cmds_t);
 esp_err_t param_modified_one(display_event_cmds_t);
+esp_err_t param_modified_two(display_event_cmds_t);
+esp_err_t param_two_bis(display_event_cmds_t, struct tm*, struct tm*);
+
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* DISPLAY_MANAGER_H__ */

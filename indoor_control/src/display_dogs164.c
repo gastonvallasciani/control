@@ -496,20 +496,60 @@ esp_err_t screen_two_line(uint8_t line, struct tm time_i, struct tm time_f)
     display_write_string(h);
     set_cursor(line, 3);
     display_write_string(ini);
-    set_cursor(line, 4);
-    display_write_string(houri);
+    if (time_i.tm_hour < 10)
+    {
+        set_cursor(line, 4);
+        display_write_string("0");
+        set_cursor(line, 5);
+        display_write_string(houri);
+    }
+    else
+    {
+        set_cursor(line, 4);
+        display_write_string(houri);
+    }
     set_cursor(line, 6);
     display_write_string(":");
-    set_cursor(line, 7);
-    display_write_string(mini);
+    if (time_i.tm_min < 10)
+    {
+        set_cursor(line, 7);
+        display_write_string("0");
+        set_cursor(line, 8);
+        display_write_string(mini);
+    }
+    else
+    {
+        set_cursor(line, 7);
+        display_write_string(mini);
+    }
     set_cursor(line, 10);
     display_write_string(fin);
-    set_cursor(line, 11);
-    display_write_string(hourf);
+    if (time_f.tm_hour < 10)
+    {
+        set_cursor(line, 11);
+        display_write_string("0");
+        set_cursor(line, 12);
+        display_write_string(hourf);
+    }
+    else
+    {
+        set_cursor(line, 11);
+        display_write_string(hourf);
+    }
     set_cursor(line, 13);
     display_write_string(":");
-    set_cursor(line, 14);
-    display_write_string(minf);
+    if (time_f.tm_min < 10)
+    {
+        set_cursor(line, 14);
+        display_write_string("0");
+        set_cursor(line, 15);
+        display_write_string(minf);
+    }
+    else
+    {
+        set_cursor(line, 14);
+        display_write_string(minf);
+    }
     ESP_LOGI("TIMER", "Salgo del screen two line");
     return ESP_OK;
 }
