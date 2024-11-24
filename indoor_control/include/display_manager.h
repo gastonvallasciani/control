@@ -53,7 +53,9 @@ esp_err_t screen_two_param(display_event_cmds_t);
 esp_err_t screen_three_param(display_event_cmds_t);
 esp_err_t param_modified_one(display_event_cmds_t);
 esp_err_t param_modified_two(display_event_cmds_t);
-esp_err_t param_two_bis(display_event_cmds_t, struct tm*, struct tm*);
+esp_err_t param_two_bis(display_event_cmds_t, struct tm *, struct tm *);
+esp_err_t param_modified_three(display_event_cmds_t);
+esp_err_t save_param(void);
 
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* DISPLAY_MANAGER_H__ */

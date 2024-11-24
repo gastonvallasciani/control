@@ -43,7 +43,7 @@ struct tm time_f4;
 struct tm time_pwmi;
 struct tm time_pwmf;
 uint8_t power;
-int fpower;
+char fpower[6];
 char vegeflora;
 bool dia;
 bool modo;
@@ -107,11 +107,11 @@ static void display_manager_task(void *arg)
     time_pwmf.tm_hour = 12;
     time_pwmf.tm_min = 35;
     power = 78;
-    fpower = 99999;
+    strcpy(fpower, "00998");
     vegeflora = 'V';
     dia = pdTRUE;
     modo = pdTRUE;
-    param_one = 5;
+    param_one = 1;
     param_two = 1;
     param_three = 1;
     while (true)
@@ -156,6 +156,7 @@ static void display_manager_task(void *arg)
                 case CONFIG_PARAM:
                     state = CONFIG_LINE;
                     // dejo de blinkear el caracter
+                    save_param();
                     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
                     // la funcion que me hace salir de la linea y vuelve titilante
                     display_blink_manager(screen, 3); // vuelvo al blink line
@@ -173,6 +174,9 @@ static void display_manager_task(void *arg)
                     // aca tengo que entrar a la primera linea titilante en la pantanlla en la que este
                     state = CONFIG_LINE;
                     line = 0;
+                    param_one = 1;
+                    param_two = 1;
+                    param_three = 1;
                     display_blink_manager(screen, 3); // con esta veo que pantalla estoy
 
                     break;
@@ -198,6 +202,7 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_PARAM:
                     // vuelvo a NORMAL a la pagina correspondiente
+                    save_param();
                     state = NORMAL;
                     stop_timer();
                     if (screen == SCREEN_ONE)
@@ -230,9 +235,6 @@ static void display_manager_task(void *arg)
                     // aca no hace nada
                     break;
                 case CONFIG_PARAM:
-                    // funcion para ir al siguiente numero a modificar
-                    // ACA TENGO QUE GUARDAR EL PARÁMETRO QUE ESTABA MODIFICANDO ANTERIORMENTE
-                    // save_param(); funcion que dado el param, el screen y la linea, se guarda.
                     ESP_LOGI("CONFIG_LINE", "Muevo al parametro siguiente");
                     display_param_manager(VF);
                     break;
@@ -245,6 +247,7 @@ static void display_manager_task(void *arg)
                 switch (state)
                 {
                 case NORMAL:
+                    power--;
                     display_set_power(display_ev.pwm_value, display_ev.vege_flora);
                     break;
                 case CONFIG_LINE:
@@ -270,6 +273,7 @@ static void display_manager_task(void *arg)
                 switch (state)
                 {
                 case NORMAL:
+                    power++;
                     display_set_power(display_ev.pwm_value, display_ev.vege_flora);
                     break;
                 case CONFIG_LINE:
@@ -458,9 +462,9 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
             {
                 line = 1; // voy a la primera linea
             }
-            else if (line == 0)
+            else if (line == 1)
             {
-                line = 1;
+                line = 0;
             }
         }
         start_timer();
@@ -631,11 +635,15 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
         }
         else if (cmd == UP)
         {
-            // aca subo el numero o cambio el estado
+            ESP_LOGI("PARAM_MANAGER", "Entro a param_modified_three");
+            param_modified_three(UP);
+            ESP_LOGI("PARAM_MANAGER", "Salgo de param_modified_three");
         }
         else // cmd == DOWN
         {
-            // aca subo el numero o cambio el estado
+            ESP_LOGI("PARAM_MANAGER", "Entro a param_modified_three");
+            param_modified_three(DOWN);
+            ESP_LOGI("PARAM_MANAGER", "Salgo de param_modified_three");
         }
         break;
 
@@ -796,7 +804,7 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
         default:
             break;
         }
-        if (cmd == AUX)
+        if (cmd == VF)
         {
             if (param_three == 8)
             {
@@ -831,7 +839,7 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
         default:
             break;
         }
-        if (cmd == AUX)
+        if (cmd == VF)
         {
             if (param_three == 5)
             {
@@ -1149,5 +1157,353 @@ esp_err_t param_two_bis(display_event_cmds_t cmd, struct tm *time_i, struct tm *
     return ESP_OK;
 }
 
+esp_err_t param_modified_three(display_event_cmds_t cmd)
+{
+    ESP_LOGI("param_modified_three", "Param_three vale %u", param_three);
+    if (line == 0)
+    {
+        switch (param_three)
+        {
+        case 1:
+            if (cmd == UP)
+            {
+                time_pwmi.tm_hour += 10;
+                mktime(&time_pwmi);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 4);
+            }
+            else
+            {
+                time_pwmi.tm_hour -= 10;
+                mktime(&time_pwmi);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 4);
+            }
+
+            break;
+        case 2:
+            if (cmd == UP)
+            {
+                time_pwmi.tm_hour += 1;
+                mktime(&time_pwmi);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 5);
+            }
+            else
+            {
+                time_pwmi.tm_hour -= 1;
+                mktime(&time_pwmi);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 5);
+            }
+            break;
+        case 3:
+            if (cmd == UP)
+            {
+                time_pwmi.tm_min += 10;
+                mktime(&time_pwmi);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 7);
+            }
+            else
+            {
+                time_pwmi.tm_min -= 10;
+                mktime(&time_pwmi);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 7);
+            }
+
+            break;
+        case 4:
+            if (cmd == UP)
+            {
+                time_pwmi.tm_min += 1;
+                mktime(&time_pwmi);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 8);
+            }
+            else
+            {
+                time_pwmi.tm_min -= 1;
+                mktime(&time_pwmi);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 8);
+            }
+            break;
+        case 5:
+            if (cmd == UP)
+            {
+                time_pwmf.tm_hour += 10;
+                mktime(&time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 11);
+            }
+            else
+            {
+                time_pwmf.tm_hour -= 10;
+                mktime(&time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 11);
+            }
+            break;
+        case 6:
+            if (cmd == UP)
+            {
+                time_pwmf.tm_hour += 1;
+                mktime(&time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 12);
+            }
+            else
+            {
+                time_pwmf.tm_hour -= 1;
+                mktime(&time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 12);
+            }
+            break;
+        case 7:
+            if (cmd == UP)
+            {
+                time_pwmf.tm_min += 10;
+                mktime(&time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 14);
+            }
+            else
+            {
+                time_pwmf.tm_min -= 10;
+                mktime(&time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 14);
+            }
+            break;
+        case 8:
+            if (cmd == UP)
+            {
+                time_pwmf.tm_min += 1;
+                mktime(&time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 15);
+            }
+            else
+            {
+                time_pwmf.tm_min -= 1;
+                mktime(&time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                set_cursor(1, 15);
+            }
+            break;
+
+        default:
+            break;
+        }
+    }
+    else
+    {
+        switch (param_three)
+        {
+        case 1:
+            if (cmd == UP)
+            {
+                if (fpower[0] == '9')
+                {
+                    fpower[0] = '0';
+                }
+                else
+                {
+                    ESP_LOGI("param_modified_three", "Entre en el ++");
+                    fpower[0]++;
+                    ESP_LOGI("param_modified_three", "Sali del ++");
+                }
+            }
+
+            else
+            {
+                if (fpower[0] == '0')
+                {
+                    fpower[0] = '9';
+                }
+                else
+                {
+                    ESP_LOGI("param_modified_three", "Entre en el --");
+                    fpower[0]--;
+                }
+            }
+
+            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            set_cursor(line, 10);
+            break;
+        case 2:
+            if (cmd == UP)
+            {
+                if (fpower[0] == '9')
+                {
+                    fpower[0] = '0';
+                }
+                else
+                {
+                    ESP_LOGI("param_modified_three", "Entre en el ++");
+                    fpower[0]++;
+                    ESP_LOGI("param_modified_three", "Sali del ++");
+                }
+            }
+
+            else
+            {
+                if (fpower[1] == '0')
+                {
+                    fpower[1] = '9';
+                }
+                else
+                {
+                    ESP_LOGI("param_modified_three", "Entre en el --");
+                    fpower[1]--;
+                }
+            }
+            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            set_cursor(line, 11);
+            break;
+        case 3:
+            if (cmd == UP)
+            {
+                if (fpower[2] == '9')
+                {
+                    fpower[2] = '0';
+                }
+                else
+                {
+                    ESP_LOGI("param_modified_three", "Entre en el ++");
+                    fpower[2]++;
+                    ESP_LOGI("param_modified_three", "Sali del ++");
+                }
+            }
+
+            else
+            {
+                if (fpower[2] == '0')
+                {
+                    fpower[2] = '9';
+                }
+                else
+                {
+                    ESP_LOGI("param_modified_three", "Entre en el --");
+                    fpower[2]--;
+                }
+            }
+            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            set_cursor(line, 12);
+            break;
+        case 4:
+            if (cmd == UP)
+            {
+                if (fpower[3] == '9')
+                {
+                    fpower[3] = '0';
+                }
+                else
+                {
+                    ESP_LOGI("param_modified_three", "Entre en el ++");
+                    fpower[3]++;
+                    ESP_LOGI("param_modified_three", "Sali del ++");
+                }
+            }
+
+            else
+            {
+                if (fpower[3] == '0')
+                {
+                    fpower[3] = '9';
+                }
+                else
+                {
+                    ESP_LOGI("param_modified_three", "Entre en el --");
+                    fpower[3]--;
+                }
+            }
+            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            set_cursor(line, 13);
+            break;
+        case 5:
+            if (cmd == UP)
+            {
+                if (fpower[4] == '9')
+                {
+                    fpower[4] = '0';
+                }
+                else
+                {
+                    ESP_LOGI("param_modified_three", "Entre en el ++");
+                    fpower[4]++;
+                    ESP_LOGI("param_modified_three", "Sali del ++");
+                }
+            }
+
+            else
+            {
+                if (fpower[4] == '0')
+                {
+                    fpower[4] = '9';
+                }
+                else
+                {
+                    ESP_LOGI("param_modified_three", "Entre en el --");
+                    fpower[4]--;
+                }
+            }
+            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            set_cursor(line, 14);
+            break;
+
+        default:
+            break;
+        }
+    }
+    return ESP_OK;
+}
+
+esp_err_t save_param() // el/los parametros los tengo que salvar cuando vuelvo a la linea titilante o salgo del config.
+{
+    switch (screen)
+    {
+    case SCREEN_ONE:
+        // set dia
+        // set modo
+        // set horario device
+        break;
+    case SCREEN_TWO:
+        if (line == 0)
+        {
+            // set horario 1 final e inicial
+        }
+        if (line == 1)
+        {
+            // set horario 2 final e inicial
+        }
+        if (line == 2)
+        {
+            // set horario 3 final e inicial
+        }
+        if (line == 3)
+        {
+            // set horario 4 final e inicial
+        }
+        break;
+    case SCREEN_THREE:
+        if (line == 0)
+        {
+            // set horario final e inicial de pwm
+        }
+        if (line == 1)
+        {
+            // set potencia total
+        }
+        break;
+
+    default:
+        break;
+    }
+    return ESP_OK;
+}
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------
