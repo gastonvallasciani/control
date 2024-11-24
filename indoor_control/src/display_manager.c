@@ -106,8 +106,8 @@ static void display_manager_task(void *arg)
     time_pwmi.tm_min = 35;
     time_pwmf.tm_hour = 12;
     time_pwmf.tm_min = 35;
-    power = 78;
-    strcpy(fpower, "00998");
+    power = 7;
+    strcpy(fpower, "10000");
     vegeflora = 'V';
     dia = pdTRUE;
     modo = pdTRUE;
@@ -124,7 +124,7 @@ static void display_manager_task(void *arg)
                 break;
             case START_DISPLAY:
                 display_init();
-                display_set_screen_one(&screen, power, vegeflora, dia, modo, time_device);
+                display_set_screen_one(&screen, fpower, power, vegeflora, dia, modo, time_device);
                 break;
             case AUX: // BOTON AUX 1 TOQUE
                 switch (state)
@@ -143,7 +143,7 @@ static void display_manager_task(void *arg)
                     else // screen = SCREEN_THREE
                     {
 
-                        display_set_screen_one(&screen, power, vegeflora, dia, modo, time_device);
+                        display_set_screen_one(&screen, fpower, power, vegeflora, dia, modo, time_device);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     break;
@@ -186,7 +186,7 @@ static void display_manager_task(void *arg)
                     stop_timer();
                     if (screen == SCREEN_ONE)
                     {
-                        display_set_screen_one(&screen, power, vegeflora, dia, modo, time_device);
+                        display_set_screen_one(&screen, fpower, power, vegeflora, dia, modo, time_device);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     else if (screen == SCREEN_TWO)
@@ -207,7 +207,7 @@ static void display_manager_task(void *arg)
                     stop_timer();
                     if (screen == SCREEN_ONE)
                     {
-                        display_set_screen_one(&screen, power, vegeflora, dia, modo, time_device);
+                        display_set_screen_one(&screen, fpower, power, vegeflora, dia, modo, time_device);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     else if (screen == SCREEN_TWO)
@@ -391,7 +391,7 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
     {
     case SCREEN_ONE:
         // en esta pantalla solo se modifica la ultima linea
-        display_set_screen_one(&screen, power, vegeflora, dia, modo, time_device);
+        display_set_screen_one(&screen, fpower, power, vegeflora, dia, modo, time_device);
         line = 3;
         start_timer();
         break;
@@ -588,7 +588,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
     switch (screen)
     {
     case SCREEN_ONE:
-        display_set_screen_one(&screen, power, vegeflora, dia, modo, time_device);
+        display_set_screen_one(&screen, fpower, power, vegeflora, dia, modo, time_device);
         if (cmd == VF || cmd == AUX)
         {
             screen_one_param(cmd);

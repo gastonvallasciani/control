@@ -110,7 +110,7 @@ esp_err_t display_clean_power_and_bar(void);
 esp_err_t screen_one_line_three(struct tm, bool, bool);
 esp_err_t screen_two_line(uint8_t, struct tm, struct tm);
 esp_err_t screen_three_line(uint8_t, char *, struct tm, struct tm);
-esp_err_t display_set_screen_one(screen_t *, uint8_t, char, bool, bool, struct tm);
+esp_err_t display_set_screen_one(screen_t *, char *, uint8_t, char, bool, bool, struct tm);
 esp_err_t display_set_screen_two(screen_t *, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm);
 esp_err_t display_set_screen_three(screen_t *, struct tm, struct tm, char *);
 esp_err_t display_init(void);

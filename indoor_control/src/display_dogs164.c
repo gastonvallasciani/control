@@ -305,7 +305,7 @@ esp_err_t display_init()
     return ESP_OK;
 }
 
-esp_err_t display_set_screen_one(screen_t *screen, uint8_t power, char vege_flora, bool dia, bool modo, struct tm time)
+esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, char vege_flora, bool dia, bool modo, struct tm time)
 { // en los argumentos de la funcion falta si auto o manual y si vege o flora, que variable?
   // bool dia, 1 si, 0 no.
   // bool modo, 1 manual, 0 auto.
@@ -322,7 +322,13 @@ esp_err_t display_set_screen_one(screen_t *screen, uint8_t power, char vege_flor
     char min[4];
     char numero[6];
     char numeroppf[6];
+    char potactual[6];
     float ppfn = power * 2.97;
+
+    int fpowercc;
+    fpowercc = atoi(fpower);
+
+    int pot_actual = fpowercc * power / 100;
 
     if (dia == true)
     {
@@ -347,6 +353,7 @@ esp_err_t display_set_screen_one(screen_t *screen, uint8_t power, char vege_flor
     sprintf(hour, "%u", time.tm_hour);
     sprintf(min, "%u", time.tm_min);
     sprintf(numeroppf, "%.f", ppfn);
+    sprintf(potactual, "%u", pot_actual);
 
     display_send_command(COMMAND_CLEAR_DISPLAY);
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
@@ -370,8 +377,28 @@ esp_err_t display_set_screen_one(screen_t *screen, uint8_t power, char vege_flor
     display_write_string(numeroppf); // escribo el numero del ppf
     set_cursor(2, 9);
     display_write_string(p); // escribo la letra P de la potencia total
-    set_cursor(2, 10);
-    display_write_string("00000"); // los 4 digitos de la potencia total (pueden ser 5?)
+    if (pot_actual <= 99999 && pot_actual > 9999)
+    {
+        set_cursor(2, 10);
+    }
+    if (pot_actual <= 9999 && pot_actual > 999)
+    {
+        set_cursor(2, 11);
+    }
+    if (pot_actual <= 999 && pot_actual > 99)
+    {
+        set_cursor(2, 12);
+    }
+    if (pot_actual <= 99 && pot_actual > 9)
+    {
+        set_cursor(2, 13);
+    }
+    if (pot_actual <= 9 && pot_actual >= 0)
+    {
+        set_cursor(2, 14);
+    }
+
+    display_write_string(potactual); // los 4 digitos de la potencia total (pueden ser 5?)
     set_cursor(2, 15);
     display_write_string(w); // escribo la W de la unidad de potencia
     // cuarta fila
