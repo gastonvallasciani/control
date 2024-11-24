@@ -37,13 +37,19 @@ static void global_manager_task(void* arg);
 static uint8_t nv_init_pwm_digital_value(void);
 static pwm_mode_t nv_init_pwm_mode(void);
 static simul_day_status_t nv_init_simul_day_status(void);
-static calendar_auto_pwm_t nv_init_pwm_calendar(void);
+static calendar_t nv_init_pwm_calendar(void);
 static uint8_t nv_init_auto_percent_power(void);
 static flora_vege_status_t nv_init_flora_vege_status(void);
+static s_out_conf_t nv_init_s_out_calendar(uint8_t s_out_num);
+static uint16_t nv_init_ppf(void);
 
 static uint8_t global_manager_init_automatic_pwm_params(pwm_auto_info_t pwm_auto);
 static uint8_t global_manager_init_pwm_mode(pwm_mode_t pwm_mode);
 static uint8_t global_manager_init_flora_vege_status(flora_vege_status_t flora_vege_status);
+static uint8_t global_manager_init_ppf(uint16_t ppf);
+
+static uint8_t global_manager_init_automatic_s_out_params(s_out_config_info_t s_out_auto_, uint8_t s_out_num);
+
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -51,6 +57,18 @@ static uint8_t global_manager_init_flora_vege_status(flora_vege_status_t flora_v
 //------------------------------------------------------------------------------
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
+//------------------------------------------------------------------------------
+static uint8_t global_manager_init_automatic_s_out_params(s_out_config_info_t s_out_auto_, uint8_t s_out_num)
+{
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_num - 1] = s_out_auto_;
+        xSemaphoreGive(global_manager_semaph);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
 //------------------------------------------------------------------------------
 static uint8_t global_manager_init_automatic_pwm_params(pwm_auto_info_t pwm_auto)
 {
@@ -69,6 +87,18 @@ static uint8_t global_manager_init_pwm_mode(pwm_mode_t pwm_mode)
     if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {
         global_manager_info.nv_info.pwm_mode = pwm_mode;
+        xSemaphoreGive(global_manager_semaph);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+static uint8_t global_manager_init_ppf(uint16_t ppf)
+{
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        global_manager_info.nv_info.ppf = ppf;
         xSemaphoreGive(global_manager_semaph);
         return 1;
     }
@@ -98,6 +128,28 @@ static uint8_t global_manager_init_flora_vege_status(flora_vege_status_t flora_v
     }
     xSemaphoreGive(global_manager_semaph);
     return 0;
+}
+//------------------------------------------------------------------------------
+static uint16_t nv_init_ppf(void)
+{
+    uint32_t value;
+    uint16_t ret_value;
+
+    if (read_uint32_from_flash(PPF_KEY, &value))
+    {
+#ifdef DEBUG_MODULE
+        printf("PPF READ: %lu \n", value);
+#endif
+        ret_value = (uint16_t)value;
+    }
+    else
+    {
+#ifdef DEBUG_MODULE
+        printf("PPF READING FAILED \n");
+#endif
+        ret_value = 0;
+    }
+    return(ret_value);
 }
 //------------------------------------------------------------------------------
 static flora_vege_status_t nv_init_flora_vege_status(void)
@@ -130,10 +182,10 @@ static flora_vege_status_t nv_init_flora_vege_status(void)
     return(ret_value);
 }
 //------------------------------------------------------------------------------
-static calendar_auto_pwm_t nv_init_pwm_calendar(void)
+static calendar_t nv_init_pwm_calendar(void)
 {
     pwm_auto_info_t pwm_calendar;
-    calendar_auto_pwm_t calendar;
+    calendar_t calendar;
 
     if (read_date_from_flash(PWM_DATE_ON_KEY, &pwm_calendar.turn_on_time))
     {
@@ -169,6 +221,88 @@ static calendar_auto_pwm_t nv_init_pwm_calendar(void)
     }
 
     return(calendar);
+}
+//------------------------------------------------------------------------------
+static s_out_conf_t nv_init_s_out_calendar(uint8_t s_out_num)
+{
+    s_out_conf_t ret;
+    char aux_str_on[20], aux_str_off[20], s_out_enable_aux[20];
+    uint32_t value;
+
+    switch (s_out_num)
+    {
+    case 1:
+        strcpy(aux_str_on, S_OUT_1_DATE_ON_KEY);
+        strcpy(aux_str_off, S_OUT_1_DATE_OFF_KEY);
+        strcpy(s_out_enable_aux, S_OUT_1_DATE_ENABLE);
+        break;
+    case 2:
+        strcpy(aux_str_on, S_OUT_2_DATE_ON_KEY);
+        strcpy(aux_str_off, S_OUT_2_DATE_OFF_KEY);
+        strcpy(s_out_enable_aux, S_OUT_2_DATE_ENABLE);
+        break;
+    case 3:
+        strcpy(aux_str_on, S_OUT_3_DATE_ON_KEY);
+        strcpy(aux_str_off, S_OUT_3_DATE_OFF_KEY);
+        strcpy(s_out_enable_aux, S_OUT_3_DATE_ENABLE);
+        break;
+    case 4:
+        strcpy(aux_str_on, S_OUT_4_DATE_ON_KEY);
+        strcpy(aux_str_off, S_OUT_4_DATE_OFF_KEY);
+        strcpy(s_out_enable_aux, S_OUT_4_DATE_ENABLE);
+        break;
+    default:
+        break;
+    }
+
+    if (read_date_from_flash(aux_str_on, &ret.calendar.turn_on_time))
+    {
+#ifdef DEBUG_MODULE
+        printf("TURN ON TIME HOUR READ: %d \n", ret.calendar.turn_on_time.tm_hour);
+        printf("TURN ON TIME min READ: %d \n", ret.calendar.turn_on_time.tm_min);
+#endif
+        ret.calendar.read_ok = true;
+    }
+    else
+    {
+#ifdef DEBUG_MODULE
+        printf("TURN ON CALENDAR READING FAILED \n");
+#endif
+        ret.calendar.read_ok = false;
+    }
+
+    if (read_date_from_flash(aux_str_off, &ret.calendar.turn_off_time))
+    {
+#ifdef DEBUG_MODULE
+        printf("TURN ON TIME HOUR READ: %d \n", ret.calendar.turn_off_time.tm_hour);
+        printf("TURN ON TIME min READ: %d \n", ret.calendar.turn_off_time.tm_min);
+#endif
+        ret.calendar.read_ok = true;
+    }
+    else
+    {
+#ifdef DEBUG_MODULE
+        printf("TURN ON CALENDAR READING FAILED \n");
+#endif
+        ret.calendar.read_ok = false;
+    }
+
+    if (read_uint32_from_flash(s_out_enable_aux, &value))
+    {
+        ret.enable = (uint8_t)value;
+#ifdef DEBUG_MODULE
+        printf("TRIAC ENABLE STATUS READ: %d \n", ret.enable);
+#endif
+    }
+    else
+    {
+#ifdef DEBUG_MODULE
+        printf("TRIAC ENABLE STATUS READING FAILED \n");
+#endif
+    }
+
+    //global_manager_update_auto_triac_calendar(info, triac_num, true);
+    return(ret);
 }
 //------------------------------------------------------------------------------
 static uint8_t nv_init_auto_percent_power(void)
@@ -294,20 +428,26 @@ static void global_manager_task(void* arg)
 {
     uint8_t pwm_manual_value = 0, pwm_value_bkp = 0;
     int8_t pwm_diff = 0;
+    struct tm current_time;
     
     pwm_auto_info_t pwm_auto_info;
-    struct tm current_time;
     bool pwm_auto_status = false;
+
+    bool s_out_auto_status = false;
 
     pwm_auto_info.output_status = PWM_OUTPUT_OFF;
     pwm_auto_info.update_calendar = false;
 
     uint8_t pwm_digital_value = nv_init_pwm_digital_value();
     pwm_mode_t pwm_mode = nv_init_pwm_mode();
-    calendar_auto_pwm_t pwm_calendar = nv_init_pwm_calendar();
+    calendar_t pwm_calendar = nv_init_pwm_calendar();
     flora_vege_status_t flora_vege_status = nv_init_flora_vege_status();
+    uint16_t ppf = nv_init_ppf();
 
-
+    s_out_auto_info_t s_out_auto_info;
+    s_out_conf_t s_out_conf;
+    s_out_config_info_t s_out_config_info;
+  
     pwm_auto_info.percent_power = nv_init_auto_percent_power();
     pwm_auto_info.simul_day_status = nv_init_simul_day_status();
     if(pwm_calendar.read_ok)
@@ -316,10 +456,23 @@ static void global_manager_task(void* arg)
         pwm_auto_info.turn_off_time = pwm_calendar.turn_off_time;
     }
 
+    for(uint8_t index = 0; index < 4; index++)
+    {
+        s_out_conf = nv_init_s_out_calendar(index + 1);
+        if(s_out_conf.calendar.read_ok)
+        {
+            s_out_config_info.enable = s_out_conf.enable;
+            s_out_config_info.turn_off_time = s_out_conf.calendar.turn_off_time;
+            s_out_config_info.turn_on_time = s_out_conf.calendar.turn_on_time;
+            global_manager_init_automatic_s_out_params(s_out_config_info, index + 1);
+        }
+    }
+
     global_manager_init_automatic_pwm_params(pwm_auto_info);
     global_manager_init_pwm_mode(pwm_mode);
     global_manager_init_pwm_digital_percentage(pwm_digital_value);
     global_manager_init_flora_vege_status(flora_vege_status);
+    global_manager_init_ppf(ppf);
 
     printf("INICIO PRINT DEBUG \n");
     printf("PWM DIGITAL VALUE %d \n", pwm_digital_value);
@@ -397,17 +550,25 @@ static void global_manager_task(void* arg)
         }
         
         global_manager_get_pwm_automatic_info(&pwm_auto_info);
-        if(global_manager_get_current_time_info(&current_time))
-            pwm_auto_info.current_time = current_time;
+        global_manager_get_s_out_automatic_info(&s_out_auto_info);
 
+        if(global_manager_get_current_time_info(&current_time))
+        {
+            pwm_auto_info.current_time = current_time;
+            s_out_auto_info.current_time = current_time;
+        }
+            
         if(pwm_mode == PWM_AUTOMATIC)
             pwm_auto_status = true;
         else
             pwm_auto_status = false;
+        s_out_auto_status = true;
 
         pwm_auto_manager_handler(&pwm_auto_info, pwm_auto_status);
-        global_manager_set_pwm_automatic_info(pwm_auto_info);
+        s_out_auto_manager_handler(&s_out_auto_info, s_out_auto_status);
 
+        global_manager_set_pwm_automatic_info(pwm_auto_info);
+        global_manager_set_s_out_automatic_info(s_out_auto_info);
 
         vTaskDelay(50 / portTICK_PERIOD_MS);
     }
@@ -446,6 +607,8 @@ void global_manager_init(void)
     pote_input_manager_init();
 
     flora_vege_manager_init();
+
+    s_out_auto_manager_init();
 }
 //------------------------------------------------------------------------------
 
@@ -775,6 +938,202 @@ uint8_t global_manager_get_automatic_pwm_output_status(uint8_t *auto_pwm_output_
         *auto_pwm_output_status = global_manager_info.nv_info.pwm_auto.output_status;
         xSemaphoreGive(global_manager_semaph);
         return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_set_s_out_automatic_info(s_out_auto_info_t s_out_auto)
+{
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {     
+        global_manager_info.nv_info.s_out_auto = s_out_auto;
+        xSemaphoreGive(global_manager_semaph);
+        return 1; 
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_get_s_out_automatic_info(s_out_auto_info_t *s_out_auto)
+{
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        *s_out_auto = global_manager_info.nv_info.s_out_auto;
+        xSemaphoreGive(global_manager_semaph);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_set_s_out_turn_off_time(struct tm turn_off_time, uint8_t s_out_index)
+{
+    struct tm date_aux;
+
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {     
+        date_aux = global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_off_time;
+        global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_off_time = turn_off_time;
+        
+        xSemaphoreGive(global_manager_semaph);
+
+        if((date_aux.tm_hour != turn_off_time.tm_hour) || (date_aux.tm_min != turn_off_time.tm_min))
+        {
+            switch(s_out_index)
+            {
+                case 0:
+                    write_date_on_flash(S_OUT_1_DATE_OFF_KEY, global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_off_time);
+                break;
+                case 1:
+                    write_date_on_flash(S_OUT_2_DATE_OFF_KEY, global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_off_time);
+                break;
+                case 2:
+                    write_date_on_flash(S_OUT_3_DATE_OFF_KEY, global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_off_time);
+                break;
+                case 3:
+                    write_date_on_flash(S_OUT_4_DATE_OFF_KEY, global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_off_time);
+                break;
+            }
+        }
+        return 1; 
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_get_s_out_turn_off_time(struct tm* turn_off_time, uint8_t s_out_index)
+{
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        *turn_off_time = global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_off_time;
+        xSemaphoreGive(global_manager_semaph);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_set_s_out_turn_on_time(struct tm turn_on_time, uint8_t s_out_index)
+{
+    struct tm date_aux;
+
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {     
+        date_aux = global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_on_time;
+        global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_on_time = turn_on_time;
+        
+        xSemaphoreGive(global_manager_semaph);
+
+        if((date_aux.tm_hour != turn_on_time.tm_hour) || (date_aux.tm_min != turn_on_time.tm_min))
+        {
+            switch(s_out_index)
+            {
+                case 0:
+                    write_date_on_flash(S_OUT_1_DATE_ON_KEY, global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_on_time);
+                break;
+                case 1:
+                    write_date_on_flash(S_OUT_2_DATE_ON_KEY, global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_on_time);
+                break;
+                case 2:
+                    write_date_on_flash(S_OUT_3_DATE_ON_KEY, global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_on_time);
+                break;
+                case 3:
+                    write_date_on_flash(S_OUT_4_DATE_ON_KEY, global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_on_time);
+                break;
+            }
+        }
+        return 1; 
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_get_s_out_turn_on_time(struct tm* turn_on_time, uint8_t s_out_index)
+{
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        *turn_on_time = global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_on_time;
+        xSemaphoreGive(global_manager_semaph);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_set_s_out_time_enable_status(uint8_t time_enable_status, uint8_t s_out_index)
+{
+    uint8_t enable_status_aux = 0;
+
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {     
+        enable_status_aux = global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].enable;
+        global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].enable = enable_status_aux;
+        
+        xSemaphoreGive(global_manager_semaph);
+
+        if(enable_status_aux != time_enable_status)
+        {
+            switch(s_out_index)
+            {
+                case 0:
+                    write_parameter_on_flash_uint32(S_OUT_1_DATE_ENABLE, (uint32_t)global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].enable);
+                break;
+                case 1:
+                    write_parameter_on_flash_uint32(S_OUT_2_DATE_ENABLE, (uint32_t)global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].enable);
+                break;
+                case 2:
+                    write_parameter_on_flash_uint32(S_OUT_3_DATE_ENABLE, (uint32_t)global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].enable);
+                break;
+                case 3:
+                    write_parameter_on_flash_uint32(S_OUT_4_DATE_ENABLE, (uint32_t)global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].enable);
+                break;
+            }
+        }
+        return 1; 
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_get_s_out_time_enable_status(uint8_t *time_enable_status, uint8_t s_out_index)
+{
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        *time_enable_status = global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].enable;
+        xSemaphoreGive(global_manager_semaph);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_get_ppf(uint16_t *ppf)
+{
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        *ppf = global_manager_info.nv_info.ppf;
+        xSemaphoreGive(global_manager_semaph);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_set_ppf(uint16_t ppf)
+{
+    uint16_t ppf_aux = 0;
+
+    if(xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        ppf_aux = global_manager_info.nv_info.ppf;
+        global_manager_info.nv_info.ppf = ppf;
+        xSemaphoreGive(global_manager_semaph);
+        if(ppf_aux != ppf)
+        {
+            write_parameter_on_flash_uint32(PPF_KEY, (uint32_t)ppf);
+        }
+        return 1; 
     }
     xSemaphoreGive(global_manager_semaph);
     return 0;

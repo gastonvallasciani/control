@@ -17,6 +17,21 @@
 #define PWM_DATE_ON_KEY "pwm_on_key\0" 
 #define PWM_DATE_OFF_KEY "pwm_off_key\0"
 #define PWM_PERCENT_POWER_KEY "pwm_power_key\0"
+#define S_OUT_1_DATE_ON_KEY "s_out_1_on\0" 
+#define S_OUT_1_DATE_OFF_KEY "s_out_1_off\0"
+#define S_OUT_1_DATE_ENABLE "s_out_1_enable\0"
+#define S_OUT_2_DATE_ON_KEY "s_out_2_on\0" 
+#define S_OUT_2_DATE_OFF_KEY "s_out_2_off\0"
+#define S_OUT_2_DATE_ENABLE "s_out_2_enable\0"
+#define S_OUT_3_DATE_ON_KEY "s_out_3_on\0" 
+#define S_OUT_3_DATE_OFF_KEY "s_out_3_off\0"
+#define S_OUT_3_DATE_ENABLE "s_out_3_enable\0"
+#define S_OUT_4_DATE_ON_KEY "s_out_4_on\0" 
+#define S_OUT_4_DATE_OFF_KEY "s_out_4_off\0"
+#define S_OUT_4_DATE_ENABLE "s_out_4_enable\0"
+#define PPF_KEY "ppf_key\0"
+
+
 
 // DEFAULT VALUES
 #define RELE_VEGE_STATUS_DEFAULT 0 // OFF
@@ -24,6 +39,11 @@
 #define PWM_MODE_DEFAULT 0 // PWM_MANUAL 
 #define PWM_SIMUL_DAY_STATUS_DEFAULT 0 // SIMUL_DAY_OFF
 #define PWM_PERCENT_POWER_DEFAULT 50 // 50 percent
+#define S_OUT_1_DATE_ENABLE_DEFAULT 1 // enable
+#define S_OUT_2_DATE_ENABLE_DEFAULT 0 // disable
+#define S_OUT_3_DATE_ENABLE_DEFAULT 0 // disable
+#define S_OUT_4_DATE_ENABLE_DEFAULT 0 // disable
+#define PPF_DEFAULT 1000
 
 
 //------------------- TYPEDEF --------------------------------------------------

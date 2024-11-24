@@ -11,6 +11,7 @@
         "stdio.h": "c",
         "task.h": "c",
         "queue.h": "c",
-        "gpio.h": "c"
+        "gpio.h": "c",
+        "nv_flash_driver.h": "c"
     }
 }

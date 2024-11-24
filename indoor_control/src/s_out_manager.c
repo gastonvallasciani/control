@@ -52,16 +52,6 @@ static void s_out_config(void)
 
     gpio_set_level(S_OUT, 0);
 }
-//------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
-//------------------------------------------------------------------------------
-void s_out_manager_init(void)
-{
-    s_out_config();
-
-    xTaskCreate(s_out_manager_task, "s_out_manager_task", configMINIMAL_STACK_SIZE * 4,
-                NULL, configMAX_PRIORITIES - 2, NULL);
-
-}
 //------------------------------------------------------------------------------
 static void s_out_manager_task(void *arg)
 {
@@ -113,6 +103,27 @@ static void s_out_manager_task(void *arg)
         
         
     }
+}
+//------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
+//------------------------------------------------------------------------------
+void s_out_manager_init(void)
+{
+    s_out_config();
+
+    /*xTaskCreate(s_out_manager_task, "s_out_manager_task", configMINIMAL_STACK_SIZE * 4,
+                NULL, configMAX_PRIORITIES - 2, NULL);*/
+
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void s_out_manager_turn_on_s_out(void)
+{
+    gpio_set_level(S_OUT, 1);
+}
+//------------------------------------------------------------------------------
+void s_out_manager_turn_off_s_out(void)
+{
+    gpio_set_level(S_OUT, 0);
 }
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------

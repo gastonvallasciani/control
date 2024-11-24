@@ -50,7 +50,7 @@ static void get_current_time(void);
 static uint8_t wait_get_current_time_response(struct tm *current_time);
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
 //------------------------------------------------------------------------------
-static void set_manual_time(void) 
+__attribute__((unused)) static void set_manual_time(void) 
 {
     struct tm manual_time;
 

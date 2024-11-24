@@ -50,6 +50,26 @@ static void first_time_flash(void)
     time_info_default.tm_hour++;
     init_date_parameter_in_flash(PWM_DATE_OFF_KEY, time_info_default);
     init_parameter_in_flash_uint32(PWM_PERCENT_POWER_KEY, PWM_PERCENT_POWER_DEFAULT);
+    init_date_parameter_in_flash(S_OUT_1_DATE_ON_KEY, time_info_default);
+    time_info_default.tm_hour++;
+    init_date_parameter_in_flash(S_OUT_1_DATE_OFF_KEY, time_info_default);
+    time_info_default.tm_hour++;
+    init_date_parameter_in_flash(S_OUT_2_DATE_ON_KEY, time_info_default);
+    time_info_default.tm_hour++;
+    init_date_parameter_in_flash(S_OUT_2_DATE_OFF_KEY, time_info_default);
+    time_info_default.tm_hour++;
+    init_date_parameter_in_flash(S_OUT_3_DATE_ON_KEY, time_info_default);
+    time_info_default.tm_hour++;
+    init_date_parameter_in_flash(S_OUT_3_DATE_OFF_KEY, time_info_default);
+    time_info_default.tm_hour++;
+    init_date_parameter_in_flash(S_OUT_4_DATE_ON_KEY, time_info_default);
+    time_info_default.tm_hour++;
+    init_date_parameter_in_flash(S_OUT_4_DATE_OFF_KEY, time_info_default);
+    init_parameter_in_flash_uint32(S_OUT_1_DATE_ENABLE, S_OUT_1_DATE_ENABLE_DEFAULT);
+    init_parameter_in_flash_uint32(S_OUT_2_DATE_ENABLE, S_OUT_2_DATE_ENABLE_DEFAULT);
+    init_parameter_in_flash_uint32(S_OUT_3_DATE_ENABLE, S_OUT_3_DATE_ENABLE_DEFAULT);
+    init_parameter_in_flash_uint32(S_OUT_4_DATE_ENABLE, S_OUT_4_DATE_ENABLE_DEFAULT);
+    init_parameter_in_flash_uint32(PPF_KEY, PPF_DEFAULT);
 
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
