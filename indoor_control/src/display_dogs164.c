@@ -344,7 +344,7 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     }
     else
     {
-        modo_m = "AUTO";
+        modo_m = "AUT";
     }
 
     *screen = SCREEN_ONE;
@@ -488,8 +488,8 @@ esp_err_t screen_two_line(uint8_t line, struct tm time_i, struct tm time_f)
 {
     ESP_LOGI("TIMER", "Entro al screen two line");
     char *h = "ER";
-    char *ini = "i";
-    char *fin = "f";
+    // char *ini = "i";
+    // char *fin = "f";
     char houri[4];
     char hourf[4];
     char mini[4];
@@ -522,7 +522,7 @@ esp_err_t screen_two_line(uint8_t line, struct tm time_i, struct tm time_f)
     set_cursor(line, 0);
     display_write_string(h);
     set_cursor(line, 3);
-    display_write_string(ini);
+    display_send_data(0xDE);
     if (time_i.tm_hour < 10)
     {
         set_cursor(line, 4);
@@ -550,7 +550,7 @@ esp_err_t screen_two_line(uint8_t line, struct tm time_i, struct tm time_f)
         display_write_string(mini);
     }
     set_cursor(line, 10);
-    display_write_string(fin);
+    display_send_data(0xE0);
     if (time_f.tm_hour < 10)
     {
         set_cursor(line, 11);
@@ -598,8 +598,8 @@ esp_err_t display_set_screen_two(screen_t *screen, struct tm time_i1, struct tm 
 esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct tm time_pwmf, char *fpower)
 {
     char *pwm = "PWM";
-    char *ini = "i";
-    char *fin = "f";
+    // char *ini = "i";
+    // char *fin = "f";
     char *total = "POT.TOTAL";
     char houri[4];
     char hourf[4];
@@ -622,12 +622,16 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct
 
     set_cursor(0, 0);
     display_write_string(pwm);
+    set_cursor(0, 3);
+    display_send_data(0xDE);
     set_cursor(0, 4);
     display_write_string(houri);
     set_cursor(0, 6);
     display_write_string(":");
     set_cursor(0, 7);
     display_write_string(mini);
+    set_cursor(0, 10);
+    display_send_data(0xE0);
     set_cursor(0, 11);
     display_write_string(hourf);
     set_cursor(0, 13);
@@ -687,12 +691,16 @@ esp_err_t screen_three_line(uint8_t line, char *fpower, struct tm time_i, struct
     case 0:
         set_cursor(0, 0);
         display_write_string(pwm);
+        set_cursor(0, 3);
+        display_send_data(0xDE);
         set_cursor(0, 4);
         display_write_string(houri);
         set_cursor(0, 6);
         display_write_string(":");
         set_cursor(0, 7);
         display_write_string(mini);
+        set_cursor(0, 10);
+        display_send_data(0xE0);
         set_cursor(0, 11);
         display_write_string(hourf);
         set_cursor(0, 13);
