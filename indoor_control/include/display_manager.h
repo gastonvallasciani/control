@@ -55,7 +55,8 @@ esp_err_t param_modified_one(display_event_cmds_t);
 esp_err_t param_modified_two(display_event_cmds_t);
 esp_err_t param_two_bis(display_event_cmds_t, struct tm *, struct tm *);
 esp_err_t param_modified_three(display_event_cmds_t);
-esp_err_t save_param(void);
+esp_err_t save_params(void);
+esp_err_t get_params(void);
 
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* DISPLAY_MANAGER_H__ */

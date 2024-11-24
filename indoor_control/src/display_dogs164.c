@@ -586,7 +586,7 @@ esp_err_t display_set_screen_two(screen_t *screen, struct tm time_i1, struct tm 
 
     display_send_command(COMMAND_CLEAR_DISPLAY);       // limpio display
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0); // me aseguro qeu se ponga en 4 lineas
-    *screen = SCREEN_TWO;
+    *screen = SCREEN_THREE;
     screen_two_line(0, time_i1, time_f1);
     screen_two_line(1, time_i2, time_f2);
     screen_two_line(2, time_i3, time_f3);
@@ -606,13 +606,13 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct
     char mini[4];
     char minf[4];
     // char fpowerc[6];
-    int fpowercc;
-    fpowercc = atoi(fpower);
-    ESP_LOGI("TAG", "fpower es %u", fpowercc);
+    // int fpowercc;
+    // fpowercc = atoi(fpower);
+    // ESP_LOGI("TAG", "fpower es %u", fpowercc);
 
     display_send_command(COMMAND_CLEAR_DISPLAY);
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
-    *screen = SCREEN_THREE;
+    *screen = SCREEN_TWO;
 
     sprintf(houri, "%u", time_pwmi.tm_hour);
     sprintf(mini, "%u", time_pwmi.tm_min);
@@ -640,26 +640,6 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct
     display_write_string(minf);
     set_cursor(1, 0);
     display_write_string(total);
-    /*if (fpowercc <= 99999 && fpowercc > 9999)
-    {
-        set_cursor(1, 10);
-    }
-    else if (fpowercc <= 9999 && fpowercc > 999)
-    {
-        set_cursor(1, 11);
-    }
-    else if (fpowercc <= 999 && fpowercc > 99)
-    {
-        set_cursor(1, 12);
-    }
-    else if (fpowercc <= 99 && fpowercc > 9)
-    {
-        set_cursor(1, 13);
-    }
-    else if (fpowercc <= 9 && fpowercc >= 0)
-    {
-        set_cursor(1, 14);
-    }*/
     set_cursor(1, 10);
     display_write_string(fpower);
     set_cursor(1, 15);
@@ -676,16 +656,16 @@ esp_err_t screen_three_line(uint8_t line, char *fpower, struct tm time_i, struct
     char hourf[4];
     char mini[4];
     char minf[4];
-    char fpowerc[6];
+    // char fpowerc[6];
 
     sprintf(houri, "%u", time_i.tm_hour);
     sprintf(mini, "%u", time_i.tm_min);
     sprintf(hourf, "%u", time_f.tm_hour);
     sprintf(minf, "%u", time_f.tm_min);
     // sprintf(fpowerc, "%u", fpower);
-    int fpowercc;
-    fpowercc = atoi(fpower);
-    ESP_LOGI("TAG", "fpower es %u", fpowercc);
+    // int fpowercc;
+    // fpowercc = atoi(fpower);
+    // ESP_LOGI("TAG", "fpower es %u", fpowercc);
     switch (line)
     {
     case 0:
@@ -711,26 +691,6 @@ esp_err_t screen_three_line(uint8_t line, char *fpower, struct tm time_i, struct
     case 1:
         set_cursor(1, 0);
         display_write_string(total);
-        /*if (fpower <= 99999 || fpower > 9999)
-        {
-            set_cursor(1, 10);
-        }
-        else if (fpower <= 9999 || fpower > 999)
-        {
-            set_cursor(1, 11);
-        }
-        else if (fpower <= 999 || fpower > 99)
-        {
-            set_cursor(1, 12);
-        }
-        else if (fpower <= 99 || fpower > 9)
-        {
-            set_cursor(1, 13);
-        }
-        else if (fpower <= 9 || fpower >= 0)
-        {
-            set_cursor(1, 14);
-        }*/
         set_cursor(1, 10);
         display_write_string(fpower);
         set_cursor(1, 15);
