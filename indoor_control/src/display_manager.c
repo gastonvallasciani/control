@@ -213,6 +213,7 @@ static void display_manager_task(void *arg)
                 switch (state)
                 {
                 case NORMAL:
+                    vegeflorachar = display_ev.vege_flora;
                     display_set_vege_flora(display_ev.vege_flora);
                     break;
                 case CONFIG_LINE:
@@ -231,7 +232,8 @@ static void display_manager_task(void *arg)
                 switch (state)
                 {
                 case NORMAL:
-                    power--;
+                    power = display_ev.pwm_value;
+                    vegeflorachar = display_ev.vege_flora;
                     display_set_power(display_ev.pwm_value, display_ev.vege_flora);
                     break;
                 case CONFIG_LINE:
@@ -257,7 +259,8 @@ static void display_manager_task(void *arg)
                 switch (state)
                 {
                 case NORMAL:
-                    power++;
+                    power = display_ev.pwm_value;
+                    vegeflorachar = display_ev.vege_flora;
                     display_set_power(display_ev.pwm_value, display_ev.vege_flora);
                     break;
                 case CONFIG_LINE:
@@ -314,35 +317,34 @@ void display_manager_start(uint8_t pwm_value, char vege_flora)
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
 //------------------------------------------------------------------------------
-void display_manager_down()
+void display_manager_down(uint8_t pwm_value, char vege_flora)
 {
     display_event_t display_ev;
 
     display_ev.cmd = DOWN;
-    // display_ev.pwm_value = pwm_value;
-    // display_ev.vege_flora = vege_flora;
+    display_ev.pwm_value = pwm_value;
+    display_ev.vege_flora = vege_flora;
 
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
 //------------------------------------------------------------------------------
-void display_manager_up()
+void display_manager_up(uint8_t pwm_value, char vege_flora)
 {
     display_event_t display_ev;
 
     display_ev.cmd = UP;
-    // display_ev.pwm_value = pwm_value;
-    // display_ev.vege_flora = vege_flora;
+    display_ev.pwm_value = pwm_value;
+    display_ev.vege_flora = vege_flora;
 
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
 //------------------------------------------------------------------------------
-void display_manager_vf()
+void display_manager_vf(char vege_flora)
 {
     display_event_t display_ev;
 
     display_ev.cmd = VF;
-    // display_ev.pwm_value = pwm_value;
-    // display_ev.vege_flora = vege_flora;
+    display_ev.vege_flora = vege_flora;
 
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
