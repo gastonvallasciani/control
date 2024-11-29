@@ -12,6 +12,8 @@
         "task.h": "c",
         "queue.h": "c",
         "gpio.h": "c",
-        "nv_flash_driver.h": "c"
+        "nv_flash_driver.h": "c",
+        "board_def.h": "c",
+        "freertosconfig.h": "c"
     }
 }

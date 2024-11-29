@@ -3,12 +3,14 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "driver/i2c.h"
 #include "esp_log.h"
+// #include "../include/display_manager.h"
 
 #define MODE_COMMAND 0x00
 #define MODE_DATA 0x40
@@ -81,9 +83,17 @@
 
 typedef enum
 {
-    ARROW_UP,
-    ARROW_DOWN
-} arrow_t;
+    SCREEN_ONE = 1,
+    SCREEN_TWO = 2,
+    SCREEN_THREE = 3
+} screen_t;
+
+typedef enum
+{
+    NORMAL,
+    CONFIG_LINE,
+    CONFIG_PARAM
+} display_state_t;
 
 esp_err_t init_reset_display_pin(void);
 esp_err_t set_i2c(void);
@@ -92,11 +102,18 @@ esp_err_t display_send_data(uint8_t);
 esp_err_t set_cursor(uint8_t, uint8_t);
 esp_err_t display_write_char(char);
 esp_err_t display_write_string(const char *);
-esp_err_t display_set_screen(uint8_t, char);
+esp_err_t display_set_screen(uint8_t);
 esp_err_t display_set_power(uint8_t, char);
 esp_err_t display_power_bar(uint8_t);
 esp_err_t display_clean_arrow(void);
 esp_err_t display_clean_power_and_bar(void);
-esp_err_t display_set_vege_flora(char vege_flora);
+esp_err_t screen_one_line_three(struct tm, bool, bool);
+esp_err_t screen_two_line(uint8_t, struct tm, struct tm);
+esp_err_t screen_three_line(uint8_t, char *, struct tm, struct tm);
+esp_err_t display_set_screen_one(screen_t *, char *, uint8_t, char, bool, bool, struct tm);
+esp_err_t display_set_screen_two(screen_t *, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm);
+esp_err_t display_set_screen_three(screen_t *, struct tm, struct tm, char *);
+esp_err_t display_init(void);
+esp_err_t display_set_vege_flora(char);
 
 #endif /* DISPLAY_DOGS164_H__ */

@@ -11,7 +11,7 @@
 
 
 
-#define PHASE_NUMBER 1
+#define PHASE_NUMBER 3
 
 void app_main() 
 {

@@ -45,6 +45,8 @@ typedef enum{
     VEGE_BUTTON_PUSHED,
     PWM_DOWN_BUTTON_PUSHED,
     PWM_UP_BUTTON_PUSHED,
+    AUX_BUTTON_PUSHED,
+    AUX_BUTTON_PUSHED_3_SECONDS,
     FABRIC_RESET,
     CALIBRATE_POTE,
     BOTON_PRESIONADO,
@@ -59,6 +61,7 @@ typedef struct{
 static QueueHandle_t button_manager_queue;
 
 volatile int64_t start_time_flora_vege = 0;
+volatile int64_t start_time_aux = 0;
 
 static TimerHandle_t pwm_down_timer;
 static TimerHandle_t pwm_up_timer;
@@ -72,6 +75,7 @@ static void config_buttons_isr(void);
 static void vege_button_interrupt(void *arg);
 static void pwm_button_down_interrupt(void *arg);
 static void pwm_button_up_interrupt(void *arg);
+static void aux_button_interrupt(void *arg); 
 
 static void pwm_up_timer_callback(TimerHandle_t xTimer);
 static void pwm_down_timer_callback(TimerHandle_t xTimer);
@@ -113,8 +117,46 @@ static void config_buttons_isr(void)
     config.intr_type = GPIO_INTR_ANYEDGE;
     gpio_config(&config);
     gpio_isr_handler_add(BT_UP, pwm_button_up_interrupt, NULL);
+
+    config.pin_bit_mask = (1ULL << BT_AUX);
+    config.mode = GPIO_MODE_INPUT;
+    config.pull_up_en = GPIO_PULLUP_DISABLE;
+    config.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    config.intr_type = GPIO_INTR_ANYEDGE;
+    gpio_config(&config);
+    gpio_isr_handler_add(BT_AUX, aux_button_interrupt, NULL);
 }
 
+//------------------------------------------------------------------------------
+static void IRAM_ATTR aux_button_interrupt(void *arg) 
+{
+    button_events_t ev;
+    int64_t time_now = esp_timer_get_time();
+
+    if(gpio_get_level(BT_AUX) == 0)
+    {
+        start_time_aux = time_now;
+    }
+    else 
+    {
+        if (start_time_aux != 0)
+        {
+            int64_t diff = time_now - start_time_aux;
+
+            if(diff > 30000000)
+            {
+                ev.cmd = AUX_BUTTON_PUSHED_3_SECONDS;
+                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+            }
+            else if ((30000 < diff) && (30000000 > diff))  // 30ms seconds expressed in microseconds
+            {
+                ev.cmd = AUX_BUTTON_PUSHED;
+                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+            }
+            start_time_aux = 0;
+        }
+    }
+}
 //------------------------------------------------------------------------------
 static void IRAM_ATTR vege_button_interrupt(void *arg) 
 {
@@ -157,8 +199,8 @@ static IRAM_ATTR void pwm_button_down_interrupt(void *arg)
             // Iniciar el temporizador si no está ya iniciado
             if (pwm_down_timer == NULL) {
                 pwm_down_timer = xTimerCreate("PWM Up Timer", 
-                                             pdMS_TO_TICKS(PWM_BUTTON_REPEAT_INTERVAL_MS), 
-                                             pdTRUE, NULL, pwm_down_timer_callback);
+                pdMS_TO_TICKS(PWM_BUTTON_REPEAT_INTERVAL_MS), 
+                pdTRUE, NULL, pwm_down_timer_callback);
             }
             xTimerStart(pwm_down_timer, 0);
         }  
@@ -187,8 +229,8 @@ static IRAM_ATTR void pwm_button_up_interrupt(void *arg)
             // Iniciar el temporizador si no está ya iniciado
             if (pwm_up_timer == NULL) {
                 pwm_up_timer = xTimerCreate("PWM Up Timer", 
-                                             pdMS_TO_TICKS(PWM_BUTTON_REPEAT_INTERVAL_MS), 
-                                             pdTRUE, NULL, pwm_up_timer_callback);
+                pdMS_TO_TICKS(PWM_BUTTON_REPEAT_INTERVAL_MS), 
+                pdTRUE, NULL, pwm_up_timer_callback);
             }
             xTimerStart(pwm_up_timer, 0);           
         }
@@ -198,7 +240,6 @@ static IRAM_ATTR void pwm_button_up_interrupt(void *arg)
             pwm_up_timer = 0;
         }
     }
-    
 }
 
 //------------------------------------------------------------------------------
@@ -235,8 +276,6 @@ void button_event_manager_task(void * pvParameters)
                         global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_ENABLE);
                         flora_vege_status = FLORA_VEGE_OUTPUT_ENABLE;
                         flora_vege_turn_on();
-                        display_manager_refreshvege_flora('V');
-
                     }
                     else if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
                     {
@@ -246,8 +285,9 @@ void button_event_manager_task(void * pvParameters)
                         global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_DISABLE);
                         flora_vege_status = FLORA_VEGE_OUTPUT_DISABLE;
                         flora_vege_turn_off();
-                        display_manager_refreshvege_flora('F');
                     }
+                    display_manager_vf((char)flora_vege_status);
+
                     break;
                 case PWM_DOWN_BUTTON_PUSHED:
                 if (is_jp3_teclas_connected() == true)
@@ -264,10 +304,8 @@ void button_event_manager_task(void * pvParameters)
                     }
                     
                     printf("Boton PWM DW presionado, pwm digital value: %d \n", pwm_digital_per_value);
-                    if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
-                        display_manager_refresh(pwm_digital_per_value, 'V');
-                    else
-                        display_manager_refresh(pwm_digital_per_value, 'F');
+                    display_manager_down(pwm_digital_per_value, flora_vege_status); // Envio evento button down en al display
+
                     global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
                     global_manager_get_pwm_mode(&pwm_mode);  
                     if(pwm_mode == PWM_MANUAL)
@@ -291,10 +329,8 @@ void button_event_manager_task(void * pvParameters)
                         pwm_digital_per_value++;
                     }
                     printf("Boton PWM UP presionado, pwm digital value: %d \n", pwm_digital_per_value);
-                    if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
-                        display_manager_refresh(pwm_digital_per_value, 'V');
-                    else
-                        display_manager_refresh(pwm_digital_per_value, 'F');
+                    display_manager_up(pwm_digital_per_value, flora_vege_status); // Envio evento button up en al display
+
                     global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
                     global_manager_get_pwm_mode(&pwm_mode); 
                     if(pwm_mode == PWM_MANUAL)
@@ -305,8 +341,13 @@ void button_event_manager_task(void * pvParameters)
                 }
                 break;
                 case FABRIC_RESET:
-                    //led_manager_new_update();
                     nv_flash_driver_erase_flash();
+                    break;
+                case AUX_BUTTON_PUSHED:
+                    display_manager_aux();
+                    break;
+                case AUX_BUTTON_PUSHED_3_SECONDS:
+                    display_manager_auxt();
                     break;
                 default:
                 break;

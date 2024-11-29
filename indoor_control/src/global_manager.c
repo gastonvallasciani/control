@@ -539,11 +539,11 @@ static void global_manager_task(void* arg)
                     pwm_manager_update_pwm(pwm_manual_value);
                     led_manager_pwm_output(pwm_manual_value);
 
-                    if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
+                    /*if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
                         display_manager_refresh(pwm_manual_value, 'V');
                     else
                         display_manager_refresh(pwm_manual_value, 'F');
-        
+                    */
                     pwm_value_bkp = pwm_manual_value;
                 }
             }
@@ -583,9 +583,9 @@ void global_manager_init(void)
     led_manager_init();
     pwm_manager_init();
     button_manager_init();
-    display_manager_init();
     s_out_manager_init();
     current_time_manager_init();
+    display_manager_init();
 
 
     xTaskCreate(global_manager_task, "global_manager_task", 
@@ -975,8 +975,48 @@ uint8_t global_manager_set_s_out_turn_off_time(struct tm turn_off_time, uint8_t 
     {     
         date_aux = global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_off_time;
         global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_off_time = turn_off_time;
-        
-        xSemaphoreGive(global_manager_semaph);
+
+        if((turn_off_time.tm_hour == 0) && (turn_off_time.tm_min == 0) && 
+        (global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_off_time.tm_hour == 0) && 
+        (global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_off_time.tm_min == 0))
+        {
+            global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].enable = 0;
+            switch(s_out_index)
+            {
+                case 0:
+                    write_parameter_on_flash_uint32(S_OUT_1_DATE_ENABLE, 0);
+                break;
+                case 1:
+                    write_parameter_on_flash_uint32(S_OUT_2_DATE_ENABLE, 0);
+                break;
+                case 2:
+                    write_parameter_on_flash_uint32(S_OUT_3_DATE_ENABLE, 0);
+                break;
+                case 3:
+                    write_parameter_on_flash_uint32(S_OUT_4_DATE_ENABLE, 0);
+                break;
+            }
+            
+        }
+        else
+        {
+            global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].enable = 1;
+            switch(s_out_index)
+            {
+                case 0:
+                    write_parameter_on_flash_uint32(S_OUT_1_DATE_ENABLE, 1);
+                break;
+                case 1:
+                    write_parameter_on_flash_uint32(S_OUT_2_DATE_ENABLE, 1);
+                break;
+                case 2:
+                    write_parameter_on_flash_uint32(S_OUT_3_DATE_ENABLE, 1);
+                break;
+                case 3:
+                    write_parameter_on_flash_uint32(S_OUT_4_DATE_ENABLE, 1);
+                break;
+            }
+        }
 
         if((date_aux.tm_hour != turn_off_time.tm_hour) || (date_aux.tm_min != turn_off_time.tm_min))
         {
@@ -996,6 +1036,8 @@ uint8_t global_manager_set_s_out_turn_off_time(struct tm turn_off_time, uint8_t 
                 break;
             }
         }
+         xSemaphoreGive(global_manager_semaph);
+
         return 1; 
     }
     xSemaphoreGive(global_manager_semaph);
@@ -1022,8 +1064,48 @@ uint8_t global_manager_set_s_out_turn_on_time(struct tm turn_on_time, uint8_t s_
     {     
         date_aux = global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_on_time;
         global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_on_time = turn_on_time;
-        
-        xSemaphoreGive(global_manager_semaph);
+
+        if((turn_on_time.tm_hour == 0) && (turn_on_time.tm_min == 0) && 
+        (global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_on_time.tm_hour == 0) && 
+        (global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_on_time.tm_min == 0))
+        {
+            global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].enable = 0;
+            switch(s_out_index)
+            {
+                case 0:
+                    write_parameter_on_flash_uint32(S_OUT_1_DATE_ENABLE, 0);
+                break;
+                case 1:
+                    write_parameter_on_flash_uint32(S_OUT_2_DATE_ENABLE, 0);
+                break;
+                case 2:
+                    write_parameter_on_flash_uint32(S_OUT_3_DATE_ENABLE, 0);
+                break;
+                case 3:
+                    write_parameter_on_flash_uint32(S_OUT_4_DATE_ENABLE, 0);
+                break;
+            }
+            
+        }
+        else
+        {
+            global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].enable = 1;
+            switch(s_out_index)
+            {
+                case 0:
+                    write_parameter_on_flash_uint32(S_OUT_1_DATE_ENABLE, 1);
+                break;
+                case 1:
+                    write_parameter_on_flash_uint32(S_OUT_2_DATE_ENABLE, 1);
+                break;
+                case 2:
+                    write_parameter_on_flash_uint32(S_OUT_3_DATE_ENABLE, 1);
+                break;
+                case 3:
+                    write_parameter_on_flash_uint32(S_OUT_4_DATE_ENABLE, 1);
+                break;
+            }
+        }
 
         if((date_aux.tm_hour != turn_on_time.tm_hour) || (date_aux.tm_min != turn_on_time.tm_min))
         {
@@ -1043,6 +1125,9 @@ uint8_t global_manager_set_s_out_turn_on_time(struct tm turn_on_time, uint8_t s_
                 break;
             }
         }
+
+        xSemaphoreGive(global_manager_semaph);
+
         return 1; 
     }
     xSemaphoreGive(global_manager_semaph);

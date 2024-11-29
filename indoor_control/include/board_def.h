@@ -21,7 +21,7 @@
 #define BT_DW GPIO_NUM_27
 #define BT_UP GPIO_NUM_14
 #define BT_VE_FLO GPIO_NUM_12
-#define BT_FUT GPIO_NUM_39
+#define BT_AUX GPIO_NUM_39
 
 // I2C
 #define I2C_SDA GPIO_NUM_21
