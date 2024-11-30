@@ -16,8 +16,8 @@
 #define RESET_PIN_DISPLAY RST_DSPY
 
 #define DISPLAY_ADDRESS 0x3C      // caso 7 bits 78, o sino 0x3C caso 8 bits
-#define I2C_MASTER_SCL_IO I2C_SCL      // Pin SCL
-#define I2C_MASTER_SDA_IO I2C_SDA      // Pin SDA
+#define I2C_MASTER_SCL_IO I2C_SCL // Pin SCL
+#define I2C_MASTER_SDA_IO I2C_SDA // Pin SDA
 #define I2C_MASTER_FREQ_HZ 400000 // Frecuencia I2C 400kHz
 #define I2C_MASTER_TX_BUF_DISABLE 0
 #define I2C_MASTER_RX_BUF_DISABLE 0
@@ -252,7 +252,7 @@ esp_err_t display_set_power(uint8_t power, char vege_flora)
 
 esp_err_t display_set_vege_flora(char vege_flora)
 {
-    set_cursor(1, 4);
+    set_cursor(1, 5);
     display_write_char(vege_flora);
 
     return ESP_OK;
@@ -348,7 +348,6 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     }
 
     *screen = SCREEN_ONE;
-
     sprintf(numero, "%u%%", power);
     sprintf(hour, "%u", time.tm_hour);
     sprintf(min, "%u", time.tm_min);
@@ -422,7 +421,6 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
 
 esp_err_t screen_one_line_three(struct tm time, bool dia, bool modo)
 {
-    ESP_LOGI("TIMER", "Entro al screen one line three");
     char *dia_m;
     char *modo_m;
     char hour[4];
@@ -480,13 +478,11 @@ esp_err_t screen_one_line_three(struct tm time, bool dia, bool modo)
         set_cursor(3, 14);
         display_write_string(min);
     }
-    ESP_LOGI("TIMER", "Salgo del screen one line three");
     return ESP_OK;
 }
 
 esp_err_t screen_two_line(uint8_t line, struct tm time_i, struct tm time_f)
 {
-    ESP_LOGI("TIMER", "Entro al screen two line");
     char *h = "ER";
     // char *ini = "i";
     // char *fin = "f";
@@ -577,7 +573,6 @@ esp_err_t screen_two_line(uint8_t line, struct tm time_i, struct tm time_f)
         set_cursor(line, 14);
         display_write_string(minf);
     }
-    ESP_LOGI("TIMER", "Salgo del screen two line");
     return ESP_OK;
 }
 

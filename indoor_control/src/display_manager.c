@@ -13,7 +13,6 @@
 #include "../include/board_def.h"
 #include "../include/display_manager.h"
 #include "../include/display_dogs164.h"
-#include "../include/global_manager.h"
 #include "../include/current_time_manager.h"
 
 //  #include "display_dogs164.c"
@@ -148,7 +147,7 @@ static void display_manager_task(void *arg)
                     }
                     else // screen = SCREEN_THREE
                     {
-
+                        global_manager_get_current_time_info(&time_device);
                         display_set_screen_one(&screen, fpower, power, vegeflorachar, dia, modo, time_device);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
@@ -191,6 +190,7 @@ static void display_manager_task(void *arg)
                     state = NORMAL;
                     stop_timer();
                     // vuelvo a la pantalla 1
+                    global_manager_get_current_time_info(&time_device);
                     display_set_screen_one(&screen, fpower, power, vegeflorachar, dia, modo, time_device);
                     ESP_LOGI(TAG, "Pantalla %u", screen);
 
@@ -201,6 +201,7 @@ static void display_manager_task(void *arg)
                     state = NORMAL;
                     stop_timer();
                     // vuelvo a la pantalla 1
+                    global_manager_get_current_time_info(&time_device);
                     display_set_screen_one(&screen, fpower, power, vegeflorachar, dia, modo, time_device);
                     ESP_LOGI(TAG, "Pantalla %u", screen);
 
@@ -213,8 +214,15 @@ static void display_manager_task(void *arg)
                 switch (state)
                 {
                 case NORMAL:
-                    vegeflorachar = display_ev.vege_flora;
-                    display_set_vege_flora(display_ev.vege_flora);
+                    if (display_ev.vege_flora == FLORA_VEGE_OUTPUT_DISABLE)
+                    {
+                        vegeflorachar = 'V';
+                    }
+                    else
+                    {
+                        vegeflorachar = 'F';
+                    }
+                    display_set_vege_flora(vegeflorachar);
                     break;
                 case CONFIG_LINE:
                     // aca no hace nada
@@ -233,8 +241,16 @@ static void display_manager_task(void *arg)
                 {
                 case NORMAL:
                     power = display_ev.pwm_value;
-                    vegeflorachar = display_ev.vege_flora;
-                    display_set_power(display_ev.pwm_value, display_ev.vege_flora);
+                    if (display_ev.vege_flora == FLORA_VEGE_OUTPUT_DISABLE)
+                    {
+                        vegeflorachar = 'V';
+                    }
+                    else
+                    {
+                        vegeflorachar = 'F';
+                    }
+                    global_manager_get_current_time_info(&time_device);
+                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, dia, modo, time_device);
                     break;
                 case CONFIG_LINE:
                     stop_timer();
@@ -260,8 +276,17 @@ static void display_manager_task(void *arg)
                 {
                 case NORMAL:
                     power = display_ev.pwm_value;
-                    vegeflorachar = display_ev.vege_flora;
-                    display_set_power(display_ev.pwm_value, display_ev.vege_flora);
+                    if (display_ev.vege_flora == FLORA_VEGE_OUTPUT_DISABLE)
+                    {
+                        vegeflorachar = 'V';
+                    }
+                    else
+                    {
+                        vegeflorachar = 'F';
+                    }
+                    printf("El char de vege_flora es %c", vegeflorachar);
+                    global_manager_get_current_time_info(&time_device);
+                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, dia, modo, time_device);
                     break;
                 case CONFIG_LINE:
                     stop_timer();
@@ -312,12 +337,14 @@ void display_manager_start(uint8_t pwm_value, char vege_flora)
     display_event_t display_ev;
 
     display_ev.cmd = START_DISPLAY;
-    display_ev.pwm_value = power;
+    display_ev.pwm_value = pwm_value;
     display_ev.vege_flora = vege_flora;
+    power = pwm_value;
+    vegeflorachar = vege_flora;
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
 //------------------------------------------------------------------------------
-void display_manager_down(uint8_t pwm_value, char vege_flora)
+void display_manager_down(uint8_t pwm_value, flora_vege_status_t vege_flora)
 {
     display_event_t display_ev;
 
@@ -328,7 +355,7 @@ void display_manager_down(uint8_t pwm_value, char vege_flora)
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
 //------------------------------------------------------------------------------
-void display_manager_up(uint8_t pwm_value, char vege_flora)
+void display_manager_up(uint8_t pwm_value, flora_vege_status_t vege_flora)
 {
     display_event_t display_ev;
 
@@ -339,7 +366,7 @@ void display_manager_up(uint8_t pwm_value, char vege_flora)
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
 //------------------------------------------------------------------------------
-void display_manager_vf(char vege_flora)
+void display_manager_vf(flora_vege_status_t vege_flora)
 {
     display_event_t display_ev;
 
@@ -466,11 +493,10 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
 
 esp_err_t clear_line(uint8_t linee)
 {
-    ESP_LOGI("TIMER", "Entro a clear_line");
+    ESP_LOGI("TIMER", "Clear_line");
     char *clearr = "                ";
     set_cursor(linee, 0);
     display_write_string(clearr);
-    ESP_LOGI("TIMER", "salgo de clear_line");
     return ESP_OK;
 }
 
@@ -479,16 +505,13 @@ void blink_callback(TimerHandle_t timer)
     ESP_LOGI("TIMER", "Entro al callback");
     if (clear == pdFALSE)
     {
-        ESP_LOGI("TIMER", "Entro al clear del callback");
         clear_line(line);
         clear = pdTRUE;
-        ESP_LOGI("TIMER", "Salgo del clear del callback");
     }
     else
     {
         switch (screen)
         {
-            ESP_LOGI("TIMER", "Entro al switch del callback");
         case SCREEN_ONE:
             screen_one_line_three(time_device, dia, modo);
             clear = pdFALSE;
@@ -519,9 +542,7 @@ void blink_callback(TimerHandle_t timer)
         default:
             break;
         }
-        ESP_LOGI("TIMER", "Salgo del switch del callback");
     }
-    ESP_LOGI("TIMER", "Salgo del callback");
 }
 
 esp_err_t set_timer()
@@ -1455,6 +1476,7 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
     {
     case SCREEN_ONE:
         // set dia
+        ESP_LOGI("Display_manager", "Guardo los parametros de la pantalla 1");
         if (diabool == false)
         {
             dia = SIMUL_DAY_OFF;
@@ -1478,6 +1500,7 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         current_time_manager_set_current_time(time_device);
         break;
     case SCREEN_THREE:
+        ESP_LOGI("Display_manager", "Guardo los parametros de la pantalla 3");
         if (line == 0)
         { // set horario 1 final e inicial
             global_manager_set_s_out_turn_on_time(time_i1, 0);
@@ -1503,6 +1526,7 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         }
         break;
     case SCREEN_TWO:
+        ESP_LOGI("Display_manager", "Guardo los parametros de la pantalla 2");
         if (line == 0)
         {
             // set horario final e inicial de pwm
@@ -1525,8 +1549,11 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
 
 esp_err_t get_params()
 {
+    ESP_LOGI("Display_manager", "Obtengo todos los parametros");
     // obtengo horario del dispositivo
     global_manager_get_current_time_info(&time_device);
+    printf("La hora del dispositivo es %u \n", time_device.tm_hour);
+    printf("Los minutos del dispositivo es %u \n", time_device.tm_min);
     // obtengo los 4 horarios de s.out
     global_manager_get_s_out_turn_on_time(&time_i1, 0);
     global_manager_get_s_out_turn_off_time(&time_f1, 0);
@@ -1548,7 +1575,8 @@ esp_err_t get_params()
     global_manager_get_ppf(&fpowerppf);
     sprintf(fpower, "%d", fpowerppf);
     // obtengo potencia porcentaje
-    global_manager_get_pwm_analog_percentage(&power);
+    global_manager_get_pwm_digital_percentage(&power);
+
     // obtengo vegeflora
     global_manager_get_flora_vege_status(&vegeflora);
     if (vegeflora == FLORA_VEGE_OUTPUT_DISABLE)

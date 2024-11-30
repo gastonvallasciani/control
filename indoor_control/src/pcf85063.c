@@ -155,7 +155,7 @@ static void pcf85063_task(void* arg)
     pcf85063_event_t ev;
     //i2c_master_init();
 
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
+    vTaskDelay(300 / portTICK_PERIOD_MS);
 
     while(1)
     {

@@ -11,49 +11,56 @@
 
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
-typedef enum{
+typedef enum
+{
     PWM_MANUAL = 0,
     PWM_AUTOMATIC = 1,
     PWM_UNDEFINED = 2,
-}pwm_mode_t;
+} pwm_mode_t;
 
-typedef enum{
+typedef enum
+{
     MODE_1 = 0,
     MODE_2 = 1,
     MODE_3 = 2,
     MODE_4 = 3,
-}device_mode_t;
+} device_mode_t;
 
-typedef enum{
+typedef enum
+{
     FLORA_VEGE_OUTPUT_DISABLE = 0,
     FLORA_VEGE_OUTPUT_ENABLE = 1,
-}flora_vege_status_t;
+} flora_vege_status_t;
 
-typedef struct{
+typedef struct
+{
     pwm_mode_t pwm_mode;
     flora_vege_status_t flora_vege_status;
     pwm_auto_info_t pwm_auto;
     s_out_auto_info_t s_out_auto;
     uint16_t ppf;
-}global_manager_nv_t;
+} global_manager_nv_t;
 
-typedef struct{
+typedef struct
+{
     device_mode_t device_mode;
     uint8_t pwm_analog_percent_power;
     uint8_t pwm_digital_percent_power;
     global_manager_nv_t nv_info;
-}global_manager_t;
+} global_manager_t;
 
-typedef struct{
+typedef struct
+{
     struct tm turn_on_time;
     struct tm turn_off_time;
     bool read_ok;
-}calendar_t;
+} calendar_t;
 
-typedef struct{
+typedef struct
+{
     calendar_t calendar;
     bool enable;
-}s_out_conf_t;
+} s_out_conf_t;
 
 //------------------- DECLARACION DE DATOS EXTERNOS ----------------------------
 //------------------------------------------------------------------------------
@@ -63,31 +70,31 @@ typedef struct{
 void global_manager_init(void);
 
 uint8_t global_manager_set_pwm_analog_percentage(uint8_t pwm_analog_per_value);
-uint8_t global_manager_get_pwm_analog_percentage(uint8_t* pwm_analog_per_value);
+uint8_t global_manager_get_pwm_analog_percentage(uint8_t *pwm_analog_per_value);
 
 uint8_t global_manager_set_pwm_mode(pwm_mode_t pwm_mode);
-uint8_t global_manager_get_pwm_mode(pwm_mode_t* pwm_mode);
+uint8_t global_manager_get_pwm_mode(pwm_mode_t *pwm_mode);
 
 uint8_t global_manager_set_device_mode(device_mode_t device_mode);
 uint8_t global_manager_get_device_mode(device_mode_t *device_mode);
 
 uint8_t global_manager_set_flora_vege_status(flora_vege_status_t flora_vege_status);
-uint8_t global_manager_get_flora_vege_status(flora_vege_status_t* flora_vege_status);
+uint8_t global_manager_get_flora_vege_status(flora_vege_status_t *flora_vege_status);
 
 uint8_t global_manager_set_pwm_digital_percentage(uint8_t pwm_digital_per_value);
-uint8_t global_manager_get_pwm_digital_percentage(uint8_t* pwm_digital_per_value);
+uint8_t global_manager_get_pwm_digital_percentage(uint8_t *pwm_digital_per_value);
 
 uint8_t global_manager_set_pwm_automatic_info(pwm_auto_info_t pwm_auto);
 uint8_t global_manager_get_pwm_automatic_info(pwm_auto_info_t *pwm_auto);
 
 uint8_t global_manager_set_simul_day_status(simul_day_status_t simul_day_status);
-uint8_t global_manager_get_simul_day_status(simul_day_status_t* simul_day_status);
+uint8_t global_manager_get_simul_day_status(simul_day_status_t *simul_day_status);
 
 uint8_t global_manager_set_turn_on_time(struct tm turn_on_time);
-uint8_t global_manager_get_turn_on_time(struct tm* turn_on_time);
+uint8_t global_manager_get_turn_on_time(struct tm *turn_on_time);
 
 uint8_t global_manager_set_turn_off_time(struct tm turn_off_time);
-uint8_t global_manager_get_turn_off_time(struct tm* turn_off_time);
+uint8_t global_manager_get_turn_off_time(struct tm *turn_off_time);
 
 uint8_t global_manager_update_pwm_calendar_info(void);
 
@@ -103,10 +110,10 @@ uint8_t global_manager_set_s_out_automatic_info(s_out_auto_info_t s_out_auto);
 uint8_t global_manager_get_s_out_automatic_info(s_out_auto_info_t *s_out_auto);
 
 uint8_t global_manager_set_s_out_turn_off_time(struct tm turn_off_time, uint8_t s_out_index);
-uint8_t global_manager_get_s_out_turn_off_time(struct tm* turn_off_time, uint8_t s_out_index);
+uint8_t global_manager_get_s_out_turn_off_time(struct tm *turn_off_time, uint8_t s_out_index);
 
 uint8_t global_manager_set_s_out_turn_on_time(struct tm turn_on_time, uint8_t s_out_index);
-uint8_t global_manager_get_s_out_turn_on_time(struct tm* turn_on_time, uint8_t s_out_index);
+uint8_t global_manager_get_s_out_turn_on_time(struct tm *turn_on_time, uint8_t s_out_index);
 
 uint8_t global_manager_set_s_out_time_enable_status(uint8_t time_enable_status, uint8_t s_out_index);
 uint8_t global_manager_get_s_out_time_enable_status(uint8_t *time_enable_status, uint8_t s_out_index);
@@ -134,4 +141,4 @@ uint8_t global_manager_set_ppf(uint16_t ppf);
 
 */
 //------------------- FIN DEL ARCHIVO ------------------------------------------
-#endif 
+#endif

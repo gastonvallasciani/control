@@ -3,8 +3,10 @@
 //------------------- INCLUDES -------------------------------------------------
 //------------------------------------------------------------------------------
 #include "../include/display_dogs164.h"
+#include "../include/global_manager.h"
 #include <time.h>
-typedef enum{
+typedef enum
+{
     START_DISPLAY = 0,
     DOWN = 1,
     UP = 2,
@@ -13,10 +15,11 @@ typedef enum{
     AUXT = 5
 } display_event_cmds_t;
 
-typedef struct{
+typedef struct
+{
     uint8_t pwm_value;
     display_event_cmds_t cmd;
-    char vege_flora;
+    flora_vege_status_t vege_flora;
 } display_event_t;
 
 //------------------- MACROS Y DEFINES -----------------------------------------
@@ -33,9 +36,9 @@ typedef struct{
 void get_screen_state(display_state_t *);
 void display_manager_init(void);
 void display_manager_start(uint8_t, char);
-void display_manager_vf(char);
-void display_manager_down(uint8_t, char);
-void display_manager_up(uint8_t, char);
+void display_manager_vf(flora_vege_status_t);
+void display_manager_down(uint8_t, flora_vege_status_t);
+void display_manager_up(uint8_t, flora_vege_status_t);
 void display_manager_aux(void);
 void display_manager_auxt(void);
 esp_err_t display_blink_manager(screen_t, uint8_t);
