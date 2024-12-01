@@ -189,6 +189,8 @@ static void display_manager_task(void *arg)
                     // vuelvo a NORMAL a la pagina correspondiente
                     state = NORMAL;
                     stop_timer();
+                    // dejo de blinkear el caracter
+                    display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
                     // vuelvo a la pantalla 1
                     global_manager_get_current_time_info(&time_device);
                     display_set_screen_one(&screen, fpower, power, vegeflorachar, dia, modo, time_device);
@@ -201,6 +203,8 @@ static void display_manager_task(void *arg)
                     state = NORMAL;
                     stop_timer();
                     // vuelvo a la pantalla 1
+                    // dejo de blinkear el caracter
+                    display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
                     global_manager_get_current_time_info(&time_device);
                     display_set_screen_one(&screen, fpower, power, vegeflorachar, dia, modo, time_device);
                     ESP_LOGI(TAG, "Pantalla %u", screen);
@@ -665,6 +669,17 @@ esp_err_t screen_one_param(display_event_cmds_t cmd)
 {
 
     screen_one_line_three(time_device, dia, modo); // escribo linea para que no quede vacia
+    if (cmd == VF)
+    {
+        if (param_one == 6)
+        {
+            param_one = 1;
+        }
+        else
+        {
+            param_one++;
+        }
+    }
     switch (param_one)
     {
     case 1:
@@ -695,17 +710,6 @@ esp_err_t screen_one_param(display_event_cmds_t cmd)
         break;
     }
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
-    if (cmd == VF)
-    {
-        if (param_one == 6)
-        {
-            param_one = 1;
-        }
-        else
-        {
-            param_one++;
-        }
-    }
 
     return ESP_OK;
 }
@@ -730,6 +734,19 @@ esp_err_t screen_two_param(display_event_cmds_t cmd)
 
     default:
         break;
+    }
+    if (cmd == VF)
+    {
+        if (param_two == 8)
+        {
+            param_two = 1;
+        }
+        else
+        {
+            ESP_LOGI("Screen_two_param", "Incremento param_two");
+            param_two++;
+        }
+        ESP_LOGI("Screen_two_param", "Param_two valu %u", param_two);
     }
 
     switch (param_two) // me fijo que parametro modifico
@@ -763,17 +780,7 @@ esp_err_t screen_two_param(display_event_cmds_t cmd)
         break;
     }
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
-    if (cmd == VF)
-    {
-        if (param_two == 8)
-        {
-            param_two = 1;
-        }
-        else
-        {
-            param_two++;
-        }
-    }
+
     return ESP_OK;
 }
 
@@ -782,6 +789,17 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
     screen_three_line(line, fpower, time_pwmi, time_pwmf);
     if (line == 0)
     {
+        if (cmd == VF)
+        {
+            if (param_three == 8)
+            {
+                param_three = 1;
+            }
+            else
+            {
+                param_three++;
+            }
+        }
         switch (param_three) // me fijo que parametro modifico
         {
         case 1:
@@ -812,9 +830,12 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
         default:
             break;
         }
+    }
+    else // line == 1
+    {
         if (cmd == VF)
         {
-            if (param_three == 8)
+            if (param_three == 5)
             {
                 param_three = 1;
             }
@@ -823,9 +844,6 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
                 param_three++;
             }
         }
-    }
-    else // line == 1
-    {
         switch (param_three) // me fijo que parametro modifico
         {
         case 1:
@@ -846,17 +864,6 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
 
         default:
             break;
-        }
-        if (cmd == VF)
-        {
-            if (param_three == 5)
-            {
-                param_three = 1;
-            }
-            else
-            {
-                param_three++;
-            }
         }
     }
 

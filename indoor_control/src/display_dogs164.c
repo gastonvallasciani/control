@@ -439,7 +439,7 @@ esp_err_t screen_one_line_three(struct tm time, bool dia, bool modo)
     }
     else
     {
-        modo_m = "AUTO";
+        modo_m = "AUT";
     }
 
     sprintf(hour, "%u", time.tm_hour);
