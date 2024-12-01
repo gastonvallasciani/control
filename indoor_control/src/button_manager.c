@@ -310,51 +310,57 @@ void button_event_manager_task(void *pvParameters)
                 if (is_jp3_teclas_connected() == true)
                 {
 
-                    global_manager_get_pwm_digital_percentage(&pwm_digital_per_value);
-                    if (pwm_digital_per_value > 10)
+                    get_screen_state(&screen_state);
+                    if (screen_state == NORMAL)
                     {
-                        pwm_digital_per_value--;
-                    }
-                    else if (pwm_digital_per_value == 10)
-                    {
-                        pwm_digital_per_value = 0;
+                        global_manager_get_pwm_digital_percentage(&pwm_digital_per_value);
+                        if (pwm_digital_per_value > 10)
+                        {
+                            pwm_digital_per_value--;
+                        }
+                        else if (pwm_digital_per_value == 10)
+                        {
+                            pwm_digital_per_value = 0;
+                        }
+                        printf("Boton PWM DW presionado, pwm digital value: %d \n", pwm_digital_per_value);
+                        global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
+                        global_manager_get_pwm_mode(&pwm_mode);
+                        if (pwm_mode == PWM_MANUAL)
+                        {
+                            pwm_manager_turn_on_pwm(pwm_digital_per_value);
+                            led_manager_pwm_output(pwm_digital_per_value);
+                        }
                     }
 
-                    printf("Boton PWM DW presionado, pwm digital value: %d \n", pwm_digital_per_value);
                     display_manager_down(pwm_digital_per_value, flora_vege_status); // Envio evento button down en al display
-
-                    global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
-                    global_manager_get_pwm_mode(&pwm_mode);
-                    if (pwm_mode == PWM_MANUAL)
-                    {
-                        pwm_manager_turn_on_pwm(pwm_digital_per_value);
-                        led_manager_pwm_output(pwm_digital_per_value);
-                    }
                 }
                 break;
             case PWM_UP_BUTTON_PUSHED:
                 if (is_jp3_teclas_connected() == true)
                 {
-                    global_manager_get_pwm_digital_percentage(&pwm_digital_per_value);
+                    get_screen_state(&screen_state);
+                    if (screen_state == NORMAL)
+                    {
+                        global_manager_get_pwm_digital_percentage(&pwm_digital_per_value);
 
-                    if (pwm_digital_per_value == 0)
-                    {
-                        pwm_digital_per_value = 10;
+                        if (pwm_digital_per_value == 0)
+                        {
+                            pwm_digital_per_value = 10;
+                        }
+                        else if (pwm_digital_per_value < 100)
+                        {
+                            pwm_digital_per_value++;
+                        }
+                        printf("Boton PWM UP presionado, pwm digital value: %d \n", pwm_digital_per_value);
+                        global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
+                        global_manager_get_pwm_mode(&pwm_mode);
+                        if (pwm_mode == PWM_MANUAL)
+                        {
+                            pwm_manager_turn_on_pwm(pwm_digital_per_value);
+                            led_manager_pwm_output(pwm_digital_per_value);
+                        }
                     }
-                    else if (pwm_digital_per_value < 100)
-                    {
-                        pwm_digital_per_value++;
-                    }
-                    printf("Boton PWM UP presionado, pwm digital value: %d \n", pwm_digital_per_value);
                     display_manager_up(pwm_digital_per_value, flora_vege_status); // Envio evento button up en al display
-
-                    global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
-                    global_manager_get_pwm_mode(&pwm_mode);
-                    if (pwm_mode == PWM_MANUAL)
-                    {
-                        pwm_manager_turn_on_pwm(pwm_digital_per_value);
-                        led_manager_pwm_output(pwm_digital_per_value);
-                    }
                 }
                 break;
             case FABRIC_RESET:
