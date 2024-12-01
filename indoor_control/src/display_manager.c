@@ -48,11 +48,11 @@ uint8_t power;
 char fpower[6];
 uint16_t fpowerppf;
 flora_vege_status_t vegeflora;
-char vegeflorachar;
+char vegeflorachar; // con esta me manejo en el display
 simul_day_status_t dia;
-bool diabool;
+bool diabool; // con este me manejo en e display
 pwm_mode_t modo;
-bool modobool;
+bool modobool; // con esta me manejo en el display
 
 uint8_t param_one;
 uint8_t param_two;
@@ -128,7 +128,7 @@ static void display_manager_task(void *arg)
             {
             case START_DISPLAY:
                 display_init();
-                display_set_screen_one(&screen, fpower, power, vegeflorachar, dia, modo, time_device);
+                display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
                 break;
             case AUX: // BOTON AUX 1 TOQUE
                 switch (state)
@@ -148,7 +148,7 @@ static void display_manager_task(void *arg)
                     else // screen = SCREEN_THREE
                     {
                         global_manager_get_current_time_info(&time_device);
-                        display_set_screen_one(&screen, fpower, power, vegeflorachar, dia, modo, time_device);
+                        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     break;
@@ -193,7 +193,7 @@ static void display_manager_task(void *arg)
                     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
                     // vuelvo a la pantalla 1
                     global_manager_get_current_time_info(&time_device);
-                    display_set_screen_one(&screen, fpower, power, vegeflorachar, dia, modo, time_device);
+                    display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
                     ESP_LOGI(TAG, "Pantalla %u", screen);
 
                     break;
@@ -206,7 +206,7 @@ static void display_manager_task(void *arg)
                     // dejo de blinkear el caracter
                     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
                     global_manager_get_current_time_info(&time_device);
-                    display_set_screen_one(&screen, fpower, power, vegeflorachar, dia, modo, time_device);
+                    display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
                     ESP_LOGI(TAG, "Pantalla %u", screen);
 
                     break;
@@ -254,7 +254,7 @@ static void display_manager_task(void *arg)
                         vegeflorachar = 'F';
                     }
                     global_manager_get_current_time_info(&time_device);
-                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, dia, modo, time_device);
+                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device);
                     break;
                 case CONFIG_LINE:
                     stop_timer();
@@ -290,7 +290,7 @@ static void display_manager_task(void *arg)
                     }
                     printf("El char de vege_flora es %c", vegeflorachar);
                     global_manager_get_current_time_info(&time_device);
-                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, dia, modo, time_device);
+                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device);
                     break;
                 case CONFIG_LINE:
                     stop_timer();
@@ -408,7 +408,7 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
     {
     case SCREEN_ONE:
         // en esta pantalla solo se modifica la ultima linea
-        display_set_screen_one(&screen, fpower, power, vegeflorachar, dia, modo, time_device);
+        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
         line = 3;
         start_timer();
         break;
@@ -517,7 +517,7 @@ void blink_callback(TimerHandle_t timer)
         switch (screen)
         {
         case SCREEN_ONE:
-            screen_one_line_three(time_device, dia, modo);
+            screen_one_line_three(time_device, diabool, modobool);
             clear = pdFALSE;
             break;
         case SCREEN_THREE:
@@ -600,7 +600,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
     switch (screen)
     {
     case SCREEN_ONE:
-        display_set_screen_one(&screen, fpower, power, vegeflorachar, dia, modo, time_device);
+        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
         if (cmd == VF || cmd == AUX)
         {
             screen_one_param(cmd);
@@ -668,7 +668,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
 esp_err_t screen_one_param(display_event_cmds_t cmd)
 {
 
-    screen_one_line_three(time_device, dia, modo); // escribo linea para que no quede vacia
+    screen_one_line_three(time_device, diabool, modobool); // escribo linea para que no quede vacia
     if (cmd == VF)
     {
         if (param_one == 6)
@@ -877,30 +877,28 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
     ESP_LOGI("param_modified_one", "Param_one vale %u", param_one);
     if (param_one == 1)
     {
-        if (dia == pdTRUE)
+        if (diabool == pdTRUE)
         {
-            dia = pdFALSE;
+            diabool = pdFALSE;
         }
         else
         {
-            dia = pdTRUE;
+            diabool = pdTRUE;
         }
-        // aca debo guardarla en la funcion de gaston
-        screen_one_line_three(time_device, dia, modo);
+        screen_one_line_three(time_device, diabool, modobool);
         set_cursor(3, 4);
     }
     if (param_one == 2)
     {
-        if (modo == pdTRUE)
+        if (modobool == pdTRUE)
         {
-            modo = pdFALSE;
+            modobool = pdFALSE;
         }
         else
         {
-            modo = pdTRUE;
+            modobool = pdTRUE;
         }
-        // aca debo guardarla en la funcion de gaston
-        screen_one_line_three(time_device, dia, modo);
+        screen_one_line_three(time_device, diabool, modobool);
         set_cursor(3, 7);
     }
     if (param_one == 3)
@@ -909,7 +907,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         {
             time_device.tm_hour += 10;
             mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            screen_one_line_three(time_device, diabool, modobool);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 11);
@@ -918,7 +916,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         {
             time_device.tm_hour -= 10;
             mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            screen_one_line_three(time_device, diabool, modobool);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 11);
@@ -930,7 +928,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         {
             time_device.tm_hour += 1;
             mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            screen_one_line_three(time_device, diabool, modobool);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 12);
@@ -939,7 +937,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         {
             time_device.tm_hour -= 1;
             mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            screen_one_line_three(time_device, diabool, modobool);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 12);
@@ -951,7 +949,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         {
             time_device.tm_min += 10;
             mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            screen_one_line_three(time_device, diabool, modobool);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 14);
@@ -960,7 +958,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         {
             time_device.tm_min -= 10;
             mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            screen_one_line_three(time_device, diabool, modobool);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 14);
@@ -972,7 +970,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         {
             time_device.tm_min += 1;
             mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            screen_one_line_three(time_device, diabool, modobool);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 15);
@@ -981,7 +979,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         {
             time_device.tm_min -= 1;
             mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            screen_one_line_three(time_device, diabool, modobool);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 15);

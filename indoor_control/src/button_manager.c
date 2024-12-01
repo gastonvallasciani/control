@@ -263,7 +263,7 @@ void button_event_manager_task(void *pvParameters)
     flora_vege_status_t flora_vege_status;
     uint8_t pwm_digital_per_value = 0;
     pwm_mode_t pwm_mode;
-
+    display_state_t screen_state;
     config_buttons_isr();
 
     while (true)
@@ -282,26 +282,29 @@ void button_event_manager_task(void *pvParameters)
                 break;
             case VEGE_BUTTON_PUSHED:
                 global_manager_get_flora_vege_status(&flora_vege_status);
-                if (flora_vege_status == FLORA_VEGE_OUTPUT_DISABLE)
+                get_screen_state(&screen_state);
+                if (screen_state == NORMAL)
                 {
+                    if (flora_vege_status == FLORA_VEGE_OUTPUT_DISABLE)
+                    {
 #ifdef DEBUG_MODULE
-                    printf("FLORa VEGE OUPUT STATUS ENABLE \n");
+                        printf("FLORA VEGE OUPUT STATUS ENABLE \n");
 #endif
-                    global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_ENABLE);
-                    flora_vege_status = FLORA_VEGE_OUTPUT_ENABLE;
-                    flora_vege_turn_on();
-                }
-                else if (flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
-                {
+                        global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_ENABLE);
+                        flora_vege_status = FLORA_VEGE_OUTPUT_ENABLE;
+                        flora_vege_turn_on();
+                    }
+                    else if (flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
+                    {
 #ifdef DEBUG_MODULE
-                    printf("FLORa VEGE OUPUT STATUS DISABLE \n");
+                        printf("FLORA VEGE OUPUT STATUS DISABLE \n");
 #endif
-                    global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_DISABLE);
-                    flora_vege_status = FLORA_VEGE_OUTPUT_DISABLE;
-                    flora_vege_turn_off();
+                        global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_DISABLE);
+                        flora_vege_status = FLORA_VEGE_OUTPUT_DISABLE;
+                        flora_vege_turn_off();
+                    }
                 }
                 display_manager_vf(flora_vege_status);
-
                 break;
             case PWM_DOWN_BUTTON_PUSHED:
                 if (is_jp3_teclas_connected() == true)

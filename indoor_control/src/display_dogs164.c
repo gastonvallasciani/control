@@ -409,12 +409,32 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     display_write_string(dia_m);
     set_cursor(3, 7);
     display_write_string(modo_m);
-    set_cursor(3, 11);
-    display_write_string(hour);
+    if (time.tm_hour < 10)
+    {
+        set_cursor(3, 11);
+        display_write_string("0");
+        set_cursor(3, 12);
+        display_write_string(hour);
+    }
+    else
+    {
+        set_cursor(3, 11);
+        display_write_string(hour);
+    }
     set_cursor(3, 13);
     display_write_string(ddots);
-    set_cursor(3, 14);
-    display_write_string(min);
+    if (time.tm_min < 10)
+    {
+        set_cursor(3, 14);
+        display_write_string("0");
+        set_cursor(3, 15);
+        display_write_string(min);
+    }
+    else
+    {
+        set_cursor(3, 14);
+        display_write_string(min);
+    }
 
     return ESP_OK;
 }
