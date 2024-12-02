@@ -32,6 +32,11 @@ int interval = 600; // ms de timer
 int timerid = 1;
 bool clear;
 
+// timer para refrescar la hora en el display
+TimerHandle_t timerh;
+int intervalh = 1000; // ms de timer, cada 1 segundo refresco la hora
+int timeridh = 2;
+
 // variables globales de parametros a escribir en el display
 struct tm time_device;
 struct tm time_i1;
@@ -87,6 +92,8 @@ static void display_manager_task(void *arg)
     state = NORMAL;
     clear = pdFALSE;
     set_timer();
+    set_timerh();
+    start_timerh();
 
     // aca asgianar valores a todas las variables globales del display
     get_params();
@@ -129,6 +136,7 @@ static void display_manager_task(void *arg)
             case START_DISPLAY:
                 display_init();
                 display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
+
                 break;
             case AUX: // BOTON AUX 1 TOQUE
                 switch (state)
@@ -591,6 +599,61 @@ esp_err_t reset_timer()
     if (xTimerReset(timer, 0) != pdPASS)
     {
         printf("Error al reiniciar el temporizador de FreeRTOS.\n");
+    }
+    return ESP_OK;
+}
+
+void time_callback(TimerHandle_t timerh)
+{ // obtengo la hora del dispositivo y printeo la linea correspondiente
+    global_manager_get_current_time_info(&time_device);
+    if (screen == SCREEN_ONE && state == NORMAL)
+    {
+        screen_one_line_three(time_device, diabool, modobool);
+    }
+}
+
+esp_err_t set_timerh()
+{
+    timerh = xTimerCreate("timerh", pdMS_TO_TICKS(intervalh), pdTRUE, (void *)timeridh, time_callback);
+    if (timerh == NULL)
+    {
+        ESP_LOGI("TIMERh", "No se creó el timer");
+    }
+    else
+    {
+        ESP_LOGI("TIMERh", "El timer se creó correctamente");
+    }
+    return ESP_OK;
+}
+
+esp_err_t start_timerh()
+{
+    if (xTimerStart(timerh, 0) != pdPASS)
+    {
+        ESP_LOGI("TIMERh", "Error al iniciar el timerh");
+    }
+    else
+    {
+        ESP_LOGI("TIMERh", "Inicio de timerh");
+    }
+    return ESP_OK;
+}
+
+esp_err_t stop_timerh()
+{
+    if (xTimerStop(timerh, 0) != pdPASS)
+    {
+        printf("Error al detener el temporizadorh de FreeRTOS.\n");
+    }
+    ESP_LOGI("TIMERh", "Paro el timerh");
+    return ESP_OK;
+}
+
+esp_err_t reset_timerh()
+{
+    if (xTimerReset(timerh, 0) != pdPASS)
+    {
+        printf("Error al reiniciar el temporizadorh de FreeRTOS.\n");
     }
     return ESP_OK;
 }

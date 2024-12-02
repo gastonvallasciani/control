@@ -16,6 +16,15 @@
         "board_def.h": "c",
         "freertosconfig.h": "c",
         "stdint.h": "c",
-        "s_run_manager.h": "c"
+        "s_run_manager.h": "c",
+        "atomic": "c",
+        "*.tcc": "c",
+        "deque": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "limits": "c",
+        "sstream": "c",
+        "system_error": "c"
     }
 }
