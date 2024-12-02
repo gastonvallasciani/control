@@ -534,7 +534,7 @@ static void global_manager_task(void *arg)
 #endif
                     pwm_manager_update_pwm(pwm_manual_value);
                     led_manager_pwm_output(pwm_manual_value);
-
+                    display_set_power(pwm_manual_value);
                     /*if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
                         display_manager_refresh(pwm_manual_value, 'V');
                     else

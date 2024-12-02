@@ -222,15 +222,15 @@ esp_err_t display_set_screen(uint8_t power)
     return ESP_OK;
 }
 
-esp_err_t display_set_power(uint8_t power, char vege_flora)
+esp_err_t display_set_power(uint8_t power)
 {
     static uint8_t last_power = 0xFF; // Guardar el valor previo del power
 
     // limpio todo lo de la linea de datos
     char numero[6];
 
-    set_cursor(1, 5);
-    display_write_char(vege_flora);
+    //set_cursor(1, 5);
+    //display_write_char(vege_flora);
 
     // Si el valor de power ha cambiado, actualiza la barra y el número
     if (power != last_power)

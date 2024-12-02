@@ -103,7 +103,7 @@ esp_err_t set_cursor(uint8_t, uint8_t);
 esp_err_t display_write_char(char);
 esp_err_t display_write_string(const char *);
 esp_err_t display_set_screen(uint8_t);
-esp_err_t display_set_power(uint8_t, char);
+esp_err_t display_set_power(uint8_t);
 esp_err_t display_power_bar(uint8_t);
 esp_err_t display_clean_arrow(void);
 esp_err_t display_clean_power_and_bar(void);
