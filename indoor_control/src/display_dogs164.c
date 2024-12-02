@@ -222,15 +222,22 @@ esp_err_t display_set_screen(uint8_t power)
     return ESP_OK;
 }
 
-esp_err_t display_set_power(uint8_t power)
+esp_err_t display_set_power(uint8_t power, char *fpower)
 {
     static uint8_t last_power = 0xFF; // Guardar el valor previo del power
 
     // limpio todo lo de la linea de datos
+    char numeroppf[6];
     char numero[6];
-
-    //set_cursor(1, 5);
-    //display_write_char(vege_flora);
+    char potactual[6];
+    int ppfn = power * 2.97;
+    int fpowercc;
+    fpowercc = atoi(fpower);
+    int pot_actual = fpowercc * power / 100;
+    sprintf(potactual, "%u", pot_actual);
+    sprintf(numeroppf, "%u", ppfn);
+    // set_cursor(1, 5);
+    // display_write_char(vege_flora);
 
     // Si el valor de power ha cambiado, actualiza la barra y el número
     if (power != last_power)
@@ -246,6 +253,30 @@ esp_err_t display_set_power(uint8_t power)
         display_power_bar(power);
         last_power = power;
     }
+    set_cursor(2, 4);
+    display_write_string(numeroppf); // escribo el numero del ppf
+    if (pot_actual <= 99999 && pot_actual > 9999)
+    {
+        set_cursor(2, 10);
+    }
+    if (pot_actual <= 9999 && pot_actual > 999)
+    {
+        set_cursor(2, 11);
+    }
+    if (pot_actual <= 999 && pot_actual > 99)
+    {
+        set_cursor(2, 12);
+    }
+    if (pot_actual <= 99 && pot_actual > 9)
+    {
+        set_cursor(2, 13);
+    }
+    if (pot_actual <= 9 && pot_actual >= 0)
+    {
+        set_cursor(2, 14);
+    }
+
+    display_write_string(potactual);
 
     return ESP_OK;
 }

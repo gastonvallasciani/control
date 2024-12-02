@@ -320,6 +320,9 @@ static void display_manager_task(void *arg)
                     break;
                 }
                 break;
+            case PWM_MANUAL_VALUE:
+                display_set_power(display_ev.pwm_value, fpower);
+                break;
             default:
                 break;
             }
@@ -405,6 +408,17 @@ void display_manager_auxt()
 
     display_ev.cmd = AUXT;
     // display_ev.pwm_value = power;
+    // display_ev.vege_flora = vege_flora;
+
+    xQueueSend(display_manager_queue, &display_ev, 10);
+}
+
+void display_manager_manual(uint8_t pwm_value)
+{
+    display_event_t display_ev;
+
+    display_ev.cmd = PWM_MANUAL_VALUE;
+    display_ev.pwm_value = pwm_value;
     // display_ev.vege_flora = vege_flora;
 
     xQueueSend(display_manager_queue, &display_ev, 10);
@@ -1390,7 +1404,6 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 {
 
                     fpower[0]++;
-
                 }
             }
 
@@ -1420,7 +1433,6 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 {
 
                     fpower[1]++;
-
                 }
             }
 
