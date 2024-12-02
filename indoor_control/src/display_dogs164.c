@@ -613,17 +613,11 @@ esp_err_t display_set_screen_two(screen_t *screen, struct tm time_i1, struct tm 
 esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct tm time_pwmf, char *fpower)
 {
     char *pwm = "PWM";
-    // char *ini = "i";
-    // char *fin = "f";
     char *total = "POT.TOTAL";
     char houri[4];
     char hourf[4];
     char mini[4];
     char minf[4];
-    // char fpowerc[6];
-    // int fpowercc;
-    // fpowercc = atoi(fpower);
-    // ESP_LOGI("TAG", "fpower es %u", fpowercc);
 
     display_send_command(COMMAND_CLEAR_DISPLAY);
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
@@ -671,16 +665,11 @@ esp_err_t screen_three_line(uint8_t line, char *fpower, struct tm time_i, struct
     char hourf[4];
     char mini[4];
     char minf[4];
-    // char fpowerc[6];
 
     sprintf(houri, "%u", time_i.tm_hour);
     sprintf(mini, "%u", time_i.tm_min);
     sprintf(hourf, "%u", time_f.tm_hour);
     sprintf(minf, "%u", time_f.tm_min);
-    // sprintf(fpowerc, "%u", fpower);
-    // int fpowercc;
-    // fpowercc = atoi(fpower);
-    // ESP_LOGI("TAG", "fpower es %u", fpowercc);
     switch (line)
     {
     case 0:

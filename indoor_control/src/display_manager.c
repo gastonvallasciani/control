@@ -1388,9 +1388,9 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
                 else
                 {
-                    ESP_LOGI("param_modified_three", "Entre en el ++");
+
                     fpower[0]++;
-                    ESP_LOGI("param_modified_three", "Sali del ++");
+
                 }
             }
 
@@ -1402,7 +1402,6 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
                 else
                 {
-                    ESP_LOGI("param_modified_three", "Entre en el --");
                     fpower[0]--;
                 }
             }
@@ -1413,15 +1412,15 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
         case 2:
             if (cmd == UP)
             {
-                if (fpower[0] == '9')
+                if (fpower[1] == '9')
                 {
-                    fpower[0] = '0';
+                    fpower[1] = '0';
                 }
                 else
                 {
-                    ESP_LOGI("param_modified_three", "Entre en el ++");
-                    fpower[0]++;
-                    ESP_LOGI("param_modified_three", "Sali del ++");
+
+                    fpower[1]++;
+
                 }
             }
 
@@ -1433,7 +1432,6 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
                 else
                 {
-                    ESP_LOGI("param_modified_three", "Entre en el --");
                     fpower[1]--;
                 }
             }
@@ -1449,9 +1447,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
                 else
                 {
-                    ESP_LOGI("param_modified_three", "Entre en el ++");
                     fpower[2]++;
-                    ESP_LOGI("param_modified_three", "Sali del ++");
                 }
             }
 
@@ -1463,7 +1459,6 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
                 else
                 {
-                    ESP_LOGI("param_modified_three", "Entre en el --");
                     fpower[2]--;
                 }
             }
@@ -1479,9 +1474,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
                 else
                 {
-                    ESP_LOGI("param_modified_three", "Entre en el ++");
                     fpower[3]++;
-                    ESP_LOGI("param_modified_three", "Sali del ++");
                 }
             }
 
@@ -1493,7 +1486,6 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
                 else
                 {
-                    ESP_LOGI("param_modified_three", "Entre en el --");
                     fpower[3]--;
                 }
             }
@@ -1509,9 +1501,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
                 else
                 {
-                    ESP_LOGI("param_modified_three", "Entre en el ++");
                     fpower[4]++;
-                    ESP_LOGI("param_modified_three", "Sali del ++");
                 }
             }
 
@@ -1523,7 +1513,6 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
                 else
                 {
-                    ESP_LOGI("param_modified_three", "Entre en el --");
                     fpower[4]--;
                 }
             }
@@ -1641,7 +1630,7 @@ esp_err_t get_params()
 
     // obtengo potencia total
     global_manager_get_ppf(&fpowerppf);
-    sprintf(fpower, "%d", fpowerppf);
+    sprintf(fpower, "%05d", fpowerppf);
     // obtengo potencia porcentaje
     global_manager_get_pwm_digital_percentage(&power);
 
