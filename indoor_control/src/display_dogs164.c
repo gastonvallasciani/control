@@ -664,20 +664,60 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct
     display_write_string(pwm);
     set_cursor(0, 3);
     display_send_data(0xDE);
-    set_cursor(0, 4);
-    display_write_string(houri);
+    if (time_pwmi.tm_hour < 10)
+    {
+        set_cursor(0, 4);
+        display_write_string("0");
+        set_cursor(0, 5);
+        display_write_string(houri);
+    }
+    else
+    {
+        set_cursor(0, 4);
+        display_write_string(houri);
+    }
     set_cursor(0, 6);
     display_write_string(":");
-    set_cursor(0, 7);
-    display_write_string(mini);
+    if (time_pwmi.tm_min < 10)
+    {
+        set_cursor(0, 7);
+        display_write_string("0");
+        set_cursor(0, 8);
+        display_write_string(mini);
+    }
+    else
+    {
+        set_cursor(0, 7);
+        display_write_string(mini);
+    }
     set_cursor(0, 10);
     display_send_data(0xE0);
-    set_cursor(0, 11);
-    display_write_string(hourf);
+    if (time_pwmf.tm_hour < 10)
+    {
+        set_cursor(0, 11);
+        display_write_string("0");
+        set_cursor(0, 12);
+        display_write_string(hourf);
+    }
+    else
+    {
+        set_cursor(0, 11);
+        display_write_string(hourf);
+    }
     set_cursor(0, 13);
     display_write_string(":");
-    set_cursor(0, 14);
-    display_write_string(minf);
+    if (time_pwmf.tm_min < 10)
+    {
+        set_cursor(0, 14);
+        display_write_string("0");
+        set_cursor(0, 15);
+        display_write_string(minf);
+    }
+    else
+    {
+        set_cursor(0, 14);
+        display_write_string(minf);
+    }
     set_cursor(1, 0);
     display_write_string(total);
     set_cursor(1, 10);
@@ -708,20 +748,60 @@ esp_err_t screen_three_line(uint8_t line, char *fpower, struct tm time_i, struct
         display_write_string(pwm);
         set_cursor(0, 3);
         display_send_data(0xDE);
-        set_cursor(0, 4);
-        display_write_string(houri);
+        if (time_i.tm_hour < 10)
+        {
+            set_cursor(line, 4);
+            display_write_string("0");
+            set_cursor(line, 5);
+            display_write_string(houri);
+        }
+        else
+        {
+            set_cursor(line, 4);
+            display_write_string(houri);
+        }
         set_cursor(0, 6);
         display_write_string(":");
-        set_cursor(0, 7);
-        display_write_string(mini);
+        if (time_i.tm_min < 10)
+        {
+            set_cursor(line, 7);
+            display_write_string("0");
+            set_cursor(line, 8);
+            display_write_string(mini);
+        }
+        else
+        {
+            set_cursor(line, 7);
+            display_write_string(mini);
+        }
         set_cursor(0, 10);
         display_send_data(0xE0);
-        set_cursor(0, 11);
-        display_write_string(hourf);
+        if (time_f.tm_hour < 10)
+        {
+            set_cursor(line, 11);
+            display_write_string("0");
+            set_cursor(line, 12);
+            display_write_string(hourf);
+        }
+        else
+        {
+            set_cursor(line, 11);
+            display_write_string(hourf);
+        }
         set_cursor(0, 13);
         display_write_string(":");
-        set_cursor(0, 14);
-        display_write_string(minf);
+        if (time_f.tm_min < 10)
+        {
+            set_cursor(line, 14);
+            display_write_string("0");
+            set_cursor(line, 15);
+            display_write_string(minf);
+        }
+        else
+        {
+            set_cursor(line, 14);
+            display_write_string(minf);
+        }
         break;
     case 1:
         set_cursor(1, 0);
