@@ -175,7 +175,7 @@ static void display_manager_task(void *arg)
                     state = CONFIG_LINE;
                     line = 0;
                     param_one = 1;
-                    param_two = 1;
+                    param_two = 2;
                     param_three = 1;
                     display_blink_manager(screen, 3); // con esta veo que pantalla estoy
 
@@ -274,7 +274,7 @@ static void display_manager_task(void *arg)
                 {
                 case NORMAL:
                     power++;
-                    display_set_power(display_ev.pwm_value, display_ev.vege_flora);
+                    display_set_power(power, vegeflora);
                     break;
                 case CONFIG_LINE:
                     stop_timer();
@@ -668,18 +668,10 @@ esp_err_t screen_one_param(display_event_cmds_t cmd)
         break;
 
     case 3:
-        set_cursor(3, 11);
-        break;
-
-    case 4:
         set_cursor(3, 12);
         break;
 
-    case 5:
-        set_cursor(3, 14);
-        break;
-
-    case 6:
+    case 4:
         set_cursor(3, 15);
         break;
 
@@ -689,7 +681,7 @@ esp_err_t screen_one_param(display_event_cmds_t cmd)
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
     if (cmd == VF)
     {
-        if (param_one == 6)
+        if (param_one == 4)
         {
             param_one = 1;
         }
@@ -726,28 +718,20 @@ esp_err_t screen_two_param(display_event_cmds_t cmd)
 
     switch (param_two) // me fijo que parametro modifico
     {
+
     case 1:
-        set_cursor(line, 4);
-        break;
-    case 2:
         set_cursor(line, 5);
         break;
-    case 3:
-        set_cursor(line, 7);
-        break;
-    case 4:
+
+    case 2:
         set_cursor(line, 8);
         break;
-    case 5:
-        set_cursor(line, 11);
-        break;
-    case 6:
+
+    case 3:
         set_cursor(line, 12);
         break;
-    case 7:
-        set_cursor(line, 14);
-        break;
-    case 8:
+
+    case 4:
         set_cursor(line, 15);
         break;
 
@@ -757,7 +741,7 @@ esp_err_t screen_two_param(display_event_cmds_t cmd)
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
     if (cmd == VF)
     {
-        if (param_two == 8)
+        if (param_two == 4)
         {
             param_two = 1;
         }
@@ -776,28 +760,20 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
     {
         switch (param_three) // me fijo que parametro modifico
         {
+
         case 1:
-            set_cursor(line, 4);
-            break;
-        case 2:
             set_cursor(line, 5);
             break;
-        case 3:
-            set_cursor(line, 7);
-            break;
-        case 4:
+
+        case 2:
             set_cursor(line, 8);
             break;
-        case 5:
-            set_cursor(line, 11);
-            break;
-        case 6:
+
+        case 3:
             set_cursor(line, 12);
             break;
-        case 7:
-            set_cursor(line, 14);
-            break;
-        case 8:
+
+        case 4:
             set_cursor(line, 15);
             break;
 
@@ -806,7 +782,7 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
         }
         if (cmd == VF)
         {
-            if (param_three == 8)
+            if (param_three == 4)
             {
                 param_three = 1;
             }
@@ -892,71 +868,51 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
     {
         if (cmd == UP)
         {
-            time_device.tm_hour += 10;
-            mktime(&time_device);
+            if (time_device.tm_hour == 23)
+            {
+                time_device.tm_hour = 0;
+            }
+            else
+            {
+                time_device.tm_hour += 1;
+            }
+            // mktime(&time_device);
             screen_one_line_three(time_device, dia, modo);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
-            set_cursor(3, 11);
+            set_cursor(3, 12);
         }
         else
         {
-            time_device.tm_hour -= 10;
-            mktime(&time_device);
+            if (time_device.tm_hour == 0)
+            {
+                time_device.tm_hour = 23;
+            }
+            else
+            {
+                time_device.tm_hour -= 1;
+            }
+            // mktime(&time_device);
             screen_one_line_three(time_device, dia, modo);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
-            set_cursor(3, 11);
+            set_cursor(3, 12);
         }
     }
     if (param_one == 4)
     {
+
         if (cmd == UP)
         {
-            time_device.tm_hour += 1;
-            mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
-            ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
-            ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
-            set_cursor(3, 12);
-        }
-        else
-        {
-            time_device.tm_hour -= 1;
-            mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
-            ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
-            ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
-            set_cursor(3, 12);
-        }
-    }
-    if (param_one == 5)
-    {
-        if (cmd == UP)
-        {
-            time_device.tm_min += 10;
-            mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
-            ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
-            ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
-            set_cursor(3, 14);
-        }
-        else
-        {
-            time_device.tm_min -= 10;
-            mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
-            ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
-            ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
-            set_cursor(3, 14);
-        }
-    }
-    if (param_one == 6)
-    {
-        if (cmd == UP)
-        {
-            time_device.tm_min += 1;
-            mktime(&time_device);
+            if (time_device.tm_min == 59)
+            {
+                time_device.tm_min = 0;
+            }
+            else
+            {
+                time_device.tm_min += 1;
+            }
+            // mktime(&time_device);
             screen_one_line_three(time_device, dia, modo);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
@@ -964,8 +920,15 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         }
         else
         {
-            time_device.tm_min -= 1;
-            mktime(&time_device);
+            if (time_device.tm_min == 0)
+            {
+                time_device.tm_min = 59;
+            }
+            else
+            {
+                time_device.tm_min -= 1;
+            }
+            // mktime(&time_device);
             screen_one_line_three(time_device, dia, modo);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
@@ -1011,136 +974,119 @@ esp_err_t param_modified_two(display_event_cmds_t cmd)
 
 esp_err_t param_two_bis(display_event_cmds_t cmd, struct tm *time_i, struct tm *time_f)
 {
+
     if (param_two == 1)
     {
         if (cmd == UP)
         {
-            time_i->tm_hour += 10;
+            if (time_i->tm_hour == 23)
+            {
+                time_i->tm_hour = 0;
+            }
+            else
+            {
+                time_i->tm_hour += 1;
+            }
             mktime(time_i);
             screen_two_line(line, *time_i, *time_f);
 
-            set_cursor(line, 4);
+            set_cursor(line, 5);
         }
         else
         {
-            time_i->tm_hour -= 10;
+            if (time_i->tm_hour == 0)
+            {
+                time_i->tm_hour = 23;
+            }
+            else
+            {
+                time_i->tm_hour -= 1;
+            }
             mktime(time_i);
             screen_two_line(line, *time_i, *time_f);
-            set_cursor(line, 4);
+            set_cursor(line, 5);
         }
     }
+
     if (param_two == 2)
     {
         if (cmd == UP)
         {
-            time_i->tm_hour += 1;
+            if (time_i->tm_min == 59)
+            {
+                time_i->tm_min = 0;
+            }
+            else
+            {
+                time_i->tm_min += 1;
+            }
             mktime(time_i);
             screen_two_line(line, *time_i, *time_f);
 
-            set_cursor(line, 5);
+            set_cursor(line, 8);
         }
         else
         {
-            time_i->tm_hour -= 1;
+            if (time_i->tm_min == 0)
+            {
+                time_i->tm_min = 59;
+            }
+            else
+            {
+                time_i->tm_min -= 1;
+            }
             mktime(time_i);
             screen_two_line(line, *time_i, *time_f);
-            set_cursor(line, 5);
+            set_cursor(line, 8);
         }
     }
+
     if (param_two == 3)
     {
         if (cmd == UP)
         {
-            time_i->tm_min += 10;
-            mktime(time_i);
+
+            if (time_f->tm_hour == 23)
+            {
+                time_f->tm_hour = 0;
+            }
+            else
+            {
+                time_f->tm_hour += 1;
+            }
+            mktime(time_f);
             screen_two_line(line, *time_i, *time_f);
-            set_cursor(line, 7);
+
+            set_cursor(line, 12);
         }
         else
         {
-            time_i->tm_min -= 10;
-            mktime(time_i);
+            if (time_f->tm_hour == 0)
+            {
+                time_f->tm_hour = 23;
+            }
+            else
+            {
+                time_f->tm_hour -= 1;
+            }
+            mktime(time_f);
             screen_two_line(line, *time_i, *time_f);
-            set_cursor(line, 7);
+            set_cursor(line, 12);
         }
     }
+
     if (param_two == 4)
     {
         if (cmd == UP)
         {
-            time_i->tm_min += 1;
-            mktime(time_i);
-            screen_two_line(line, *time_i, *time_f);
-
-            set_cursor(line, 8);
-        }
-        else
-        {
-            time_i->tm_min -= 1;
-            mktime(time_i);
-            screen_two_line(line, *time_i, *time_f);
-            set_cursor(line, 8);
-        }
-    }
-    if (param_two == 5)
-    {
-        if (cmd == UP)
-        {
-            time_f->tm_hour += 10;
-            mktime(time_f);
-            screen_two_line(line, *time_i, *time_f);
-
-            set_cursor(line, 11);
-        }
-        else
-        {
-            time_f->tm_hour -= 10;
-            mktime(time_f);
-            screen_two_line(line, *time_i, *time_f);
-            set_cursor(line, 11);
-        }
-    }
-    if (param_two == 6)
-    {
-        if (cmd == UP)
-        {
-            time_f->tm_hour += 1;
-            mktime(time_f);
-            screen_two_line(line, *time_i, *time_f);
-
-            set_cursor(line, 12);
-        }
-        else
-        {
-            time_f->tm_hour -= 1;
-            mktime(time_f);
-            screen_two_line(line, *time_i, *time_f);
-            set_cursor(line, 12);
-        }
-    }
-    if (param_two == 7)
-    {
-        if (cmd == UP)
-        {
-            time_f->tm_min += 10;
-            mktime(time_f);
-            screen_two_line(line, *time_i, *time_f);
-
-            set_cursor(line, 14);
-        }
-        else
-        {
-            time_f->tm_min -= 10;
-            mktime(time_f);
-            screen_two_line(line, *time_i, *time_f);
-            set_cursor(line, 14);
-        }
-    }
-    if (param_two == 8)
-    {
-        if (cmd == UP)
-        {
-            time_f->tm_min += 1;
+            if (time_f->tm_min == 59)
+            {
+                time_f->tm_min = 0;
+            }
+            else
+            {
+                time_f->tm_min += 1;
+            }
             mktime(time_f);
             screen_two_line(line, *time_i, *time_f);
 
@@ -1148,7 +1094,14 @@ esp_err_t param_two_bis(display_event_cmds_t cmd, struct tm *time_i, struct tm *
         }
         else
         {
-            time_f->tm_min -= 1;
+            if (time_f->tm_min == 0)
+            {
+                time_f->tm_min = 59;
+            }
+            else
+            {
+                time_f->tm_min -= 1;
+            }
             mktime(time_f);
             screen_two_line(line, *time_i, *time_f);
             set_cursor(line, 15);
@@ -1164,134 +1117,128 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
     {
         switch (param_three)
         {
+
         case 1:
             if (cmd == UP)
             {
-                time_pwmi.tm_hour += 10;
+                if (time_pwmi.tm_hour == 23)
+                {
+                    time_pwmi.tm_hour = 0;
+                }
+                else
+                {
+                    time_pwmi.tm_hour += 1;
+                }
                 mktime(&time_pwmi);
                 screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 4);
+                set_cursor(0, 5);
             }
             else
             {
-                time_pwmi.tm_hour -= 10;
+                if (time_pwmi.tm_hour == 0)
+                {
+                    time_pwmi.tm_hour = 23;
+                }
+                else
+                {
+                    time_pwmi.tm_hour -= 1;
+                }
                 mktime(&time_pwmi);
                 screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 4);
+                set_cursor(0, 5);
             }
-
             break;
+
         case 2:
             if (cmd == UP)
             {
-                time_pwmi.tm_hour += 1;
+                if (time_pwmi.tm_min == 59)
+                {
+                    time_pwmi.tm_min = 0;
+                }
+                else
+                {
+                    time_pwmi.tm_min += 1;
+                }
                 mktime(&time_pwmi);
                 screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 5);
+                set_cursor(0, 8);
             }
             else
             {
-                time_pwmi.tm_hour -= 1;
+                if (time_pwmi.tm_min == 0)
+                {
+                    time_pwmi.tm_min = 59;
+                }
+                else
+                {
+                    time_pwmi.tm_min -= 1;
+                }
                 mktime(&time_pwmi);
                 screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 5);
+                set_cursor(0, 8);
             }
             break;
+
         case 3:
             if (cmd == UP)
             {
-                time_pwmi.tm_min += 10;
-                mktime(&time_pwmi);
+                if (time_pwmf.tm_hour == 23)
+                {
+                    time_pwmf.tm_hour = 0;
+                }
+                else
+                {
+                    time_pwmf.tm_hour += 1;
+                }
+                mktime(&time_pwmf);
                 screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 7);
+                set_cursor(0, 12);
             }
             else
             {
-                time_pwmi.tm_min -= 10;
-                mktime(&time_pwmi);
+                if (time_pwmf.tm_hour == 0)
+                {
+                    time_pwmf.tm_hour = 23;
+                }
+                else
+                {
+                    time_pwmf.tm_hour -= 1;
+                }
+                mktime(&time_pwmf);
                 screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 7);
+                set_cursor(0, 12);
             }
-
             break;
+
         case 4:
             if (cmd == UP)
             {
-                time_pwmi.tm_min += 1;
-                mktime(&time_pwmi);
+                if (time_pwmf.tm_min == 59)
+                {
+                    time_pwmf.tm_min = 0;
+                }
+                else
+                {
+                    time_pwmf.tm_min += 1;
+                }
+                mktime(&time_pwmf);
                 screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 8);
+                set_cursor(0, 15);
             }
             else
             {
-                time_pwmi.tm_min -= 1;
-                mktime(&time_pwmi);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 8);
-            }
-            break;
-        case 5:
-            if (cmd == UP)
-            {
-                time_pwmf.tm_hour += 10;
+                if (time_pwmf.tm_min == 0)
+                {
+                    time_pwmf.tm_min = 59;
+                }
+                else
+                {
+                    time_pwmf.tm_min -= 1;
+                }
                 mktime(&time_pwmf);
                 screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 11);
-            }
-            else
-            {
-                time_pwmf.tm_hour -= 10;
-                mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 11);
-            }
-            break;
-        case 6:
-            if (cmd == UP)
-            {
-                time_pwmf.tm_hour += 1;
-                mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 12);
-            }
-            else
-            {
-                time_pwmf.tm_hour -= 1;
-                mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 12);
-            }
-            break;
-        case 7:
-            if (cmd == UP)
-            {
-                time_pwmf.tm_min += 10;
-                mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 14);
-            }
-            else
-            {
-                time_pwmf.tm_min -= 10;
-                mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 14);
-            }
-            break;
-        case 8:
-            if (cmd == UP)
-            {
-                time_pwmf.tm_min += 1;
-                mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 15);
-            }
-            else
-            {
-                time_pwmf.tm_min -= 1;
-                mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(1, 15);
+                set_cursor(0, 15);
             }
             break;
 
