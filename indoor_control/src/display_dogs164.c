@@ -742,3 +742,65 @@ esp_err_t screen_three_line(uint8_t line, char *fpower, struct tm time_i, struct
 
     return ESP_OK;
 }
+
+esp_err_t set_contrast(uint8_t level)
+{
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS1);
+    display_send_command(COMMAND_POWER_CONTROL_DOGS164);
+    switch (level)
+    {
+    case 1:
+        display_send_command(0x70);
+        break;
+    case 2:
+        display_send_command(0x71);
+        break;
+    case 3:
+        display_send_command(0x72);
+        break;
+    case 4:
+        display_send_command(0x73);
+        break;
+    case 5:
+        display_send_command(0x74);
+        break;
+    case 6:
+        display_send_command(0x75);
+        break;
+    case 7:
+        display_send_command(0x76);
+        break;
+    case 8:
+        display_send_command(0x77);
+        break;
+    case 9:
+        display_send_command(0x78);
+        break;
+    case 10:
+        display_send_command(0x79);
+        break;
+    case 11:
+        display_send_command(0x7A);
+        break;
+    case 12:
+        display_send_command(0x7B);
+        break;
+    case 13:
+        display_send_command(0x7C);
+        break;
+    case 14:
+        display_send_command(0x7D);
+        break;
+    case 15:
+        display_send_command(0x7E);
+        break;
+    case 16:
+        display_send_command(0x7F);
+        break;
+    default:
+        display_send_command(COMMAND_CONTRAST_DEFAULT_DOGS164);
+        break;
+    }
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
+    return ESP_OK;
+}

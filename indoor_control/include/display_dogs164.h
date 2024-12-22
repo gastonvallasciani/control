@@ -116,4 +116,6 @@ esp_err_t display_set_screen_three(screen_t *, struct tm, struct tm, char *);
 esp_err_t display_init(void);
 esp_err_t display_set_vege_flora(char);
 
+esp_err_t set_contrast(uint8_t);
+
 #endif /* DISPLAY_DOGS164_H__ */

@@ -127,7 +127,20 @@ void app_main()
             display_manager_down();
         }
 
-        vTaskDelay(150 / portTICK_PERIOD_MS);
+        
+
+        vTaskDelay(400 / portTICK_PERIOD_MS);
+
+        set_contrast(i);
+        ESP_LOGI("Constraste", "Nivel de contraste: %d",i);
+        if (i == 15)
+        {
+            i = 1;
+        }
+        else
+        {
+            i++;
+        }
 
         // blink_line(2);
         // display_set_screen_two();
