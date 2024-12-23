@@ -221,7 +221,7 @@ static void display_manager_task(void *arg)
                 default:
                     break;
                 }
-
+                break;
             case VF:
                 switch (state)
                 {
