@@ -1,0 +1,31 @@
+- Las distintas FASES tienen distintas versiones de firmware. Esto es necesario para no añadir ruido con un esxceso de condicionales al código ya que por ejemplo FASE 2 y 3 poseen distintas pantallas e display.
+
+- CAMBIOS FASE 3:
+
+Se modifica funcionalidad jumper 2 de la
+siguiente forma:
+
+	JUMPER 2 ON   --- FASE 3 ON
+	JUMPER 2 OFF  --- FASE 3 OFF
+
+En FASE 3 ON:
+	La salida S-OUT NO se puee controlar por horarios
+	S.OUT se enciende si el porcentaje de pwm de salida
+	configurado ya sea por tecla o por pote sea mayor que 0. 
+	Se apaga si es 0.
+
+LA configuracion posible de FASE 3 es:
+	JUMPER 2 ON y JUMPER 3 ON --- PWM se configura con teclado
+	JUMPER 2 ON y JUMPER 3 OFF --- PWM se configura con pote
+
+EL display funciona en todo momento.
+EL RTC tiene que estar presente en la placa y tiene que funcionar para poder configurar horario del pwm automatico.
+
+JUMPER 2 deja de ser utilizado para presencia e reloj y pasa a ser utilizado para especificar FASE 3
+
+En FASE 4 --- JUMPER 2 OFF y S.OUT funcionara por configuración de horarios.
+
+
+- La detección de los 3 segundos del pulsador adicional para entrar en modo configuración debe quedar como esta implementada. Esta detección se realiza por detección de flanco
+con una interrupción. Se detecto flanco de subida (cuando se presiona el pulsador) y flanco de bajada (cuando se libera el pulsador) y se verifica cuanto tiempo fue pulsado.
+Esta es la forma mas optima de realizarlo para minimizar el uso de recursos en chequear el estado de un boton.
