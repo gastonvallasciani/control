@@ -129,9 +129,9 @@ void app_main()
 
         
 
-        vTaskDelay(400 / portTICK_PERIOD_MS);
+        vTaskDelay(150 / portTICK_PERIOD_MS);
 
-        set_contrast(i);
+        /*set_contrast(i);
         ESP_LOGI("Constraste", "Nivel de contraste: %d",i);
         if (i == 15)
         {
@@ -140,7 +140,7 @@ void app_main()
         else
         {
             i++;
-        }
+        }*/
 
         // blink_line(2);
         // display_set_screen_two();

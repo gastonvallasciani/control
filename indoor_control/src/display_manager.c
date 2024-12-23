@@ -47,6 +47,7 @@ char fpower[6];
 char vegeflora;
 bool dia;
 bool modo;
+uint8_t contrast;
 
 uint8_t param_one;
 uint8_t param_two;
@@ -111,6 +112,7 @@ static void display_manager_task(void *arg)
     vegeflora = 'V';
     dia = pdTRUE;
     modo = pdTRUE;
+    contrast = 1;
     param_one = 1;
     param_two = 1;
     param_three = 1;
@@ -137,7 +139,7 @@ static void display_manager_task(void *arg)
                     }
                     else if (screen == SCREEN_TWO)
                     {
-                        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
+                        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower, contrast);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     else // screen = SCREEN_THREE
@@ -196,7 +198,7 @@ static void display_manager_task(void *arg)
                     }
                     else // screen = SCREEN_THREE
                     {
-                        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
+                        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower, contrast);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     break;
@@ -217,7 +219,7 @@ static void display_manager_task(void *arg)
                     }
                     else // screen = SCREEN_THREE
                     {
-                        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
+                        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower, contrast);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     break;
@@ -444,27 +446,27 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
 
         break;
     case SCREEN_THREE:
-        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
+        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower, contrast);
         if (cmd == 0) // es down
         {
             if (line == 0)
             {
-                line = 1; // voy a la ultima linea
+                line = 2; // voy a la ultima linea
             }
-            else if (line == 1)
+            else
             {
-                line = 0;
+                line--;
             }
         }
         else if (cmd == 1) // es up
         {
-            if (line == 0)
+            if (line == 2)
             {
-                line = 1; // voy a la primera linea
+                line = 0; // voy a la primera linea
             }
-            else if (line == 1)
+            else
             {
-                line = 0;
+                line++;
             }
         }
         start_timer();
@@ -526,7 +528,7 @@ void blink_callback(TimerHandle_t timer)
             clear = pdFALSE;
             break;
         case SCREEN_THREE:
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
             clear = pdFALSE;
             break;
         default:
@@ -628,7 +630,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
         }
         break;
     case SCREEN_THREE:
-        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
+        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower, contrast);
         if (cmd == VF || cmd == AUX)
         {
             screen_three_param(cmd);
@@ -755,7 +757,7 @@ esp_err_t screen_two_param(display_event_cmds_t cmd)
 
 esp_err_t screen_three_param(display_event_cmds_t cmd)
 {
-    screen_three_line(line, fpower, time_pwmi, time_pwmf);
+    screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
     if (line == 0)
     {
         switch (param_three) // me fijo que parametro modifico
@@ -792,7 +794,7 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
             }
         }
     }
-    else // line == 1
+    else if (line == 1)
     {
         switch (param_three) // me fijo que parametro modifico
         {
@@ -826,6 +828,10 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
                 param_three++;
             }
         }
+    }
+    else // line ==2
+    {
+        set_cursor(line, 14);
     }
 
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
@@ -1130,7 +1136,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmi.tm_hour += 1;
                 }
                 mktime(&time_pwmi);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
                 set_cursor(0, 5);
             }
             else
@@ -1144,7 +1150,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmi.tm_hour -= 1;
                 }
                 mktime(&time_pwmi);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
                 set_cursor(0, 5);
             }
             break;
@@ -1161,7 +1167,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmi.tm_min += 1;
                 }
                 mktime(&time_pwmi);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
                 set_cursor(0, 8);
             }
             else
@@ -1175,7 +1181,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmi.tm_min -= 1;
                 }
                 mktime(&time_pwmi);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
                 set_cursor(0, 8);
             }
             break;
@@ -1192,7 +1198,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmf.tm_hour += 1;
                 }
                 mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
                 set_cursor(0, 12);
             }
             else
@@ -1206,7 +1212,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmf.tm_hour -= 1;
                 }
                 mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
                 set_cursor(0, 12);
             }
             break;
@@ -1223,7 +1229,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmf.tm_min += 1;
                 }
                 mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
                 set_cursor(0, 15);
             }
             else
@@ -1237,7 +1243,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmf.tm_min -= 1;
                 }
                 mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
                 set_cursor(0, 15);
             }
             break;
@@ -1246,7 +1252,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
             break;
         }
     }
-    else
+    else if (line == 1)
     {
         switch (param_three)
         {
@@ -1278,7 +1284,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
             }
 
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
             set_cursor(line, 10);
             break;
         case 2:
@@ -1308,7 +1314,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[1]--;
                 }
             }
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
             set_cursor(line, 11);
             break;
         case 3:
@@ -1338,7 +1344,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[2]--;
                 }
             }
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
             set_cursor(line, 12);
             break;
         case 4:
@@ -1368,7 +1374,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[3]--;
                 }
             }
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
             set_cursor(line, 13);
             break;
         case 5:
@@ -1398,13 +1404,43 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[4]--;
                 }
             }
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
             set_cursor(line, 14);
             break;
 
         default:
             break;
         }
+    }
+    else // line ==2
+    {
+        if (cmd == UP)
+        {
+            if (contrast == 16)
+            {
+                contrast = 1;
+            }
+            else
+            {
+                contrast++;
+            }
+            set_contrast(contrast);
+        }
+
+        else
+        {
+            if (contrast == 1)
+            {
+                contrast = 16;
+            }
+            else
+            {
+                contrast--;
+            }
+            set_contrast(contrast);
+        }
+        screen_three_line(line, fpower, time_pwmi, time_pwmf, contrast);
+        set_cursor(line, 14);
     }
     return ESP_OK;
 }

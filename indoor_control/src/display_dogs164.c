@@ -595,16 +595,18 @@ esp_err_t display_set_screen_two(screen_t *screen, struct tm time_i1, struct tm 
     return ESP_OK;
 }
 
-esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct tm time_pwmf, char *fpower)
+esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct tm time_pwmf, char *fpower, uint8_t level)
 {
     char *pwm = "PWM";
     // char *ini = "i";
     // char *fin = "f";
     char *total = "POT.TOTAL";
+    char *contraste = "CONTRASTE";
     char houri[4];
     char hourf[4];
     char mini[4];
     char minf[4];
+    char contrast_level[4];
     // char fpowerc[6];
     int fpowercc;
     fpowercc = atoi(fpower);
@@ -618,6 +620,7 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct
     sprintf(mini, "%u", time_pwmi.tm_min);
     sprintf(hourf, "%u", time_pwmf.tm_hour);
     sprintf(minf, "%u", time_pwmf.tm_min);
+    sprintf(contrast_level, "%u", level);
     // sprintf(fpowerc, "%u", fpower);
 
     set_cursor(0, 0);
@@ -640,6 +643,7 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct
     display_write_string(minf);
     set_cursor(1, 0);
     display_write_string(total);
+
     /*if (fpowercc <= 99999 && fpowercc > 9999)
     {
         set_cursor(1, 10);
@@ -664,24 +668,31 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct
     display_write_string(fpower);
     set_cursor(1, 15);
     display_write_string("W");
+    set_cursor(2, 0);
+    display_write_string(contraste);
+    set_cursor(2, 14);
+    display_write_string(contrast_level);
 
     return ESP_OK;
 }
 
-esp_err_t screen_three_line(uint8_t line, char *fpower, struct tm time_i, struct tm time_f)
+esp_err_t screen_three_line(uint8_t line, char *fpower, struct tm time_i, struct tm time_f, uint8_t level)
 {
     char *pwm = "PWM";
     char *total = "POT.TOTAL";
+    char *contraste = "CONTRASTE";
     char houri[4];
     char hourf[4];
     char mini[4];
     char minf[4];
     char fpowerc[6];
+    char contrast_level[4];
 
     sprintf(houri, "%u", time_i.tm_hour);
     sprintf(mini, "%u", time_i.tm_min);
     sprintf(hourf, "%u", time_f.tm_hour);
     sprintf(minf, "%u", time_f.tm_min);
+    sprintf(contrast_level, "%u", level);
     // sprintf(fpowerc, "%u", fpower);
     int fpowercc;
     fpowercc = atoi(fpower);
@@ -735,6 +746,12 @@ esp_err_t screen_three_line(uint8_t line, char *fpower, struct tm time_i, struct
         display_write_string(fpower);
         set_cursor(1, 15);
         display_write_string("W");
+        break;
+    case 2:
+        set_cursor(2, 0);
+        display_write_string(contraste);
+        set_cursor(2, 14);
+        display_write_string(contrast_level);
         break;
     default:
         break;
