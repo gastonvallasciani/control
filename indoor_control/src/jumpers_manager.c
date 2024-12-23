@@ -33,7 +33,7 @@ void jumpers_manager_init(void)
     
     io_conf.intr_type = GPIO_INTR_DISABLE;          
     io_conf.mode = GPIO_MODE_INPUT;                   
-    io_conf.pin_bit_mask = (1ULL << JP1_DSPY) | (1ULL << JP2_RELOJ) | (1ULL << JP3_TECLAS) | (1ULL << J1); 
+    io_conf.pin_bit_mask = (1ULL << JP1_DSPY) | (1ULL << JP2_FASE3) | (1ULL << JP3_TECLAS) | (1ULL << J1); 
     io_conf.pull_down_en = 0;                         
     io_conf.pull_up_en = 1;  
 
@@ -51,9 +51,9 @@ uint8_t is_jp1_dspy_connected(void)
 }
 //------------------------------------------------------------------------------
 // Devuelve 1 cuando el jumper esta conectado y 0 cuando esta desconectado
-uint8_t is_jp2_reloj_connected(void)
+uint8_t is_jp2_fase3_connected(void)
 {
-    uint8_t status = gpio_get_level(JP2_RELOJ);
+    uint8_t status = gpio_get_level(JP2_FASE3);
     if(status)
         return 0;
     else

@@ -37,7 +37,7 @@
 
 // JUMPERS 
 #define JP1_DSPY GPIO_NUM_35 // usa pull up externo
-#define JP2_RELOJ GPIO_NUM_34 // usa pull up externo
+#define JP2_FASE3 GPIO_NUM_34 // usa pull up externo  
 #define JP3_TECLAS GPIO_NUM_4
 
 #define J1 GPIO_NUM_5

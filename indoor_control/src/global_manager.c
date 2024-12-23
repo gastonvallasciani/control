@@ -396,19 +396,19 @@ device_mode_t global_manager_find_device_mode(void)
 {
     device_mode_t device_mode;
 
-    if ((is_jp2_reloj_connected() == false) && (is_jp3_teclas_connected() == false) && (is_jp1_dspy_connected() == false))
+    if ((is_jp2_fase3_connected() == false) && (is_jp3_teclas_connected() == false) && (is_jp1_dspy_connected() == false))
     {
         device_mode = MODE_1; // FASE 1
     }
-    else if ((is_jp2_reloj_connected() == false) && (is_jp3_teclas_connected() == false) && (is_jp1_dspy_connected() == true))
+    else if ((is_jp2_fase3_connected() == false) && (is_jp3_teclas_connected() == false) && (is_jp1_dspy_connected() == true))
     {
         device_mode = MODE_2; // FASE 2 con pote
     }
-    else if ((is_jp2_reloj_connected() == false) && (is_jp3_teclas_connected() == true) && (is_jp1_dspy_connected() == true))
+    else if ((is_jp2_fase3_connected() == false) && (is_jp3_teclas_connected() == true) && (is_jp1_dspy_connected() == true))
     {
         device_mode = MODE_3; // FASE 2 con tecla
     }
-    else if ((is_jp2_reloj_connected() == true) && (is_jp3_teclas_connected() == true) && (is_jp1_dspy_connected() == true))
+    else if ((is_jp2_fase3_connected() == true) && (is_jp3_teclas_connected() == true) && (is_jp1_dspy_connected() == true))
     {
         device_mode = MODE_4; // FASE 3 con reloj montado y teclas
     }
@@ -418,6 +418,15 @@ device_mode_t global_manager_find_device_mode(void)
     }
 
     return (device_mode);
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_is_device_in_phase_3(void)
+{ 
+    if(is_jp2_fase3_connected() == true)
+    {
+        return 1;
+    }
+    return 0;
 }
 //------------------------------------------------------------------------------
 static void global_manager_task(void *arg)

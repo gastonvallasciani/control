@@ -69,6 +69,9 @@ typedef struct
 //------------------------------------------------------------------------------
 void global_manager_init(void);
 
+uint8_t global_manager_is_device_in_phase_3(void);
+
+
 uint8_t global_manager_set_pwm_analog_percentage(uint8_t pwm_analog_per_value);
 uint8_t global_manager_get_pwm_analog_percentage(uint8_t *pwm_analog_per_value);
 
