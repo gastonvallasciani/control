@@ -360,9 +360,8 @@ void button_event_manager_task(void *pvParameters)
                             led_manager_pwm_output(pwm_digital_per_value);
                         }
                     }
-
-                    display_manager_down(pwm_digital_per_value, flora_vege_status); // Envio evento button down en al display
                 }
+                display_manager_down(pwm_digital_per_value, flora_vege_status); // Envio evento button down en al display
                 break;
             case PWM_UP_BUTTON_PUSHED:
                 if (is_jp3_teclas_connected() == true)
@@ -389,8 +388,8 @@ void button_event_manager_task(void *pvParameters)
                             led_manager_pwm_output(pwm_digital_per_value);
                         }
                     }
-                    display_manager_up(pwm_digital_per_value, flora_vege_status); // Envio evento button up en al display
                 }
+                display_manager_up(pwm_digital_per_value, flora_vege_status); // Envio evento button up en al display
                 break;
             case FABRIC_RESET:
                 nv_flash_driver_erase_flash();
