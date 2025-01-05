@@ -66,6 +66,8 @@ volatile int64_t start_time_aux = 0;
 static TimerHandle_t pwm_down_timer;
 static TimerHandle_t pwm_up_timer;
 
+static TimerHandle_t aux_button_timer = NULL; // Timer para manejar el tiempo de 3 segundos
+
 static int64_t last_time_pwm_down = 0;
 static int64_t last_time_pwm_up = 0;
 //--------------------DECLARACION DE FUNCIONES INTERNAS-------------------------
@@ -128,34 +130,61 @@ static void config_buttons_isr(void)
 }
 
 //------------------------------------------------------------------------------
+static void aux_button_timer_callback(TimerHandle_t xTimer)
+{
+    button_events_t ev;
+    ev.cmd = AUX_BUTTON_PUSHED_3_SECONDS;
+
+    // Enviar evento a la cola solo si el botón sigue presionado
+    if (gpio_get_level(BT_AUX) == 0)
+    {
+        xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+    }
+}
+//------------------------------------------------------------------------------
 static void IRAM_ATTR aux_button_interrupt(void *arg)
 {
     button_events_t ev;
     int64_t time_now = esp_timer_get_time();
 
-    if (gpio_get_level(BT_AUX) == 0)
+    if (gpio_get_level(BT_AUX) == 0) // Botón presionado
     {
         start_time_aux = time_now;
-    }
-    else
-    {
-        if (start_time_aux != 0)
+
+        if (aux_button_timer == NULL)
         {
-            int64_t diff = time_now - start_time_aux;
-
-            if (diff > 3000000)
-            {
-                ev.cmd = AUX_BUTTON_PUSHED_3_SECONDS;
-
-                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
-            }
-            else if ((30000 < diff) && (3000000 > diff)) // 30ms seconds expressed in microseconds
-            {
-                ev.cmd = AUX_BUTTON_PUSHED;
-                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
-            }
-            start_time_aux = 0;
+            // Crear el temporizador si no existe
+            aux_button_timer = xTimerCreate("Aux Button Timer",
+                                            pdMS_TO_TICKS(3000), // 3 segundos
+                                            pdFALSE,             // No repetitivo
+                                            NULL, aux_button_timer_callback);
         }
+        // Reiniciar y empezar el temporizador
+        xTimerStartFromISR(aux_button_timer, NULL);
+    }
+    else // Botón liberado
+    {
+        // Detener el temporizador en caso de que no haya expirado
+        if (aux_button_timer != NULL && xTimerIsTimerActive(aux_button_timer))
+        {
+            xTimerStopFromISR(aux_button_timer, NULL);
+        }
+
+        // Calcular el tiempo que el botón estuvo presionado
+        int64_t diff = time_now - start_time_aux;
+
+        if (start_time_aux != 0 && diff >= 3000000) // 3 segundos o más
+        {
+            //ev.cmd = AUX_BUTTON_PUSHED_3_SECONDS;
+        }
+        else if (start_time_aux != 0 && diff >= 30000) // 30ms seconds expressed in microseconds
+        {
+            ev.cmd = AUX_BUTTON_PUSHED;
+            xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+        }
+
+        aux_button_timer = NULL;
+        start_time_aux = 0; // Reiniciar el tiempo de inicio
     }
 }
 //------------------------------------------------------------------------------
