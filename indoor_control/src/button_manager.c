@@ -291,6 +291,7 @@ void button_event_manager_task(void *pvParameters)
     button_events_t button_ev;
     flora_vege_status_t flora_vege_status;
     uint8_t pwm_digital_per_value = 0;
+    uint8_t pwm_analog_per_value = 0;
     pwm_mode_t pwm_mode;
     display_state_t screen_state;
     config_buttons_isr();
@@ -360,8 +361,18 @@ void button_event_manager_task(void *pvParameters)
                             led_manager_pwm_output(pwm_digital_per_value);
                         }
                     }
+                    display_manager_down(pwm_digital_per_value, flora_vege_status); // Envio evento button down en al display
                 }
-                display_manager_down(pwm_digital_per_value, flora_vege_status); // Envio evento button down en al display
+                else
+                {
+                    if (screen_state != NORMAL)
+                    {
+                        global_manager_get_pwm_analog_percentage(&pwm_analog_per_value);
+                        printf("Boton PWM DW presionado, pwm analog value: %d \n", pwm_analog_per_value);
+                        display_manager_down(pwm_analog_per_value, flora_vege_status); 
+                    }
+                }
+                
                 break;
             case PWM_UP_BUTTON_PUSHED:
                 if (is_jp3_teclas_connected() == true)
@@ -385,11 +396,21 @@ void button_event_manager_task(void *pvParameters)
                         if (pwm_mode == PWM_MANUAL)
                         {
                             pwm_manager_turn_on_pwm(pwm_digital_per_value);
+                            printf("Boton PWM DW presionado, pwm analog value: %d \n", pwm_analog_per_value);
                             led_manager_pwm_output(pwm_digital_per_value);
                         }
                     }
+                    display_manager_up(pwm_digital_per_value, flora_vege_status); // Envio evento button up en al display
                 }
-                display_manager_up(pwm_digital_per_value, flora_vege_status); // Envio evento button up en al display
+                else
+                {
+                    if (screen_state != NORMAL)
+                    {
+                        global_manager_get_pwm_analog_percentage(&pwm_analog_per_value);
+                        display_manager_up(pwm_analog_per_value, flora_vege_status); 
+                    }
+                }
+                
                 break;
             case FABRIC_RESET:
                 nv_flash_driver_erase_flash();

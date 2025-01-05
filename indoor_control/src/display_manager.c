@@ -14,6 +14,7 @@
 #include "../include/display_manager.h"
 #include "../include/display_dogs164.h"
 #include "../include/current_time_manager.h"
+#include "../include/jumpers_manager.h"
 
 //  #include "display_dogs164.c"
 
@@ -96,7 +97,7 @@ static void display_manager_task(void *arg)
     start_timerh();
 
     // aca asgianar valores a todas las variables globales del display
-    get_params();
+    
     /*time_device.tm_hour = 12;
     time_device.tm_min = 35;
     time_i1.tm_hour = 12;
@@ -135,10 +136,12 @@ static void display_manager_task(void *arg)
             {
             case START_DISPLAY:
                 display_init();
+                get_params();
                 display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
 
                 break;
             case AUX: // BOTON AUX 1 TOQUE
+                get_params();
                 switch (state)
                 {
                 case NORMAL:
@@ -181,6 +184,7 @@ static void display_manager_task(void *arg)
 
                 break;
             case AUXT: // boton AUX 3 segundos
+                get_params();
                 switch (state)
                 {
                 case NORMAL:
@@ -1587,7 +1591,16 @@ esp_err_t get_params()
     global_manager_get_ppf(&fpowerppf);
     sprintf(fpower, "%05d", fpowerppf);
     // obtengo potencia porcentaje
-    global_manager_get_pwm_digital_percentage(&power);
+
+    if (is_jp3_teclas_connected() == true)
+    {
+        global_manager_get_pwm_digital_percentage(&power);
+    }
+    else
+    {
+        global_manager_get_pwm_analog_percentage(&power);
+        printf("La potencia es %u \n", power);
+    }
 
     // obtengo vegeflora
     global_manager_get_flora_vege_status(&vegeflora);
