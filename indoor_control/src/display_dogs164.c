@@ -676,14 +676,21 @@ esp_err_t display_set_screen_two(screen_t *screen, struct tm time_i1, struct tm 
     return ESP_OK;
 }
 
-esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct tm time_pwmf, char *fpower)
+esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, struct tm time_pwmi, struct tm time_pwmf, char *fpower, bool dia, bool modo, uint8_t level)
 {
-    char *pwm = "PWM";
+    char *contraste = "CONTRASTE";
     char *total = "POT.TOTAL";
+    char *seteos = "SETEOS";
+    char *modo_m;
+    char *ddots = ":";
+    char *dia_m;
     char houri[4];
     char hourf[4];
     char mini[4];
     char minf[4];
+    char hour[4];
+    char min[4];
+    char contrast_level[4];
 
     display_send_command(COMMAND_CLEAR_DISPLAY);
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
@@ -693,73 +700,136 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_pwmi, struct
     sprintf(mini, "%u", time_pwmi.tm_min);
     sprintf(hourf, "%u", time_pwmf.tm_hour);
     sprintf(minf, "%u", time_pwmf.tm_min);
+    sprintf(hour, "%u", time_device.tm_hour);
+    sprintf(min, "%u", time_device.tm_min);
+    sprintf(contrast_level, "%u", level);
     // sprintf(fpowerc, "%u", fpower);
 
+    // Primera fila
     set_cursor(0, 0);
-    display_write_string(pwm);
-    set_cursor(0, 3);
-    display_send_data(0xDE);
-    if (time_pwmi.tm_hour < 10)
-    {
-        set_cursor(0, 4);
-        display_write_string("0");
-        set_cursor(0, 5);
-        display_write_string(houri);
-    }
-    else
-    {
-        set_cursor(0, 4);
-        display_write_string(houri);
-    }
-    set_cursor(0, 6);
-    display_write_string(":");
-    if (time_pwmi.tm_min < 10)
-    {
-        set_cursor(0, 7);
-        display_write_string("0");
-        set_cursor(0, 8);
-        display_write_string(mini);
-    }
-    else
-    {
-        set_cursor(0, 7);
-        display_write_string(mini);
-    }
-    set_cursor(0, 10);
-    display_send_data(0xE0);
-    if (time_pwmf.tm_hour < 10)
+    display_write_string(seteos);
+    // escribo la hora del equipo
+    if (time_device.tm_hour < 10)
     {
         set_cursor(0, 11);
         display_write_string("0");
         set_cursor(0, 12);
-        display_write_string(hourf);
+        display_write_string(hour);
     }
     else
     {
         set_cursor(0, 11);
-        display_write_string(hourf);
+        display_write_string(hour);
     }
     set_cursor(0, 13);
-    display_write_string(":");
-    if (time_pwmf.tm_min < 10)
+    display_write_string(ddots);
+    if (time_device.tm_min < 10)
     {
         set_cursor(0, 14);
         display_write_string("0");
         set_cursor(0, 15);
-        display_write_string(minf);
+        display_write_string(min);
     }
     else
     {
         set_cursor(0, 14);
-        display_write_string(minf);
+        display_write_string(min);
     }
+    // segunda fila
     set_cursor(1, 0);
     display_write_string(total);
     set_cursor(1, 10);
     display_write_string(fpower);
     set_cursor(1, 15);
     display_write_string("W");
+    // tercera fila
+    set_cursor(2, 0);
+    display_write_string(contraste);
+    set_cursor(2, 14);
+    display_write_string(contrast_level);
+    // cuarta fila
+    set_cursor(3, 0);
+    display_write_string("D");
 
+    if (modo == true)
+    {
+        modo_m = "MANUAL";
+        dia_m = "--";
+        set_cursor(3, 1);
+        display_write_string(dia_m);
+        set_cursor(3, 4);
+        display_write_string(modo_m);
+    }
+    else
+    {
+        modo_m = "A";
+        set_cursor(3, 1);
+        if (dia == true)
+        {
+            dia_m = "SI";
+        }
+        else
+        {
+            dia_m = "NO";
+        }
+        display_write_string(dia_m);
+        set_cursor(3, 4);
+        display_write_string(modo_m);
+        if (time_pwmi.tm_hour < 10)
+        {
+            set_cursor(3, 5);
+            display_write_string("0");
+            set_cursor(3, 6);
+            display_write_string(houri);
+        }
+        else
+        {
+            set_cursor(3, 5);
+            display_write_string(houri);
+        }
+        set_cursor(3, 7);
+        display_write_string(":");
+        if (time_pwmi.tm_min < 10)
+        {
+            set_cursor(3, 8);
+            display_write_string("0");
+            set_cursor(3, 9);
+            display_write_string(mini);
+        }
+        else
+        {
+            set_cursor(3, 8);
+            display_write_string(mini);
+        }
+        set_cursor(3, 10);
+        display_write_string("-");
+        if (time_pwmf.tm_hour < 10)
+        {
+            set_cursor(3, 11);
+            display_write_string("0");
+            set_cursor(3, 12);
+            display_write_string(hourf);
+        }
+        else
+        {
+            set_cursor(3, 11);
+            display_write_string(hourf);
+        }
+        set_cursor(3, 13);
+        display_write_string(":");
+        if (time_pwmf.tm_min < 10)
+        {
+            set_cursor(3, 14);
+            display_write_string("0");
+            set_cursor(3, 15);
+            display_write_string(minf);
+        }
+        else
+        {
+            set_cursor(3, 14);
+            display_write_string(minf);
+        }
+    }
     return ESP_OK;
 }
 
@@ -850,5 +920,67 @@ esp_err_t screen_three_line(uint8_t line, char *fpower, struct tm time_i, struct
         break;
     }
 
+    return ESP_OK;
+}
+
+esp_err_t set_contrast(uint8_t level)
+{
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS1);
+    display_send_command(COMMAND_POWER_CONTROL_DOGS164);
+    switch (level)
+    {
+    case 1:
+        display_send_command(0x70);
+        break;
+    case 2:
+        display_send_command(0x71);
+        break;
+    case 3:
+        display_send_command(0x72);
+        break;
+    case 4:
+        display_send_command(0x73);
+        break;
+    case 5:
+        display_send_command(0x74);
+        break;
+    case 6:
+        display_send_command(0x75);
+        break;
+    case 7:
+        display_send_command(0x76);
+        break;
+    case 8:
+        display_send_command(0x77);
+        break;
+    case 9:
+        display_send_command(0x78);
+        break;
+    case 10:
+        display_send_command(0x79);
+        break;
+    case 11:
+        display_send_command(0x7A);
+        break;
+    case 12:
+        display_send_command(0x7B);
+        break;
+    case 13:
+        display_send_command(0x7C);
+        break;
+    case 14:
+        display_send_command(0x7D);
+        break;
+    case 15:
+        display_send_command(0x7E);
+        break;
+    case 16:
+        display_send_command(0x7F);
+        break;
+    default:
+        display_send_command(COMMAND_CONTRAST_DEFAULT_DOGS164);
+        break;
+    }
+    display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
     return ESP_OK;
 }

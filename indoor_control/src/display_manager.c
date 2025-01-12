@@ -58,7 +58,8 @@ char vegeflorachar; // con esta me manejo en el display
 simul_day_status_t dia;
 bool diabool; // con este me manejo en e display
 pwm_mode_t modo;
-bool modobool; // con esta me manejo en el display
+bool modobool;    // con esta me manejo en el display
+uint8_t contrast; // contraste del display
 
 uint8_t param_one;
 uint8_t param_two;
@@ -95,6 +96,7 @@ static void display_manager_task(void *arg)
     set_timer();
     set_timerh();
     start_timerh();
+    contrast = 10;
 
     // aca asgianar valores a todas las variables globales del display
 
@@ -147,7 +149,7 @@ static void display_manager_task(void *arg)
                 case NORMAL:
                     if (screen == SCREEN_ONE)
                     {
-                        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
+                        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
 
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
@@ -487,7 +489,7 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
 
         break;
     case SCREEN_TWO:
-        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
+        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
 
         if (cmd == 0) // es down
         {
@@ -721,7 +723,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
         }
         break;
     case SCREEN_TWO:
-        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
+        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
         if (cmd == VF || cmd == AUX)
         {
             screen_three_param(cmd);

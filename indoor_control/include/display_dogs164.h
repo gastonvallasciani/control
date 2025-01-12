@@ -112,8 +112,9 @@ esp_err_t screen_two_line(uint8_t, struct tm, struct tm);
 esp_err_t screen_three_line(uint8_t, char *, struct tm, struct tm);
 esp_err_t display_set_screen_one(screen_t *, char *, uint8_t, char, bool, bool, struct tm, struct tm, struct tm);
 esp_err_t display_set_screen_two(screen_t *, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm);
-esp_err_t display_set_screen_three(screen_t *, struct tm, struct tm, char *);
+esp_err_t display_set_screen_three(screen_t *, struct tm, struct tm, struct tm, char *, bool, bool, uint8_t);
 esp_err_t display_init(void);
 esp_err_t display_set_vege_flora(char);
+esp_err_t set_contrast(uint8_t);
 
 #endif /* DISPLAY_DOGS164_H__ */
