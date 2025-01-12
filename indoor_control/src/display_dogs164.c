@@ -336,24 +336,27 @@ esp_err_t display_init()
     return ESP_OK;
 }
 
-esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, char vege_flora, bool dia, bool modo, struct tm time)
+esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, char vege_flora, bool dia, bool modo, struct tm time, struct tm time_pwmi, struct tm time_pwmf)
 { // en los argumentos de la funcion falta si auto o manual y si vege o flora, que variable?
   // bool dia, 1 si, 0 no.
   // bool modo, 1 manual, 0 auto.
   // para el tiempo, uso la time.h. revisar como es la estructura.
-    char *phy = "PHY-03";
-    char *lumenar = "LUMENAR";
+    char *phy = "PHY";
+    char *control = "CONTROL";
     char *ppf = "PPF";
-    char *p = "P";
     char *w = "W";
-    char *modo_m = "MAN";
+    char *modo_m = "MANUAL";
     char *ddots = ":";
-    char *dia_m = "DIA";
+    char *dia_m;
     char hour[4];
     char min[4];
     char numero[6];
     char numeroppf[6];
     char potactual[6];
+    char houri[4];
+    char hourf[4];
+    char mini[4];
+    char minf[4];
     float ppfn = power * 2.97;
 
     int fpowercc;
@@ -361,37 +364,51 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
 
     int pot_actual = fpowercc * power / 100;
 
-    if (dia == true)
-    {
-        dia_m = "SI";
-    }
-    else
-    {
-        dia_m = "NO";
-    }
-    if (modo == true)
-    {
-        modo_m = "MAN";
-    }
-    else
-    {
-        modo_m = "AUT";
-    }
-
     *screen = SCREEN_ONE;
     sprintf(numero, "%u%%", power);
     sprintf(hour, "%u", time.tm_hour);
     sprintf(min, "%u", time.tm_min);
     sprintf(numeroppf, "%.f", ppfn);
     sprintf(potactual, "%u", pot_actual);
+    sprintf(houri, "%u", time_pwmi.tm_hour);
+    sprintf(mini, "%u", time_pwmi.tm_min);
+    sprintf(hourf, "%u", time_pwmf.tm_hour);
+    sprintf(minf, "%u", time_pwmf.tm_min);
 
     display_send_command(COMMAND_CLEAR_DISPLAY);
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
     // primera fila
     set_cursor(0, 0);
-    display_write_string(phy); // pongo el phy-03
-    set_cursor(0, 9);
-    display_write_string(lumenar); // pongo la marca lumenar
+    display_write_string(phy); // pongo el phy
+    set_cursor(0, 4);
+    display_write_string(control); // pongo la palabra control
+    // escribo la hora del equipo
+    if (time.tm_hour < 10)
+    {
+        set_cursor(0, 11);
+        display_write_string("0");
+        set_cursor(0, 12);
+        display_write_string(hour);
+    }
+    else
+    {
+        set_cursor(0, 11);
+        display_write_string(hour);
+    }
+    set_cursor(0, 13);
+    display_write_string(ddots);
+    if (time.tm_min < 10)
+    {
+        set_cursor(0, 14);
+        display_write_string("0");
+        set_cursor(0, 15);
+        display_write_string(min);
+    }
+    else
+    {
+        set_cursor(0, 14);
+        display_write_string(min);
+    }
     // segunda fila
     set_cursor(1, 0);
     display_write_string(numero); // escribo el valor de potencia
@@ -405,8 +422,6 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     display_write_string(ddots); // escribo los dos puntos
     set_cursor(2, 4);
     display_write_string(numeroppf); // escribo el numero del ppf
-    set_cursor(2, 9);
-    display_write_string(p); // escribo la letra P de la potencia total
     if (pot_actual <= 99999 && pot_actual > 9999)
     {
         set_cursor(2, 10);
@@ -427,44 +442,89 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     {
         set_cursor(2, 14);
     }
-
     display_write_string(potactual); // los 4 digitos de la potencia total (pueden ser 5?)
     set_cursor(2, 15);
     display_write_string(w); // escribo la W de la unidad de potencia
+
     // cuarta fila
     set_cursor(3, 0);
-    display_write_string("DIA");
-    set_cursor(3, 3);
-    display_write_string(ddots);
-    set_cursor(3, 4);
+    display_write_string("D");
+    set_cursor(3, 1);
+    if (dia == true)
+    {
+        dia_m = "SI";
+    }
+    else
+    {
+        dia_m = "NO";
+    }
     display_write_string(dia_m);
-    set_cursor(3, 7);
-    display_write_string(modo_m);
-    if (time.tm_hour < 10)
+
+    if (modo == true)
     {
-        set_cursor(3, 11);
-        display_write_string("0");
-        set_cursor(3, 12);
-        display_write_string(hour);
+        modo_m = "MANUAL";
+        set_cursor(3, 4);
+        display_write_string(modo_m);
     }
     else
     {
-        set_cursor(3, 11);
-        display_write_string(hour);
-    }
-    set_cursor(3, 13);
-    display_write_string(ddots);
-    if (time.tm_min < 10)
-    {
-        set_cursor(3, 14);
-        display_write_string("0");
-        set_cursor(3, 15);
-        display_write_string(min);
-    }
-    else
-    {
-        set_cursor(3, 14);
-        display_write_string(min);
+        modo_m = "A";
+        set_cursor(3, 4);
+        display_write_string(modo_m);
+        if (time_pwmi.tm_hour < 10)
+        {
+            set_cursor(3, 5);
+            display_write_string("0");
+            set_cursor(3, 6);
+            display_write_string(houri);
+        }
+        else
+        {
+            set_cursor(3, 5);
+            display_write_string(houri);
+        }
+        set_cursor(3, 7);
+        display_write_string(":");
+        if (time_pwmi.tm_min < 10)
+        {
+            set_cursor(3, 8);
+            display_write_string("0");
+            set_cursor(3, 9);
+            display_write_string(mini);
+        }
+        else
+        {
+            set_cursor(3, 8);
+            display_write_string(mini);
+        }
+        set_cursor(3, 10);
+        display_write_string("-");
+        if (time_pwmf.tm_hour < 10)
+        {
+            set_cursor(3, 11);
+            display_write_string("0");
+            set_cursor(3, 12);
+            display_write_string(hourf);
+        }
+        else
+        {
+            set_cursor(3, 11);
+            display_write_string(hourf);
+        }
+        set_cursor(3, 13);
+        display_write_string(":");
+        if (time_pwmf.tm_min < 10)
+        {
+            set_cursor(3, 14);
+            display_write_string("0");
+            set_cursor(3, 15);
+            display_write_string(minf);
+        }
+        else
+        {
+            set_cursor(3, 14);
+            display_write_string(minf);
+        }
     }
 
     return ESP_OK;

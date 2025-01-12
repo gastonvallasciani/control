@@ -97,7 +97,7 @@ static void display_manager_task(void *arg)
     start_timerh();
 
     // aca asgianar valores a todas las variables globales del display
-    
+
     /*time_device.tm_hour = 12;
     time_device.tm_min = 35;
     time_i1.tm_hour = 12;
@@ -137,7 +137,7 @@ static void display_manager_task(void *arg)
             case START_DISPLAY:
                 display_init();
                 get_params();
-                display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
+                display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
 
                 break;
             case AUX: // BOTON AUX 1 TOQUE
@@ -159,7 +159,7 @@ static void display_manager_task(void *arg)
                     else // screen = SCREEN_THREE
                     {
                         global_manager_get_current_time_info(&time_device);
-                        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
+                        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     break;
@@ -205,7 +205,7 @@ static void display_manager_task(void *arg)
                     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
                     // vuelvo a la pantalla 1
                     global_manager_get_current_time_info(&time_device);
-                    display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
+                    display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                     ESP_LOGI(TAG, "Pantalla %u", screen);
 
                     break;
@@ -218,7 +218,7 @@ static void display_manager_task(void *arg)
                     // dejo de blinkear el caracter
                     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
                     global_manager_get_current_time_info(&time_device);
-                    display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
+                    display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                     ESP_LOGI(TAG, "Pantalla %u", screen);
 
                     break;
@@ -266,7 +266,7 @@ static void display_manager_task(void *arg)
                         vegeflorachar = 'F';
                     }
                     global_manager_get_current_time_info(&time_device);
-                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device);
+                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                     break;
                 case CONFIG_LINE:
                     stop_timer();
@@ -302,7 +302,7 @@ static void display_manager_task(void *arg)
                     }
                     printf("El char de vege_flora es %c", vegeflorachar);
                     global_manager_get_current_time_info(&time_device);
-                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device);
+                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                     break;
                 case CONFIG_LINE:
                     stop_timer();
@@ -434,7 +434,7 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
     {
     case SCREEN_ONE:
         // en esta pantalla solo se modifica la ultima linea
-        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
+        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
         line = 3;
         start_timer();
         break;
@@ -681,7 +681,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
     switch (screen)
     {
     case SCREEN_ONE:
-        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
+        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
         if (cmd == VF || cmd == AUX)
         {
             screen_one_param(cmd);
