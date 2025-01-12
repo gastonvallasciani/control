@@ -543,7 +543,7 @@ void blink_callback(TimerHandle_t timer)
         switch (screen)
         {
         case SCREEN_ONE:
-            screen_one_line_three(time_device, diabool, modobool);
+            // screen_one_line_three(time_device, diabool, modobool);
             clear = pdFALSE;
             break;
         case SCREEN_THREE:
@@ -626,7 +626,7 @@ void time_callback(TimerHandle_t timerh)
     global_manager_get_current_time_info(&time_device);
     if (screen == SCREEN_ONE && state == NORMAL)
     {
-        screen_one_line_three(time_device, diabool, modobool);
+        screen_one_time_device(time_device);
     }
 }
 
@@ -749,7 +749,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
 esp_err_t screen_one_param(display_event_cmds_t cmd)
 {
 
-    screen_one_line_three(time_device, diabool, modobool); // escribo linea para que no quede vacia
+    // screen_one_line_three(time_device, diabool, modobool); // escribo linea para que no quede vacia
     if (cmd == VF)
     {
         if (param_one == 4)
@@ -941,7 +941,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         {
             diabool = pdTRUE;
         }
-        screen_one_line_three(time_device, diabool, modobool);
+        // screen_one_line_three(time_device, diabool, modobool);
         set_cursor(3, 4);
     }
     if (param_one == 2)
@@ -954,7 +954,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         {
             modobool = pdTRUE;
         }
-        screen_one_line_three(time_device, diabool, modobool);
+        // screen_one_line_three(time_device, diabool, modobool);
         set_cursor(3, 7);
     }
     if (param_one == 3)
@@ -970,7 +970,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
                 time_device.tm_hour += 1;
             }
             // mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            // screen_one_line_three(time_device, dia, modo);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 12);
@@ -986,7 +986,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
                 time_device.tm_hour -= 1;
             }
             // mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            // screen_one_line_three(time_device, dia, modo);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 12);
@@ -1006,7 +1006,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
                 time_device.tm_min += 1;
             }
             // mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            // screen_one_line_three(time_device, dia, modo);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 15);
@@ -1022,7 +1022,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
                 time_device.tm_min -= 1;
             }
             // mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            // screen_one_line_three(time_device, dia, modo);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 15);

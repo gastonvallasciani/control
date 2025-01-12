@@ -530,63 +530,38 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     return ESP_OK;
 }
 
-esp_err_t screen_one_line_three(struct tm time, bool dia, bool modo)
+esp_err_t screen_one_time_device(struct tm time)
 {
-    char *dia_m;
-    char *modo_m;
     char hour[4];
     char min[4];
-    if (dia == true)
-    {
-        dia_m = "SI";
-    }
-    else
-    {
-        dia_m = "NO";
-    }
-    if (modo == true)
-    {
-        modo_m = "MAN";
-    }
-    else
-    {
-        modo_m = "AUT";
-    }
 
     sprintf(hour, "%u", time.tm_hour);
     sprintf(min, "%u", time.tm_min);
-    set_cursor(3, 0);
-    display_write_string("DIA");
-    set_cursor(3, 3);
-    display_write_string(":");
-    set_cursor(3, 4);
-    display_write_string(dia_m);
-    set_cursor(3, 7);
-    display_write_string(modo_m);
+
     if (time.tm_hour < 10)
     {
-        set_cursor(3, 11);
+        set_cursor(0, 11);
         display_write_string("0");
-        set_cursor(3, 12);
+        set_cursor(0, 12);
         display_write_string(hour);
     }
     else
     {
-        set_cursor(3, 11);
+        set_cursor(0, 11);
         display_write_string(hour);
     }
-    set_cursor(3, 13);
+    set_cursor(0, 13);
     display_write_string(":");
     if (time.tm_min < 10)
     {
-        set_cursor(3, 14);
+        set_cursor(0, 14);
         display_write_string("0");
-        set_cursor(3, 15);
+        set_cursor(0, 15);
         display_write_string(min);
     }
     else
     {
-        set_cursor(3, 14);
+        set_cursor(0, 14);
         display_write_string(min);
     }
     return ESP_OK;
