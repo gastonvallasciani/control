@@ -56,10 +56,10 @@ esp_err_t stop_timerh(void);
 esp_err_t reset_timerh(void);
 esp_err_t clear_line(uint8_t);
 esp_err_t display_param_manager(display_event_cmds_t);
-esp_err_t screen_one_param(display_event_cmds_t);
+/*esp_err_t screen_one_param(display_event_cmds_t);*/
 esp_err_t screen_two_param(display_event_cmds_t);
 esp_err_t screen_three_param(display_event_cmds_t);
-esp_err_t param_modified_one(display_event_cmds_t);
+/*esp_err_t param_modified_one(display_event_cmds_t);*/
 esp_err_t param_modified_two(display_event_cmds_t);
 esp_err_t param_two_bis(display_event_cmds_t, struct tm *, struct tm *);
 esp_err_t param_modified_three(display_event_cmds_t);

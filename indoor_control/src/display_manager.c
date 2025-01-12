@@ -61,7 +61,6 @@ pwm_mode_t modo;
 bool modobool;    // con esta me manejo en el display
 uint8_t contrast; // contraste del display
 
-uint8_t param_one;
 uint8_t param_two;
 uint8_t param_three;
 // comandos de las acciones del display
@@ -127,7 +126,6 @@ static void display_manager_task(void *arg)
     vegeflora = 1;
     dia = pdTRUE;
     modo = pdTRUE;*/
-    param_one = 1;
     param_two = 1;
     param_three = 1;
     while (true)
@@ -137,6 +135,7 @@ static void display_manager_task(void *arg)
             switch (display_ev.cmd)
             {
             case START_DISPLAY:
+                screen = NONE;
                 display_init();
                 get_params();
                 display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
@@ -149,18 +148,12 @@ static void display_manager_task(void *arg)
                 case NORMAL:
                     if (screen == SCREEN_ONE)
                     {
-                        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
+                        display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
 
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     else if (screen == SCREEN_TWO)
                     {
-                        display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
-                        ESP_LOGI(TAG, "Pantalla %u", screen);
-                    }
-                    else // screen = SCREEN_THREE
-                    {
-                        global_manager_get_current_time_info(&time_device);
                         display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
@@ -191,9 +184,13 @@ static void display_manager_task(void *arg)
                 {
                 case NORMAL:
                     // aca tengo que entrar a la primera linea titilante en la pantanlla en la que este
+                    if (screen == SCREEN_ONE)
+                    {
+                        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
+                        ESP_LOGI(TAG, "Pantalla %u", screen);
+                    }
                     state = CONFIG_LINE;
                     line = 0;
-                    param_one = 1;
                     param_two = 1;
                     param_three = 1;
                     display_blink_manager(screen, 3); // con esta veo que pantalla estoy
@@ -273,7 +270,6 @@ static void display_manager_task(void *arg)
                 case CONFIG_LINE:
                     stop_timer();
                     ESP_LOGI("CONFIG_LINE", "line es %u", line);
-                    param_one = 1;
                     param_two = 1;
                     param_three = 1;
                     display_blink_manager(screen, 0); // 0 es down
@@ -308,7 +304,6 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_LINE:
                     stop_timer();
-                    param_one = 1;
                     param_two = 1;
                     param_three = 1;
                     display_blink_manager(screen, 1); // 1 es up
@@ -434,12 +429,12 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
 {
     switch (screen)
     {
-    case SCREEN_ONE:
+    /*case SCREEN_ONE:
         // en esta pantalla solo se modifica la ultima linea
         display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
         line = 3;
         start_timer();
-        break;
+        break;*/
     case SCREEN_THREE:
         // chequeo si vino up o down
         display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
@@ -544,10 +539,10 @@ void blink_callback(TimerHandle_t timer)
     {
         switch (screen)
         {
-        case SCREEN_ONE:
+        /*case SCREEN_ONE:
             // screen_one_line_three(time_device, diabool, modobool);
             clear = pdFALSE;
-            break;
+            break;*/
         case SCREEN_THREE:
             if (line == 0)
             {
@@ -682,7 +677,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
 {
     switch (screen)
     {
-    case SCREEN_ONE:
+    /*case SCREEN_ONE:
         display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
         if (cmd == VF || cmd == AUX)
         {
@@ -702,7 +697,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
             param_modified_one(DOWN);
             ESP_LOGI("PARAM_MANAGER", "Salgo de param_modified_one");
         }
-        break;
+        break;*/
     case SCREEN_THREE:
         display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
         if (cmd == VF || cmd == AUX)
@@ -748,7 +743,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
     return ESP_OK;
 }
 
-esp_err_t screen_one_param(display_event_cmds_t cmd)
+/*esp_err_t screen_one_param(display_event_cmds_t cmd)
 {
 
     // screen_one_line_three(time_device, diabool, modobool); // escribo linea para que no quede vacia
@@ -787,7 +782,7 @@ esp_err_t screen_one_param(display_event_cmds_t cmd)
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
 
     return ESP_OK;
-}
+}*/
 
 esp_err_t screen_two_param(display_event_cmds_t cmd)
 {
@@ -930,7 +925,7 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
     return ESP_OK;
 }
 
-esp_err_t param_modified_one(display_event_cmds_t cmd)
+/*esp_err_t param_modified_one(display_event_cmds_t cmd)
 {
     ESP_LOGI("param_modified_one", "Param_one vale %u", param_one);
     if (param_one == 1)
@@ -1032,7 +1027,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
     }
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
     return ESP_OK;
-}
+}*/
 
 esp_err_t param_modified_two(display_event_cmds_t cmd)
 {
@@ -1492,7 +1487,7 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
 {
     switch (screen)
     {
-    case SCREEN_ONE:
+    /*case SCREEN_ONE:
         // set dia
         ESP_LOGI("Display_manager", "Guardo los parametros de la pantalla 1");
         if (diabool == false)
@@ -1516,7 +1511,7 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         global_manager_set_pwm_mode(modo);
         // set horario device
         current_time_manager_set_current_time(time_device);
-        break;
+        break;*/
     case SCREEN_THREE:
         ESP_LOGI("Display_manager", "Guardo los parametros de la pantalla 3");
         if (line == 0)

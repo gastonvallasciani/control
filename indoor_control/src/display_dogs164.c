@@ -667,7 +667,7 @@ esp_err_t display_set_screen_two(screen_t *screen, struct tm time_i1, struct tm 
 
     display_send_command(COMMAND_CLEAR_DISPLAY);       // limpio display
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0); // me aseguro qeu se ponga en 4 lineas
-    *screen = SCREEN_THREE;
+    *screen = SCREEN_TWO;
     screen_two_line(0, time_i1, time_f1);
     screen_two_line(1, time_i2, time_f2);
     screen_two_line(2, time_i3, time_f3);
@@ -694,7 +694,7 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, stru
 
     display_send_command(COMMAND_CLEAR_DISPLAY);
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
-    *screen = SCREEN_TWO;
+    *screen = SCREEN_THREE;
 
     sprintf(houri, "%u", time_pwmi.tm_hour);
     sprintf(mini, "%u", time_pwmi.tm_min);
