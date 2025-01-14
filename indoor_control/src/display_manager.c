@@ -543,7 +543,7 @@ void blink_callback(TimerHandle_t timer)
             // screen_one_line_three(time_device, diabool, modobool);
             clear = pdFALSE;
             break;*/
-        case SCREEN_THREE:
+        case SCREEN_TWO:
             if (line == 0)
             {
                 screen_two_line(line, time_i1, time_f1);
@@ -562,8 +562,10 @@ void blink_callback(TimerHandle_t timer)
             }
             clear = pdFALSE;
             break;
-        case SCREEN_TWO:
-            // screen_three_line(line, fpower, time_pwmi, time_pwmf);
+        case SCREEN_THREE:
+
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
+
             clear = pdFALSE;
             break;
         default:
