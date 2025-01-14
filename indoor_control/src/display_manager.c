@@ -435,10 +435,58 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
         line = 3;
         start_timer();
         break;*/
-    case SCREEN_THREE:
+    case SCREEN_TWO:
         // chequeo si vino up o down
         display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
-        if (cmd == 0) // es down
+        /* if (cmd == 0) // es down
+         {
+             if (line == 0)
+             {
+                 line = 3; // voy a la ultima linea
+             }
+             else
+             {
+                 --line; // voy a la anterior linea
+             }
+         }
+         else if (cmd == 1) // es up
+         {
+             if (line == 3)
+             {
+                 line = 0; // voy a la primera linea
+             }
+             else
+             {
+                 ++(line); // voy a la siguiente linea
+             }
+         }*/
+        /*if (line == 0)
+        {
+            // blink renglon 1
+            start_timer();
+        }
+        else if (line == 1)
+        {
+            // blink renglon 2
+            start_timer();
+        }
+        else if (line == 2)
+        {
+            // blink renglon 3
+            start_timer();
+        }
+        else if (line == 3)
+        {
+            // blink renglon 4
+            ESP_LOGI("CONFIG_LINE", "line es %u", line);
+            start_timer();
+        }*/
+        // start_timer();
+        break;
+    case SCREEN_THREE:
+        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
+
+        /*if (cmd == 0) // es down
         {
             if (line == 0)
             {
@@ -460,60 +508,35 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
                 ++(line); // voy a la siguiente linea
             }
         }
-        if (line == 0)
-        {
-            // blink renglon 1
-            start_timer();
-        }
-        else if (line == 1)
-        {
-            // blink renglon 2
-            start_timer();
-        }
-        else if (line == 2)
-        {
-            // blink renglon 3
-            start_timer();
-        }
-        else if (line == 3)
-        {
-            // blink renglon 4
-            ESP_LOGI("CONFIG_LINE", "line es %u", line);
-            start_timer();
-        }
-
-        break;
-    case SCREEN_TWO:
-        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
-
-        if (cmd == 0) // es down
-        {
-            if (line == 0)
-            {
-                line = 1; // voy a la ultima linea
-            }
-            else if (line == 1)
-            {
-                line = 0;
-            }
-        }
-        else if (cmd == 1) // es up
-        {
-            if (line == 0)
-            {
-                line = 1; // voy a la primera linea
-            }
-            else if (line == 1)
-            {
-                line = 0;
-            }
-        }
-        start_timer();
+        start_timer();*/
         break;
 
     default:
         break;
     }
+    if (cmd == 0) // es down
+    {
+        if (line == 0)
+        {
+            line = 3; // voy a la ultima linea
+        }
+        else
+        {
+            --line; // voy a la anterior linea
+        }
+    }
+    else if (cmd == 1) // es up
+    {
+        if (line == 3)
+        {
+            line = 0; // voy a la primera linea
+        }
+        else
+        {
+            ++(line); // voy a la siguiente linea
+        }
+    }
+    start_timer();
 
     return ESP_OK;
 }
