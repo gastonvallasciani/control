@@ -563,7 +563,7 @@ void blink_callback(TimerHandle_t timer)
             clear = pdFALSE;
             break;
         case SCREEN_TWO:
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            // screen_three_line(line, fpower, time_pwmi, time_pwmf);
             clear = pdFALSE;
             break;
         default:
@@ -847,7 +847,7 @@ esp_err_t screen_two_param(display_event_cmds_t cmd)
 
 esp_err_t screen_three_param(display_event_cmds_t cmd)
 {
-    screen_three_line(line, fpower, time_pwmi, time_pwmf);
+    // screen_three_line(line, fpower, time_pwmi, time_pwmf);
     if (line == 0)
     {
         if (cmd == VF)
@@ -1217,7 +1217,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmi.tm_hour += 1;
                 }
                 mktime(&time_pwmi);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
                 set_cursor(0, 5);
             }
             else
@@ -1231,7 +1231,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmi.tm_hour -= 1;
                 }
                 mktime(&time_pwmi);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
                 set_cursor(0, 5);
             }
             break;
@@ -1248,7 +1248,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmi.tm_min += 1;
                 }
                 mktime(&time_pwmi);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
                 set_cursor(0, 8);
             }
             else
@@ -1262,7 +1262,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmi.tm_min -= 1;
                 }
                 mktime(&time_pwmi);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
                 set_cursor(0, 8);
             }
             break;
@@ -1279,7 +1279,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmf.tm_hour += 1;
                 }
                 mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
                 set_cursor(0, 12);
             }
             else
@@ -1293,7 +1293,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmf.tm_hour -= 1;
                 }
                 mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
                 set_cursor(0, 12);
             }
             break;
@@ -1310,7 +1310,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmf.tm_min += 1;
                 }
                 mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
                 set_cursor(0, 15);
             }
             else
@@ -1324,7 +1324,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_pwmf.tm_min -= 1;
                 }
                 mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
                 set_cursor(0, 15);
             }
             break;
@@ -1363,7 +1363,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
             }
 
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            // screen_three_line(line, fpower, time_pwmi, time_pwmf);
             set_cursor(line, 10);
             break;
         case 2:
@@ -1391,7 +1391,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[1]--;
                 }
             }
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            // screen_three_line(line, fpower, time_pwmi, time_pwmf);
             set_cursor(line, 11);
             break;
         case 3:
@@ -1418,7 +1418,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[2]--;
                 }
             }
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            // screen_three_line(line, fpower, time_pwmi, time_pwmf);
             set_cursor(line, 12);
             break;
         case 4:
@@ -1445,7 +1445,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[3]--;
                 }
             }
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            // screen_three_line(line, fpower, time_pwmi, time_pwmf);
             set_cursor(line, 13);
             break;
         case 5:
@@ -1472,7 +1472,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[4]--;
                 }
             }
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            // screen_three_line(line, fpower, time_pwmi, time_pwmf);
             set_cursor(line, 14);
             break;
 
