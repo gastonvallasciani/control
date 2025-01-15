@@ -142,10 +142,10 @@ static void display_manager_task(void *arg)
 
                 break;
             case AUX: // BOTON AUX 1 TOQUE
-                get_params();
                 switch (state)
                 {
                 case NORMAL:
+                    get_params();
                     if (screen == SCREEN_ONE)
                     {
                         display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
@@ -179,16 +179,18 @@ static void display_manager_task(void *arg)
 
                 break;
             case AUXT: // boton AUX 3 segundos
-                get_params();
+
                 switch (state)
                 {
                 case NORMAL:
+                    get_params();
                     // aca tengo que entrar a la primera linea titilante en la pantanlla en la que este
                     if (screen == SCREEN_ONE)
                     {
                         display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
+
                     state = CONFIG_LINE;
                     line = 0;
                     param_two = 1;
@@ -312,6 +314,7 @@ static void display_manager_task(void *arg)
                 case CONFIG_PARAM:
                     ESP_LOGI("UP-CONFIG_PARAM", "Entro al config_param del UP");
                     ESP_LOGI("UP-CONFIG_PARAM", "param_two es %u", param_two);
+                    ESP_LOGI("UP-CONFIG_PARAM", "param_three es %u", param_three);
                     // subo numero a configurar
                     display_param_manager(UP);
 
@@ -645,9 +648,10 @@ esp_err_t reset_timer()
 
 void time_callback(TimerHandle_t timerh)
 { // obtengo la hora del dispositivo y printeo la linea correspondiente
-    global_manager_get_current_time_info(&time_device);
+
     if (screen == SCREEN_ONE && state == NORMAL)
     {
+        global_manager_get_current_time_info(&time_device);
         screen_one_time_device(time_device);
     }
 }
@@ -753,6 +757,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
             ESP_LOGI("PARAM_MANAGER", "Entro a param_modified_three");
             param_modified_three(UP);
             ESP_LOGI("PARAM_MANAGER", "Salgo de param_modified_three");
+            ESP_LOGI("param_modified_three", "La hora del dispositivo es %u", time_device.tm_hour);
         }
         else // cmd == DOWN
         {
@@ -1237,6 +1242,7 @@ esp_err_t param_two_bis(display_event_cmds_t cmd, struct tm *time_i, struct tm *
 esp_err_t param_modified_three(display_event_cmds_t cmd)
 {
     ESP_LOGI("param_modified_three", "Param_three vale %u", param_three);
+    ESP_LOGI("param_modified_three", "Line %u", line);
     if (line == 0)
     {
         switch (param_three)
@@ -1244,6 +1250,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
         case 1:
             if (cmd == UP)
             {
+                ESP_LOGI("param_modified_three", "Subo hora del dispositivo");
                 if (time_device.tm_hour == 23)
                 {
                     time_device.tm_hour = 0;
@@ -1258,6 +1265,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
             }
             else
             {
+                ESP_LOGI("param_modified_three", "Bajo hora del dispositivo");
                 if (time_device.tm_hour == 0)
                 {
                     time_device.tm_hour = 23;
@@ -1266,6 +1274,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 {
                     time_device.tm_hour -= 1;
                 }
+                ESP_LOGI("param_modified_three", "La hora del dispositivo es %u", time_device.tm_hour);
                 mktime(&time_device);
                 screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
                 set_cursor(0, 12);
@@ -1275,6 +1284,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
         case 2:
             if (cmd == UP)
             {
+                ESP_LOGI("param_modified_three", "Subo minutos del dispositivo");
                 if (time_device.tm_min == 59)
                 {
                     time_device.tm_min = 0;
@@ -1289,6 +1299,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
             }
             else
             {
+                ESP_LOGI("param_modified_three", "Bajo minutos del dispositivo");
                 if (time_device.tm_min == 0)
                 {
                     time_device.tm_min = 59;
@@ -1519,46 +1530,55 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         // set horario device
         current_time_manager_set_current_time(time_device);
         break;*/
-    case SCREEN_THREE:
-        ESP_LOGI("Display_manager", "Guardo los parametros de la pantalla 3");
-        if (line == 0)
-        { // set horario 1 final e inicial
-            global_manager_set_s_out_turn_on_time(time_i1, 0);
-            global_manager_set_s_out_turn_off_time(time_f1, 0);
-        }
-        if (line == 1)
-        {
-            // set horario 2 final e inicial
-            global_manager_set_s_out_turn_on_time(time_i2, 1);
-            global_manager_set_s_out_turn_off_time(time_f2, 1);
-        }
-        if (line == 2)
-        {
-            // set horario 3 final e inicial
-            global_manager_set_s_out_turn_on_time(time_i3, 2);
-            global_manager_set_s_out_turn_off_time(time_f3, 2);
-        }
-        if (line == 3)
-        {
-            // set horario 4 final e inicial
-            global_manager_set_s_out_turn_on_time(time_i4, 3);
-            global_manager_set_s_out_turn_off_time(time_f4, 3);
-        }
-        break;
     case SCREEN_TWO:
         ESP_LOGI("Display_manager", "Guardo los parametros de la pantalla 2");
-        if (line == 0)
+        // set horario 1 final e inicial
+        global_manager_set_s_out_turn_on_time(time_i1, 0);
+        global_manager_set_s_out_turn_off_time(time_f1, 0);
+        // set horario 2 final e inicial
+        global_manager_set_s_out_turn_on_time(time_i2, 1);
+        global_manager_set_s_out_turn_off_time(time_f2, 1);
+        // set horario 3 final e inicial
+        global_manager_set_s_out_turn_on_time(time_i3, 2);
+        global_manager_set_s_out_turn_off_time(time_f3, 2);
+        // set horario 4 final e inicial
+        global_manager_set_s_out_turn_on_time(time_i4, 3);
+        global_manager_set_s_out_turn_off_time(time_f4, 3);
+
+        break;
+    case SCREEN_THREE:
+        ESP_LOGI("Display_manager", "Guardo los parametros de la pantalla 3");
+
+        // set horario final e inicial de pwm
+        global_manager_set_turn_on_time(time_pwmi);
+        global_manager_set_turn_off_time(time_pwmf);
+        // set horario device
+        current_time_manager_set_current_time(time_device);
+        // set contrast (falta funcion)
+        // set dia
+        if (diabool == false)
         {
-            // set horario final e inicial de pwm
-            global_manager_set_turn_on_time(time_pwmi);
-            global_manager_set_turn_off_time(time_pwmf);
+            dia = SIMUL_DAY_OFF;
         }
-        if (line == 1)
+        else
         {
-            // set potencia total
-            fpowerppf = atoi(fpower);
-            global_manager_set_ppf(fpowerppf);
+            dia = SIMUL_DAY_ON;
         }
+        global_manager_set_simul_day_status(dia);
+        // set modo
+        if (modobool == false)
+        {
+            modo = PWM_MANUAL;
+        }
+        else
+        {
+            modo = PWM_AUTOMATIC;
+        }
+        global_manager_set_pwm_mode(modo);
+        // set potencia total
+        fpowerppf = atoi(fpower);
+        global_manager_set_ppf(fpowerppf);
+
         break;
 
     default:

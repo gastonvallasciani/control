@@ -844,7 +844,7 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, stru
     return ESP_OK;
 }
 
-esp_err_t screen_three_line(uint8_t line, struct tm time_device, struct tm time_pwmi, struct tm time_pwmf, char *fpower, bool dia, bool modo, uint8_t level)
+esp_err_t screen_three_line(uint8_t line, struct tm time_devicee, struct tm time_pwmi, struct tm time_pwmf, char *fpower, bool dia, bool modo, uint8_t level)
 {
     char *contraste = "CONTRASTE";
     char *total = "POT.TOTAL";
@@ -864,8 +864,8 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_device, struct tm time_
     sprintf(mini, "%u", time_pwmi.tm_min);
     sprintf(hourf, "%u", time_pwmf.tm_hour);
     sprintf(minf, "%u", time_pwmf.tm_min);
-    sprintf(hour, "%u", time_device.tm_hour);
-    sprintf(min, "%u", time_device.tm_min);
+    sprintf(hour, "%u", time_devicee.tm_hour);
+    sprintf(min, "%u", time_devicee.tm_min);
     sprintf(contrast_level, "%u", level);
 
     switch (line)
@@ -875,7 +875,7 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_device, struct tm time_
         set_cursor(0, 0);
         display_write_string(seteos);
         // escribo la hora del equipo
-        if (time_device.tm_hour < 10)
+        if (time_devicee.tm_hour < 10)
         {
             set_cursor(0, 11);
             display_write_string("0");
@@ -889,7 +889,7 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_device, struct tm time_
         }
         set_cursor(0, 13);
         display_write_string(ddots);
-        if (time_device.tm_min < 10)
+        if (time_devicee.tm_min < 10)
         {
             set_cursor(0, 14);
             display_write_string("0");
