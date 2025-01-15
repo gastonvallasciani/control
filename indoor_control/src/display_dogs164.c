@@ -745,8 +745,19 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, stru
     // tercera fila
     set_cursor(2, 0);
     display_write_string(contraste);
-    set_cursor(2, 14);
-    display_write_string(contrast_level);
+    if (level < 10)
+    {
+        set_cursor(2, 14);
+        display_write_string("0");
+        set_cursor(2, 15);
+        display_write_string(contrast_level);
+    }
+    else
+    {
+        set_cursor(2, 14);
+        display_write_string(contrast_level);
+    }
+
     // cuarta fila
     set_cursor(3, 0);
     display_write_string("D");
@@ -901,8 +912,18 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_device, struct tm time_
     case 2:
         set_cursor(2, 0);
         display_write_string(contraste);
-        set_cursor(2, 14);
-        display_write_string(contrast_level);
+        if (level < 10)
+        {
+            set_cursor(2, 14);
+            display_write_string("0");
+            set_cursor(2, 15);
+            display_write_string(contrast_level);
+        }
+        else
+        {
+            set_cursor(2, 14);
+            display_write_string(contrast_level);
+        }
         break;
     case 3:
         set_cursor(3, 0);

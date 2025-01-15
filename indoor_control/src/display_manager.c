@@ -723,7 +723,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
             ESP_LOGI("PARAM_MANAGER", "Salgo de param_modified_one");
         }
         break;*/
-    case SCREEN_THREE:
+    case SCREEN_TWO:
         display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
         if (cmd == VF || cmd == AUX)
         {
@@ -742,7 +742,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
             ESP_LOGI("PARAM_MANAGER", "Salgo de param_modified_two");
         }
         break;
-    case SCREEN_TWO:
+    case SCREEN_THREE:
         display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
         if (cmd == VF || cmd == AUX)
         {
@@ -830,7 +830,7 @@ esp_err_t screen_two_param(display_event_cmds_t cmd)
     default:
         break;
     }
-    if (cmd == VF)
+    if (cmd == VF) // si el comando es VF, avanzo al siguiente
     {
         if (param_two == 4)
         {
@@ -872,12 +872,13 @@ esp_err_t screen_two_param(display_event_cmds_t cmd)
 
 esp_err_t screen_three_param(display_event_cmds_t cmd)
 {
-    // screen_three_line(line, fpower, time_pwmi, time_pwmf);
+
+    screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
     if (line == 0)
     {
         if (cmd == VF)
         {
-            if (param_three == 4)
+            if (param_three == 2)
             {
                 param_three = 1;
             }
@@ -890,18 +891,10 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
         {
 
         case 1:
-            set_cursor(line, 5);
-            break;
-
-        case 2:
-            set_cursor(line, 8);
-            break;
-
-        case 3:
             set_cursor(line, 12);
             break;
 
-        case 4:
+        case 2:
             set_cursor(line, 15);
             break;
 
@@ -909,7 +902,7 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
             break;
         }
     }
-    else // line == 1
+    else if (line == 1)
     {
         if (cmd == VF)
         {
@@ -942,6 +935,24 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
 
         default:
             break;
+        }
+    }
+    else if (line == 2)
+    {
+        set_cursor(line, 15);
+    }
+    else if (line == 3)
+    {
+        if (cmd == VF)
+        {
+            if (param_three == 2)
+            {
+                param_three = 1;
+            }
+            else
+            {
+                param_three++;
+            }
         }
     }
 
@@ -1233,123 +1244,61 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
         case 1:
             if (cmd == UP)
             {
-                if (time_pwmi.tm_hour == 23)
+                if (time_device.tm_hour == 23)
                 {
-                    time_pwmi.tm_hour = 0;
+                    time_device.tm_hour = 0;
                 }
                 else
                 {
-                    time_pwmi.tm_hour += 1;
+                    time_device.tm_hour += 1;
                 }
-                mktime(&time_pwmi);
-                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(0, 5);
+                mktime(&time_device);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
+                set_cursor(0, 12);
             }
             else
             {
-                if (time_pwmi.tm_hour == 0)
+                if (time_device.tm_hour == 0)
                 {
-                    time_pwmi.tm_hour = 23;
+                    time_device.tm_hour = 23;
                 }
                 else
                 {
-                    time_pwmi.tm_hour -= 1;
+                    time_device.tm_hour -= 1;
                 }
-                mktime(&time_pwmi);
-                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(0, 5);
+                mktime(&time_device);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
+                set_cursor(0, 12);
             }
             break;
 
         case 2:
             if (cmd == UP)
             {
-                if (time_pwmi.tm_min == 59)
+                if (time_device.tm_min == 59)
                 {
-                    time_pwmi.tm_min = 0;
+                    time_device.tm_min = 0;
                 }
                 else
                 {
-                    time_pwmi.tm_min += 1;
+                    time_device.tm_min += 1;
                 }
-                mktime(&time_pwmi);
-                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(0, 8);
-            }
-            else
-            {
-                if (time_pwmi.tm_min == 0)
-                {
-                    time_pwmi.tm_min = 59;
-                }
-                else
-                {
-                    time_pwmi.tm_min -= 1;
-                }
-                mktime(&time_pwmi);
-                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(0, 8);
-            }
-            break;
-
-        case 3:
-            if (cmd == UP)
-            {
-                if (time_pwmf.tm_hour == 23)
-                {
-                    time_pwmf.tm_hour = 0;
-                }
-                else
-                {
-                    time_pwmf.tm_hour += 1;
-                }
-                mktime(&time_pwmf);
-                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(0, 12);
-            }
-            else
-            {
-                if (time_pwmf.tm_hour == 0)
-                {
-                    time_pwmf.tm_hour = 23;
-                }
-                else
-                {
-                    time_pwmf.tm_hour -= 1;
-                }
-                mktime(&time_pwmf);
-                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(0, 12);
-            }
-            break;
-
-        case 4:
-            if (cmd == UP)
-            {
-                if (time_pwmf.tm_min == 59)
-                {
-                    time_pwmf.tm_min = 0;
-                }
-                else
-                {
-                    time_pwmf.tm_min += 1;
-                }
-                mktime(&time_pwmf);
-                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                mktime(&time_device);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
                 set_cursor(0, 15);
             }
             else
             {
-                if (time_pwmf.tm_min == 0)
+                if (time_device.tm_min == 0)
                 {
-                    time_pwmf.tm_min = 59;
+                    time_device.tm_min = 59;
                 }
                 else
                 {
-                    time_pwmf.tm_min -= 1;
+                    time_device.tm_min -= 1;
                 }
-                mktime(&time_pwmf);
-                // screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                mktime(&time_device);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
                 set_cursor(0, 15);
             }
             break;
@@ -1358,7 +1307,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
             break;
         }
     }
-    else
+    else if (line == 1)
     {
         switch (param_three)
         {
@@ -1388,7 +1337,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
             }
 
-            // screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
             set_cursor(line, 10);
             break;
         case 2:
@@ -1416,7 +1365,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[1]--;
                 }
             }
-            // screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
             set_cursor(line, 11);
             break;
         case 3:
@@ -1443,7 +1392,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[2]--;
                 }
             }
-            // screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
             set_cursor(line, 12);
             break;
         case 4:
@@ -1470,7 +1419,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[3]--;
                 }
             }
-            // screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
             set_cursor(line, 13);
             break;
         case 5:
@@ -1497,13 +1446,46 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[4]--;
                 }
             }
-            // screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
             set_cursor(line, 14);
             break;
 
         default:
             break;
         }
+    }
+    else if (line == 2) // estoy en contraste
+    {
+        if (cmd == UP)
+        {
+            if (contrast == 16)
+            {
+                contrast = 1;
+            }
+            else
+            {
+                contrast++;
+            }
+        }
+
+        else
+        {
+            if (contrast == 1)
+            {
+                contrast = 16;
+            }
+            else
+            {
+                contrast--;
+            }
+        }
+        set_contrast(contrast);
+
+        screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
+        set_cursor(line, 15);
+    }
+    else if (line == 3)
+    {
     }
     return ESP_OK;
 }
