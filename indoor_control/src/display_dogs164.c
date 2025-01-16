@@ -453,12 +453,15 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     if (dia == true)
     {
         dia_m = "SI";
+        display_send_data(0x12);
+        set_cursor(3, 2);
+        display_send_data(0x13);
     }
     else
     {
-        dia_m = "NO";
+        dia_m = "--";
+        display_write_string(dia_m);
     }
-    display_write_string(dia_m);
 
     if (modo == true)
     {
@@ -778,12 +781,16 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, stru
         if (dia == true)
         {
             dia_m = "SI";
+            display_send_data(0x12);
+            set_cursor(3, 2);
+            display_send_data(0x13);
         }
         else
         {
-            dia_m = "NO";
+            dia_m = "--";
+            display_write_string(dia_m);
         }
-        display_write_string(dia_m);
+
         set_cursor(3, 4);
         display_write_string(modo_m);
         if (time_pwmi.tm_hour < 10)
@@ -945,12 +952,16 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_devicee, struct tm time
             if (dia == true)
             {
                 dia_m = "SI";
+                display_send_data(0x12);
+                set_cursor(3, 2);
+                display_send_data(0x13);
             }
             else
             {
-                dia_m = "NO";
+                dia_m = "--";
+                display_write_string(dia_m);
             }
-            display_write_string(dia_m);
+
             set_cursor(3, 4);
             display_write_string(modo_m);
             if (time_pwmi.tm_hour < 10)

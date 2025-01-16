@@ -312,9 +312,6 @@ static void display_manager_task(void *arg)
 
                     break;
                 case CONFIG_PARAM:
-                    ESP_LOGI("UP-CONFIG_PARAM", "Entro al config_param del UP");
-                    ESP_LOGI("UP-CONFIG_PARAM", "param_two es %u", param_two);
-                    ESP_LOGI("UP-CONFIG_PARAM", "param_three es %u", param_three);
                     // subo numero a configurar
                     display_param_manager(UP);
 
