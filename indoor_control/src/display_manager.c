@@ -60,7 +60,7 @@ bool diabool; // con este me manejo en e display
 pwm_mode_t modo;
 bool modobool;    // con esta me manejo en el display
 uint8_t contrast; // contraste del display
-
+uint8_t pwm_auto;
 uint8_t param_two;
 uint8_t param_three;
 // comandos de las acciones del display
@@ -96,6 +96,7 @@ static void display_manager_task(void *arg)
     set_timerh();
     start_timerh();
     contrast = 10;
+    pwm_auto = 50;
 
     // aca asgianar valores a todas las variables globales del display
 
@@ -187,7 +188,7 @@ static void display_manager_task(void *arg)
                     // aca tengo que entrar a la primera linea titilante en la pantanlla en la que este
                     if (screen == SCREEN_ONE)
                     {
-                        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
+                        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
 
@@ -274,7 +275,7 @@ static void display_manager_task(void *arg)
                     ESP_LOGI("CONFIG_LINE", "line es %u", line);
                     param_two = 1;
                     param_three = 1;
-                    display_blink_manager(screen, 0); // 0 es down
+                    display_blink_manager(screen, 1); // 0 es down
 
                     break;
                 case CONFIG_PARAM:
@@ -308,7 +309,7 @@ static void display_manager_task(void *arg)
                     stop_timer();
                     param_two = 1;
                     param_three = 1;
-                    display_blink_manager(screen, 1); // 1 es up
+                    display_blink_manager(screen, 0); // 1 es up
 
                     break;
                 case CONFIG_PARAM:
@@ -484,7 +485,7 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
         // start_timer();
         break;
     case SCREEN_THREE:
-        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
+        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
 
         /*if (cmd == 0) // es down
         {
@@ -587,7 +588,7 @@ void blink_callback(TimerHandle_t timer)
             break;
         case SCREEN_THREE:
 
-            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
 
             clear = pdFALSE;
             break;
@@ -744,7 +745,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
         }
         break;
     case SCREEN_THREE:
-        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast);
+        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
         if (cmd == VF || cmd == AUX)
         {
             screen_three_param(cmd);
@@ -875,7 +876,7 @@ esp_err_t screen_two_param(display_event_cmds_t cmd)
 esp_err_t screen_three_param(display_event_cmds_t cmd)
 {
 
-    screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
+    screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
     if (line == 0)
     {
         if (cmd == VF)
@@ -904,11 +905,11 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
             break;
         }
     }
-    else if (line == 1)
+    else if (line == 2)
     {
         if (cmd == VF)
         {
-            if (param_three == 5)
+            if (param_three == 6)
             {
                 param_three = 1;
             }
@@ -920,18 +921,21 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
         switch (param_three) // me fijo que parametro modifico
         {
         case 1:
-            set_cursor(line, 10);
+            set_cursor(line, 1);
             break;
         case 2:
-            set_cursor(line, 11);
+            set_cursor(line, 2);
             break;
         case 3:
-            set_cursor(line, 12);
+            set_cursor(line, 3);
             break;
         case 4:
-            set_cursor(line, 13);
+            set_cursor(line, 4);
             break;
         case 5:
+            set_cursor(line, 5);
+            break;
+        case 6:
             set_cursor(line, 14);
             break;
 
@@ -939,11 +943,11 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
             break;
         }
     }
-    else if (line == 2)
+    else if (line == 3)
     {
         set_cursor(line, 15);
     }
-    else if (line == 3)
+    else if (line == 1)
     {
         if (cmd == VF)
         {
@@ -1257,7 +1261,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_device.tm_hour += 1;
                 }
                 mktime(&time_device);
-                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
                 set_cursor(0, 12);
             }
             else
@@ -1273,7 +1277,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
                 ESP_LOGI("param_modified_three", "La hora del dispositivo es %u", time_device.tm_hour);
                 mktime(&time_device);
-                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
                 set_cursor(0, 12);
             }
             break;
@@ -1291,7 +1295,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_device.tm_min += 1;
                 }
                 mktime(&time_device);
-                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
                 set_cursor(0, 15);
             }
             else
@@ -1306,7 +1310,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     time_device.tm_min -= 1;
                 }
                 mktime(&time_device);
-                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
                 set_cursor(0, 15);
             }
             break;
@@ -1315,7 +1319,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
             break;
         }
     }
-    else if (line == 1)
+    else if (line == 2)
     {
         switch (param_three)
         {
@@ -1345,8 +1349,8 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
             }
 
-            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
-            set_cursor(line, 10);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+            set_cursor(line, 1);
             break;
         case 2:
             if (cmd == UP)
@@ -1373,8 +1377,8 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[1]--;
                 }
             }
-            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
-            set_cursor(line, 11);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+            set_cursor(line, 2);
             break;
         case 3:
             if (cmd == UP)
@@ -1400,8 +1404,8 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[2]--;
                 }
             }
-            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
-            set_cursor(line, 12);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+            set_cursor(line, 3);
             break;
         case 4:
             if (cmd == UP)
@@ -1427,8 +1431,8 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[3]--;
                 }
             }
-            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
-            set_cursor(line, 13);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+            set_cursor(line, 4);
             break;
         case 5:
             if (cmd == UP)
@@ -1454,15 +1458,44 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[4]--;
                 }
             }
-            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+            set_cursor(line, 5);
+            break;
+        case 6:
+            if (cmd == UP)
+            {
+                if (pwm_auto == 100)
+                {
+                    pwm_auto = 0;
+                }
+                else
+                {
+
+                    pwm_auto++;
+                }
+            }
+
+            else
+            {
+                if (pwm_auto == 0)
+                {
+                    pwm_auto = 100;
+                }
+                else
+                {
+
+                    pwm_auto--;
+                }
+            }
+
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
             set_cursor(line, 14);
             break;
-
         default:
             break;
         }
     }
-    else if (line == 2) // estoy en contraste
+    else if (line == 3) // estoy en contraste
     {
         if (cmd == UP)
         {
@@ -1489,11 +1522,12 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
         }
         set_contrast(contrast);
 
-        screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast); // escribo la linea para que no quede en blanco
+        screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
         set_cursor(line, 15);
     }
-    else if (line == 3)
+    else if (line == 1)
     {
+        // falta
     }
     return ESP_OK;
 }
@@ -1576,6 +1610,8 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         fpowerppf = atoi(fpower);
         global_manager_set_ppf(fpowerppf);
 
+        // set pwm_auto_level
+
         break;
 
     default:
@@ -1653,6 +1689,8 @@ esp_err_t get_params()
     {
         modobool = pdTRUE;
     }
+
+    // get pwm_auto_level
     return ESP_OK;
 }
 //---------------------------- END OF FILE -------------------------------------

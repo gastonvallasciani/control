@@ -357,7 +357,7 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     char hourf[4];
     char mini[4];
     char minf[4];
-    float ppfn = power * 2.97;
+    float ppfn = power * 3.17;
 
     int fpowercc;
     fpowercc = atoi(fpower);
@@ -679,10 +679,9 @@ esp_err_t display_set_screen_two(screen_t *screen, struct tm time_i1, struct tm 
     return ESP_OK;
 }
 
-esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, struct tm time_pwmi, struct tm time_pwmf, char *fpower, bool dia, bool modo, uint8_t level)
+esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, struct tm time_pwmi, struct tm time_pwmf, char *fpower, bool dia, bool modo, uint8_t level, uint8_t pwm_auto)
 {
     char *contraste = "CONTRASTE";
-    char *total = "POT.TOTAL";
     char *seteos = "SETEOS";
     char *modo_m;
     char *ddots = ":";
@@ -694,6 +693,7 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, stru
     char hour[4];
     char min[4];
     char contrast_level[4];
+    char pwm_auto_level[4];
 
     display_send_command(COMMAND_CLEAR_DISPLAY);
     display_send_command(COMMAND_8BIT_4LINES_RE0_IS0);
@@ -706,11 +706,14 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, stru
     sprintf(hour, "%u", time_device.tm_hour);
     sprintf(min, "%u", time_device.tm_min);
     sprintf(contrast_level, "%u", level);
+    sprintf(pwm_auto_level, "%u", pwm_auto);
     // sprintf(fpowerc, "%u", fpower);
 
     // Primera fila
     set_cursor(0, 0);
     display_write_string(seteos);
+    set_cursor(0, 10);
+    display_write_string("H");
     // escribo la hora del equipo
     if (time_device.tm_hour < 10)
     {
@@ -738,51 +741,29 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, stru
         set_cursor(0, 14);
         display_write_string(min);
     }
-    // segunda fila
-    set_cursor(1, 0);
-    display_write_string(total);
-    set_cursor(1, 10);
-    display_write_string(fpower);
-    set_cursor(1, 15);
-    display_write_string("W");
-    // tercera fila
-    set_cursor(2, 0);
-    display_write_string(contraste);
-    if (level < 10)
-    {
-        set_cursor(2, 14);
-        display_write_string("0");
-        set_cursor(2, 15);
-        display_write_string(contrast_level);
-    }
-    else
-    {
-        set_cursor(2, 14);
-        display_write_string(contrast_level);
-    }
 
-    // cuarta fila
-    set_cursor(3, 0);
+    // Segunda fila
+    set_cursor(1, 0);
     display_write_string("D");
 
     if (modo == true)
     {
         modo_m = "MANUAL";
         dia_m = "--";
-        set_cursor(3, 1);
+        set_cursor(1, 1);
         display_write_string(dia_m);
-        set_cursor(3, 4);
+        set_cursor(1, 4);
         display_write_string(modo_m);
     }
     else
     {
         modo_m = "A";
-        set_cursor(3, 1);
+        set_cursor(1, 1);
         if (dia == true)
         {
             dia_m = "SI";
             display_send_data(0x12);
-            set_cursor(3, 2);
+            set_cursor(1, 2);
             display_send_data(0x13);
         }
         else
@@ -791,70 +772,112 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, stru
             display_write_string(dia_m);
         }
 
-        set_cursor(3, 4);
+        set_cursor(1, 4);
         display_write_string(modo_m);
         if (time_pwmi.tm_hour < 10)
         {
-            set_cursor(3, 5);
+            set_cursor(1, 5);
             display_write_string("0");
-            set_cursor(3, 6);
+            set_cursor(1, 6);
             display_write_string(houri);
         }
         else
         {
-            set_cursor(3, 5);
+            set_cursor(1, 5);
             display_write_string(houri);
         }
-        set_cursor(3, 7);
+        set_cursor(1, 7);
         display_write_string(":");
         if (time_pwmi.tm_min < 10)
         {
-            set_cursor(3, 8);
+            set_cursor(1, 8);
             display_write_string("0");
-            set_cursor(3, 9);
+            set_cursor(1, 9);
             display_write_string(mini);
         }
         else
         {
-            set_cursor(3, 8);
+            set_cursor(1, 8);
             display_write_string(mini);
         }
-        set_cursor(3, 10);
+        set_cursor(1, 10);
         display_write_string("-");
         if (time_pwmf.tm_hour < 10)
         {
-            set_cursor(3, 11);
+            set_cursor(1, 11);
             display_write_string("0");
-            set_cursor(3, 12);
+            set_cursor(1, 12);
             display_write_string(hourf);
         }
         else
         {
-            set_cursor(3, 11);
+            set_cursor(1, 11);
             display_write_string(hourf);
         }
-        set_cursor(3, 13);
+        set_cursor(1, 13);
         display_write_string(":");
         if (time_pwmf.tm_min < 10)
         {
-            set_cursor(3, 14);
+            set_cursor(1, 14);
             display_write_string("0");
-            set_cursor(3, 15);
+            set_cursor(1, 15);
             display_write_string(minf);
         }
         else
         {
-            set_cursor(3, 14);
+            set_cursor(1, 14);
             display_write_string(minf);
         }
+    }
+
+    // Tercera fila
+    set_cursor(2, 0);
+    display_send_data(0xDB);
+    set_cursor(2, 1);
+    display_write_string(fpower);
+    set_cursor(2, 6);
+    display_write_string("W");
+    set_cursor(2, 8);
+    display_write_string("PWM:");
+    if (pwm_auto < 10)
+    {
+        set_cursor(2, 14);
+        display_write_string(pwm_auto_level);
+    }
+    else if (pwm_auto > 10 && pwm_auto < 100)
+    {
+        set_cursor(2, 13);
+        display_write_string(pwm_auto_level);
+    }
+    else if (pwm_auto == 100)
+    {
+        set_cursor(2, 12);
+        display_write_string(pwm_auto_level);
+    }
+    set_cursor(2, 15);
+    display_write_string("%");
+
+    // Cuarta fila
+    set_cursor(3, 0);
+    display_write_string(contraste);
+    if (level < 10)
+    {
+        set_cursor(3, 14);
+        display_write_string("0");
+        set_cursor(3, 15);
+        display_write_string(contrast_level);
+    }
+    else
+    {
+        set_cursor(3, 14);
+        display_write_string(contrast_level);
     }
     return ESP_OK;
 }
 
-esp_err_t screen_three_line(uint8_t line, struct tm time_devicee, struct tm time_pwmi, struct tm time_pwmf, char *fpower, bool dia, bool modo, uint8_t level)
+esp_err_t screen_three_line(uint8_t line, struct tm time_devicee, struct tm time_pwmi, struct tm time_pwmf, char *fpower, bool dia, bool modo, uint8_t level, uint8_t pwm_auto)
 {
     char *contraste = "CONTRASTE";
-    char *total = "POT.TOTAL";
     char *seteos = "SETEOS";
     char *modo_m;
     char *ddots = ":";
@@ -866,6 +889,7 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_devicee, struct tm time
     char hour[4];
     char min[4];
     char contrast_level[4];
+    char pwm_auto_level[4];
 
     sprintf(houri, "%u", time_pwmi.tm_hour);
     sprintf(mini, "%u", time_pwmi.tm_min);
@@ -874,6 +898,7 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_devicee, struct tm time
     sprintf(hour, "%u", time_devicee.tm_hour);
     sprintf(min, "%u", time_devicee.tm_min);
     sprintf(contrast_level, "%u", level);
+    sprintf(pwm_auto_level, "%u", pwm_auto);
 
     switch (line)
     {
@@ -881,6 +906,8 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_devicee, struct tm time
         // Primera fila
         set_cursor(0, 0);
         display_write_string(seteos);
+        set_cursor(0, 10);
+        display_write_string("H");
         // escribo la hora del equipo
         if (time_devicee.tm_hour < 10)
         {
@@ -910,50 +937,26 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_devicee, struct tm time
         }
     case 1:
         set_cursor(1, 0);
-        display_write_string(total);
-        set_cursor(1, 10);
-        display_write_string(fpower);
-        set_cursor(1, 15);
-        display_write_string("W");
-        break;
-    case 2:
-        set_cursor(2, 0);
-        display_write_string(contraste);
-        if (level < 10)
-        {
-            set_cursor(2, 14);
-            display_write_string("0");
-            set_cursor(2, 15);
-            display_write_string(contrast_level);
-        }
-        else
-        {
-            set_cursor(2, 14);
-            display_write_string(contrast_level);
-        }
-        break;
-    case 3:
-        set_cursor(3, 0);
         display_write_string("D");
 
         if (modo == true)
         {
             modo_m = "MANUAL";
             dia_m = "--";
-            set_cursor(3, 1);
+            set_cursor(1, 1);
             display_write_string(dia_m);
-            set_cursor(3, 4);
+            set_cursor(1, 4);
             display_write_string(modo_m);
         }
         else
         {
             modo_m = "A";
-            set_cursor(3, 1);
+            set_cursor(1, 1);
             if (dia == true)
             {
                 dia_m = "SI";
                 display_send_data(0x12);
-                set_cursor(3, 2);
+                set_cursor(1, 2);
                 display_send_data(0x13);
             }
             else
@@ -962,62 +965,105 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_devicee, struct tm time
                 display_write_string(dia_m);
             }
 
-            set_cursor(3, 4);
+            set_cursor(1, 4);
             display_write_string(modo_m);
             if (time_pwmi.tm_hour < 10)
             {
-                set_cursor(3, 5);
+                set_cursor(1, 5);
                 display_write_string("0");
-                set_cursor(3, 6);
+                set_cursor(1, 6);
                 display_write_string(houri);
             }
             else
             {
-                set_cursor(3, 5);
+                set_cursor(1, 5);
                 display_write_string(houri);
             }
-            set_cursor(3, 7);
+            set_cursor(1, 7);
             display_write_string(":");
             if (time_pwmi.tm_min < 10)
             {
-                set_cursor(3, 8);
+                set_cursor(1, 8);
                 display_write_string("0");
-                set_cursor(3, 9);
+                set_cursor(1, 9);
                 display_write_string(mini);
             }
             else
             {
-                set_cursor(3, 8);
+                set_cursor(1, 8);
                 display_write_string(mini);
             }
-            set_cursor(3, 10);
+            set_cursor(1, 10);
             display_write_string("-");
             if (time_pwmf.tm_hour < 10)
             {
-                set_cursor(3, 11);
+                set_cursor(1, 11);
                 display_write_string("0");
-                set_cursor(3, 12);
+                set_cursor(1, 12);
                 display_write_string(hourf);
             }
             else
             {
-                set_cursor(3, 11);
+                set_cursor(1, 11);
                 display_write_string(hourf);
             }
-            set_cursor(3, 13);
+            set_cursor(1, 13);
             display_write_string(":");
             if (time_pwmf.tm_min < 10)
             {
-                set_cursor(3, 14);
+                set_cursor(1, 14);
                 display_write_string("0");
-                set_cursor(3, 15);
+                set_cursor(1, 15);
                 display_write_string(minf);
             }
             else
             {
-                set_cursor(3, 14);
+                set_cursor(1, 14);
                 display_write_string(minf);
             }
+        }
+        break;
+    case 2:
+        set_cursor(2, 0);
+        display_send_data(0xDB);
+        set_cursor(2, 1);
+        display_write_string(fpower);
+        set_cursor(2, 6);
+        display_write_string("W");
+        set_cursor(2, 8);
+        display_write_string("PWM:");
+        if (pwm_auto < 10)
+        {
+            set_cursor(2, 14);
+            display_write_string(pwm_auto_level);
+        }
+        else if (pwm_auto > 10 && pwm_auto < 100)
+        {
+            set_cursor(2, 13);
+            display_write_string(pwm_auto_level);
+        }
+        else if (pwm_auto == 100)
+        {
+            set_cursor(2, 12);
+            display_write_string(pwm_auto_level);
+        }
+        set_cursor(2, 15);
+        display_write_string("%");
+        break;
+    case 3:
+        set_cursor(3, 0);
+        display_write_string(contraste);
+        if (level < 10)
+        {
+            set_cursor(3, 14);
+            display_write_string("0");
+            set_cursor(3, 15);
+            display_write_string(contrast_level);
+        }
+        else
+        {
+            set_cursor(3, 14);
+            display_write_string(contrast_level);
         }
         break;
     default:
