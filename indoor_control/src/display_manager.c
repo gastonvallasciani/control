@@ -951,14 +951,18 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
     {
         if (cmd == VF)
         {
-            if (param_three == 2)
+            if (modobool == true) //estoy en manual
             {
-                param_three = 1;
+                //no puedo hacer nada
             }
-            else
-            {
-                param_three++;
-            }
+                if (param_three == 3)
+                {
+                    param_three = 1;
+                }
+                else
+                {
+                    param_three++;
+                }
         }
     }
 
