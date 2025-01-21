@@ -951,18 +951,36 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
     {
         if (cmd == VF)
         {
-            if (modobool == true) //estoy en manual
+
+            if (param_three == 5)
             {
-                //no puedo hacer nada
+                param_three = 1;
             }
-                if (param_three == 3)
-                {
-                    param_three = 1;
-                }
-                else
-                {
-                    param_three++;
-                }
+            else
+            {
+                param_three++;
+            }
+        }
+        switch (param_three) // me fijo que parametro modifico
+        {
+        case 1:
+            set_cursor(line, 0);
+            break;
+        case 2:
+            set_cursor(line, 6);
+            break;
+        case 3:
+            set_cursor(line, 9);
+            break;
+        case 4:
+            set_cursor(line, 12);
+            break;
+        case 5:
+            set_cursor(line, 15);
+            break;
+
+        default:
+            break;
         }
     }
 
@@ -1531,7 +1549,144 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
     }
     else if (line == 1)
     {
-        // falta
+        switch (param_three)
+        {
+        case 1:
+            if (diabool == true)
+            {
+                diabool = false;
+            }
+            else
+            {
+                diabool = true;
+            }
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+            set_cursor(line, 0);
+            break;
+        case 2:
+            if (cmd == UP)
+            {
+                if (time_pwmi.tm_hour == 23)
+                {
+                    time_pwmi.tm_hour = 0;
+                }
+                else
+                {
+                    time_pwmi.tm_hour += 1;
+                }
+                mktime(&time_pwmi);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 6);
+            }
+            else
+            {
+                if (time_pwmi.tm_hour == 0)
+                {
+                    time_pwmi.tm_hour = 23;
+                }
+                else
+                {
+                    time_pwmi.tm_hour -= 1;
+                }
+                mktime(&time_pwmi);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 6);
+            }
+
+            break;
+        case 3:
+            if (cmd == UP)
+            {
+                if (time_pwmi.tm_min == 59)
+                {
+                    time_pwmi.tm_min = 0;
+                }
+                else
+                {
+                    time_pwmi.tm_min += 1;
+                }
+                mktime(&time_pwmi);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 9);
+            }
+            else
+            {
+                if (time_pwmi.tm_min == 0)
+                {
+                    time_pwmi.tm_min = 59;
+                }
+                else
+                {
+                    time_pwmi.tm_min -= 1;
+                }
+                mktime(&time_pwmi);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 9);
+            }
+            break;
+        case 4:
+            if (cmd == UP)
+            {
+                if (time_pwmf.tm_hour == 23)
+                {
+                    time_pwmf.tm_hour = 0;
+                }
+                else
+                {
+                    time_pwmf.tm_hour += 1;
+                }
+                mktime(&time_pwmf);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 12);
+            }
+            else
+            {
+                if (time_pwmf.tm_hour == 0)
+                {
+                    time_pwmf.tm_hour = 23;
+                }
+                else
+                {
+                    time_pwmf.tm_hour -= 1;
+                }
+                mktime(&time_pwmf);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 12);
+            }
+            break;
+        case 5:
+            if (cmd == UP)
+            {
+                if (time_pwmf.tm_min == 59)
+                {
+                    time_pwmf.tm_min = 0;
+                }
+                else
+                {
+                    time_pwmf.tm_min += 1;
+                }
+                mktime(&time_pwmf);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 15);
+            }
+            else
+            {
+                if (time_pwmf.tm_min == 0)
+                {
+                    time_pwmf.tm_min = 59;
+                }
+                else
+                {
+                    time_pwmf.tm_min -= 1;
+                }
+                mktime(&time_pwmf);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 15);
+            }
+            break;
+        default:
+            break;
+        }
     }
     return ESP_OK;
 }

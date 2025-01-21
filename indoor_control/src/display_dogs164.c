@@ -748,88 +748,76 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, stru
     set_cursor(1, 0);
     display_write_string("D");
 
-    if (modo == true)
+    if (dia == true)
     {
-        modo_m = "MANUAL";
-        dia_m = "--";
         set_cursor(1, 1);
-        display_write_string(dia_m);
-        set_cursor(1, 4);
-        display_write_string(modo_m);
+        display_send_data(0x12);
+        set_cursor(1, 2);
+        display_send_data(0x13);
     }
     else
     {
-        modo_m = "A";
         set_cursor(1, 1);
-        if (dia == true)
-        {
-            dia_m = "SI";
-            display_send_data(0x12);
-            set_cursor(1, 2);
-            display_send_data(0x13);
-        }
-        else
-        {
-            dia_m = "--";
-            display_write_string(dia_m);
-        }
+        dia_m = "--";
+        display_write_string(dia_m);
+    }
 
-        set_cursor(1, 4);
-        display_write_string(modo_m);
-        if (time_pwmi.tm_hour < 10)
-        {
-            set_cursor(1, 5);
-            display_write_string("0");
-            set_cursor(1, 6);
-            display_write_string(houri);
-        }
-        else
-        {
-            set_cursor(1, 5);
-            display_write_string(houri);
-        }
-        set_cursor(1, 7);
-        display_write_string(":");
-        if (time_pwmi.tm_min < 10)
-        {
-            set_cursor(1, 8);
-            display_write_string("0");
-            set_cursor(1, 9);
-            display_write_string(mini);
-        }
-        else
-        {
-            set_cursor(1, 8);
-            display_write_string(mini);
-        }
-        set_cursor(1, 10);
-        display_write_string("-");
-        if (time_pwmf.tm_hour < 10)
-        {
-            set_cursor(1, 11);
-            display_write_string("0");
-            set_cursor(1, 12);
-            display_write_string(hourf);
-        }
-        else
-        {
-            set_cursor(1, 11);
-            display_write_string(hourf);
-        }
-        set_cursor(1, 13);
-        display_write_string(":");
-        if (time_pwmf.tm_min < 10)
-        {
-            set_cursor(1, 14);
-            display_write_string("0");
-            set_cursor(1, 15);
-            display_write_string(minf);
-        }
-        else
-        {
-            set_cursor(1, 14);
-            display_write_string(minf);
-        }
+    set_cursor(1, 4);
+    modo_m = "A";
+    display_write_string(modo_m);
+    if (time_pwmi.tm_hour < 10)
+    {
+        set_cursor(1, 5);
+        display_write_string("0");
+        set_cursor(1, 6);
+        display_write_string(houri);
+    }
+    else
+    {
+        set_cursor(1, 5);
+        display_write_string(houri);
+    }
+    set_cursor(1, 7);
+    display_write_string(":");
+    if (time_pwmi.tm_min < 10)
+    {
+        set_cursor(1, 8);
+        display_write_string("0");
+        set_cursor(1, 9);
+        display_write_string(mini);
+    }
+    else
+    {
+        set_cursor(1, 8);
+        display_write_string(mini);
+    }
+    set_cursor(1, 10);
+    display_write_string("-");
+    if (time_pwmf.tm_hour < 10)
+    {
+        set_cursor(1, 11);
+        display_write_string("0");
+        set_cursor(1, 12);
+        display_write_string(hourf);
+    }
+    else
+    {
+        set_cursor(1, 11);
+        display_write_string(hourf);
+    }
+    set_cursor(1, 13);
+    display_write_string(":");
+    if (time_pwmf.tm_min < 10)
+    {
+        set_cursor(1, 14);
+        display_write_string("0");
+        set_cursor(1, 15);
+        display_write_string(minf);
+    }
+    else
+    {
+        set_cursor(1, 14);
+        display_write_string(minf);
     }
 
     // Tercera fila
@@ -941,89 +929,78 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_devicee, struct tm time
         set_cursor(1, 0);
         display_write_string("D");
 
-        if (modo == true)
+        if (dia == true)
         {
-            modo_m = "MANUAL";
-            dia_m = "--";
             set_cursor(1, 1);
-            display_write_string(dia_m);
-            set_cursor(1, 4);
-            display_write_string(modo_m);
+            display_send_data(0x12);
+            set_cursor(1, 2);
+            display_send_data(0x13);
         }
         else
         {
-            modo_m = "A";
             set_cursor(1, 1);
-            if (dia == true)
-            {
-                dia_m = "SI";
-                display_send_data(0x12);
-                set_cursor(1, 2);
-                display_send_data(0x13);
-            }
-            else
-            {
-                dia_m = "--";
-                display_write_string(dia_m);
-            }
-
-            set_cursor(1, 4);
-            display_write_string(modo_m);
-            if (time_pwmi.tm_hour < 10)
-            {
-                set_cursor(1, 5);
-                display_write_string("0");
-                set_cursor(1, 6);
-                display_write_string(houri);
-            }
-            else
-            {
-                set_cursor(1, 5);
-                display_write_string(houri);
-            }
-            set_cursor(1, 7);
-            display_write_string(":");
-            if (time_pwmi.tm_min < 10)
-            {
-                set_cursor(1, 8);
-                display_write_string("0");
-                set_cursor(1, 9);
-                display_write_string(mini);
-            }
-            else
-            {
-                set_cursor(1, 8);
-                display_write_string(mini);
-            }
-            set_cursor(1, 10);
-            display_write_string("-");
-            if (time_pwmf.tm_hour < 10)
-            {
-                set_cursor(1, 11);
-                display_write_string("0");
-                set_cursor(1, 12);
-                display_write_string(hourf);
-            }
-            else
-            {
-                set_cursor(1, 11);
-                display_write_string(hourf);
-            }
-            set_cursor(1, 13);
-            display_write_string(":");
-            if (time_pwmf.tm_min < 10)
-            {
-                set_cursor(1, 14);
-                display_write_string("0");
-                set_cursor(1, 15);
-                display_write_string(minf);
-            }
-            else
-            {
-                set_cursor(1, 14);
-                display_write_string(minf);
-            }
+            dia_m = "--";
+            display_write_string(dia_m);
         }
+
+        set_cursor(1, 4);
+        modo_m = "A";
+        display_write_string(modo_m);
+        if (time_pwmi.tm_hour < 10)
+        {
+            set_cursor(1, 5);
+            display_write_string("0");
+            set_cursor(1, 6);
+            display_write_string(houri);
+        }
+        else
+        {
+            set_cursor(1, 5);
+            display_write_string(houri);
+        }
+        set_cursor(1, 7);
+        display_write_string(":");
+        if (time_pwmi.tm_min < 10)
+        {
+            set_cursor(1, 8);
+            display_write_string("0");
+            set_cursor(1, 9);
+            display_write_string(mini);
+        }
+        else
+        {
+            set_cursor(1, 8);
+            display_write_string(mini);
+        }
+        set_cursor(1, 10);
+        display_write_string("-");
+        if (time_pwmf.tm_hour < 10)
+        {
+            set_cursor(1, 11);
+            display_write_string("0");
+            set_cursor(1, 12);
+            display_write_string(hourf);
+        }
+        else
+        {
+            set_cursor(1, 11);
+            display_write_string(hourf);
+        }
+        set_cursor(1, 13);
+        display_write_string(":");
+        if (time_pwmf.tm_min < 10)
+        {
+            set_cursor(1, 14);
+            display_write_string("0");
+            set_cursor(1, 15);
+            display_write_string(minf);
+        }
+        else
+        {
+            set_cursor(1, 14);
+            display_write_string(minf);
+        }
+
         break;
     case 2:
         set_cursor(2, 0);
