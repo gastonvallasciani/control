@@ -357,19 +357,21 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     char hourf[4];
     char mini[4];
     char minf[4];
-    float ppfn = power * 3.17;
+    float ppfn;
 
     int fpowercc;
-    fpowercc = atoi(fpower);
+    fpowercc = atoi(fpower); // potencia total
 
-    int pot_actual = fpowercc * power / 100;
+    float pot_actual = fpowercc * power / 100;
+
+    ppfn = 3.17 * pot_actual;
 
     *screen = SCREEN_ONE;
     sprintf(numero, "%u%%", power);
     sprintf(hour, "%u", time.tm_hour);
     sprintf(min, "%u", time.tm_min);
     sprintf(numeroppf, "%.f", ppfn);
-    sprintf(potactual, "%u", pot_actual);
+    sprintf(potactual, "%.f", pot_actual);
     sprintf(houri, "%u", time_pwmi.tm_hour);
     sprintf(mini, "%u", time_pwmi.tm_min);
     sprintf(hourf, "%u", time_pwmf.tm_hour);
