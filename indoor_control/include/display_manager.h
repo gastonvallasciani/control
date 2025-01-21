@@ -13,7 +13,8 @@ typedef enum
     VF = 3,
     AUX = 4,
     AUXT = 5,
-    PWM_MANUAL_VALUE = 6
+    VFT = 6,
+    PWM_MANUAL_VALUE = 7
 } display_event_cmds_t;
 
 typedef struct
@@ -43,6 +44,7 @@ void display_manager_up(uint8_t, flora_vege_status_t);
 void display_manager_aux(void);
 void display_manager_auxt(void);
 void display_manager_manual(uint8_t);
+void display_manager_vft();
 void blink_callback(TimerHandle_t);
 void time_callback(TimerHandle_t);
 esp_err_t display_blink_manager(screen_t, uint8_t);

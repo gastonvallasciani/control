@@ -254,6 +254,18 @@ static void display_manager_task(void *arg)
                     break;
                 }
                 break;
+            case VFT:
+                // cambio el modo (manual o automatico)
+                if (modobool == true)
+                {
+                    modobool = false;
+                }
+                else
+                {
+                    modobool = true;
+                }
+                display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
+                break;
             case DOWN:
                 switch (state)
                 {
@@ -409,6 +421,17 @@ void display_manager_auxt()
     display_event_t display_ev;
 
     display_ev.cmd = AUXT;
+    // display_ev.pwm_value = power;
+    // display_ev.vege_flora = vege_flora;
+
+    xQueueSend(display_manager_queue, &display_ev, 10);
+}
+
+void display_manager_vft()
+{
+    display_event_t display_ev;
+
+    display_ev.cmd = VFT;
     // display_ev.pwm_value = power;
     // display_ev.vege_flora = vege_flora;
 
@@ -1769,7 +1792,7 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         fpowerppf = atoi(fpower);
         global_manager_set_ppf(fpowerppf);
 
-        // set pwm_auto_level
+        // set pwm_auto_level FALTA
 
         break;
 
@@ -1849,7 +1872,7 @@ esp_err_t get_params()
         modobool = pdTRUE;
     }
 
-    // get pwm_auto_level
+    // get pwm_auto_level FALTA
     return ESP_OK;
 }
 //---------------------------- END OF FILE -------------------------------------
