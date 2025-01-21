@@ -1824,10 +1824,13 @@ esp_err_t get_params()
 
     // obtengo horario de pwm
     global_manager_get_turn_on_time(&time_pwmi);
+    printf("La hora de inicio de PWM es %u:%u \n", time_pwmi.tm_hour, time_pwmi.tm_min);
     global_manager_get_turn_off_time(&time_pwmf);
+    printf("La hora de off de PWM es %u:%u \n", time_pwmf.tm_hour, time_pwmf.tm_min);
 
     // obtengo potencia total
     global_manager_get_ppf(&fpowerppf);
+    printf("La potencia total es %u \n", fpowerppf);
     sprintf(fpower, "%05d", fpowerppf);
     // obtengo potencia porcentaje
 
@@ -1873,6 +1876,7 @@ esp_err_t get_params()
     }
 
     // get pwm_auto_level FALTA
+    // FALTA GET CONTRAST
     return ESP_OK;
 }
 //---------------------------- END OF FILE -------------------------------------
