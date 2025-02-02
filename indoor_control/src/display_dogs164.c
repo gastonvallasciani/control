@@ -230,12 +230,24 @@ esp_err_t display_set_power(uint8_t power, char *fpower)
     char numeroppf[6];
     char numero[6];
     char potactual[6];
-    int ppfn = power * 2.97;
+
+    memset(numeroppf, 0, sizeof(numeroppf));
+    memset(numero, 0, sizeof(numero));
+    memset(potactual, 0, sizeof(potactual));
+
+    uint32_t ppfn;
     int fpowercc;
     fpowercc = atoi(fpower);
+    
     int pot_actual = fpowercc * power / 100;
+    ppfn = 3.17 * pot_actual;
+    
     sprintf(potactual, "%u", pot_actual);
-    sprintf(numeroppf, "%u", ppfn);
+    sprintf(numeroppf, "%lu", ppfn);
+    
+    printf("Potencia actual: %s\n", potactual);
+    printf("numeroppf %s\n", numeroppf);
+
     // set_cursor(1, 5);
     // display_write_char(vege_flora);
 
@@ -254,7 +266,11 @@ esp_err_t display_set_power(uint8_t power, char *fpower)
         last_power = power;
     }
     set_cursor(2, 4);
+    display_write_string("     ");
+    set_cursor(2, 4);
     display_write_string(numeroppf); // escribo el numero del ppf
+    set_cursor(2, 10);  
+    display_write_string("     ");
     if (pot_actual <= 99999 && pot_actual > 9999)
     {
         set_cursor(2, 10);
@@ -359,10 +375,9 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     char minf[4];
     float ppfn;
 
-    int fpowercc;
-    fpowercc = atoi(fpower); // potencia total
-
-    float pot_actual = fpowercc * power / 100;
+    int fpowercc = atoi(fpower); // potencia total
+ 
+    float pot_actual = fpowercc * power/100;
 
     ppfn = 3.17 * pot_actual;
 
@@ -423,7 +438,13 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     set_cursor(2, 3);
     display_write_string(ddots); // escribo los dos puntos
     set_cursor(2, 4);
+    display_write_string("     ");
+    set_cursor(2, 4);
     display_write_string(numeroppf); // escribo el numero del ppf
+
+    set_cursor(2, 10);  
+    display_write_string("     ");
+
     if (pot_actual <= 99999 && pot_actual > 9999)
     {
         set_cursor(2, 10);
@@ -925,6 +946,7 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_devicee, struct tm time
             set_cursor(0, 14);
             display_write_string(min);
         }
+        break;
     case 1:
         set_cursor(1, 0);
         display_write_string("D");

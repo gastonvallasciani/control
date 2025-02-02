@@ -52,7 +52,7 @@ struct tm time_pwmi;
 struct tm time_pwmf;
 uint8_t power;
 char fpower[6];
-uint16_t fpowerppf;
+uint32_t fpowerppf;
 flora_vege_status_t vegeflora;
 char vegeflorachar; // con esta me manejo en el display
 simul_day_status_t dia;
@@ -334,6 +334,7 @@ static void display_manager_task(void *arg)
                 }
                 break;
             case PWM_MANUAL_VALUE:
+                get_params();
                 display_set_power(display_ev.pwm_value, fpower);
                 break;
             default:
@@ -1790,7 +1791,7 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         // set potencia total
         fpowerppf = atoi(fpower);
         global_manager_set_ppf(fpowerppf);
-
+        printf("Valor convertido: %lu\n", fpowerppf);
         global_manager_set_automatic_pwm_power(pwm_auto);  ///////////// SET porcentaje de pwm automatico
 
         break;
@@ -1829,8 +1830,8 @@ esp_err_t get_params()
 
     // obtengo potencia total
     global_manager_get_ppf(&fpowerppf);
-    printf("La potencia total es %u \n", fpowerppf);
-    sprintf(fpower, "%05d", fpowerppf);
+    printf("La potencia total es %d \n", (int)fpowerppf);
+    sprintf(fpower, "%05d", (int)fpowerppf);
     // obtengo potencia porcentaje
 
     if (is_jp3_teclas_connected() == true)

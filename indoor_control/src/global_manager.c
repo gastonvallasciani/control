@@ -1194,7 +1194,7 @@ uint8_t global_manager_get_s_out_time_enable_status(uint8_t *time_enable_status,
     return 0;
 }
 //------------------------------------------------------------------------------
-uint8_t global_manager_get_ppf(uint16_t *ppf)
+uint8_t global_manager_get_ppf(uint32_t *ppf)
 {
     if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {
@@ -1206,9 +1206,9 @@ uint8_t global_manager_get_ppf(uint16_t *ppf)
     return 0;
 }
 //------------------------------------------------------------------------------
-uint8_t global_manager_set_ppf(uint16_t ppf)
+uint8_t global_manager_set_ppf(uint32_t ppf)
 {
-    uint16_t ppf_aux = 0;
+    uint32_t ppf_aux = 0;
 
     if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {
