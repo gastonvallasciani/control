@@ -96,8 +96,7 @@ static void display_manager_task(void *arg)
     set_timerh();
     start_timerh();
     contrast = 10;
-    pwm_auto = 50;
-
+    pwm_auto = 0;
     // aca asgianar valores a todas las variables globales del display
 
     /*time_device.tm_hour = 12;
@@ -1792,7 +1791,7 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         fpowerppf = atoi(fpower);
         global_manager_set_ppf(fpowerppf);
 
-        // set pwm_auto_level FALTA
+        global_manager_set_automatic_pwm_power(pwm_auto);  ///////////// SET porcentaje de pwm automatico
 
         break;
 
@@ -1874,8 +1873,7 @@ esp_err_t get_params()
     {
         modobool = pdTRUE;
     }
-
-    // get pwm_auto_level FALTA
+     global_manager_get_automatic_pwm_power(&pwm_auto);
     // FALTA GET CONTRAST
     return ESP_OK;
 }

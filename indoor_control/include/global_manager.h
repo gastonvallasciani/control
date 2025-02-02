@@ -101,8 +101,8 @@ uint8_t global_manager_get_turn_off_time(struct tm *turn_off_time);
 
 uint8_t global_manager_update_pwm_calendar_info(void);
 
-uint8_t global_manager_set_automatic_pwm_power(uint8_t auto_pwm_power);
-uint8_t global_manager_get_automatic_pwm_power(uint8_t *auto_pwm_power);
+uint8_t global_manager_set_automatic_pwm_power(uint8_t auto_pwm_power);  ///////////// SET porcentaje de pwm automatico
+uint8_t global_manager_get_automatic_pwm_power(uint8_t *auto_pwm_power); ////////////// GET porcentaje de pwm de salida autoamtico
 
 uint8_t global_manager_update_output_percent_power(void);
 
