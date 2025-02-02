@@ -50,6 +50,7 @@ typedef enum
     CALIBRATE_POTE,
     BOTON_PRESIONADO,
     BOTON_LIBERADO,
+    VEGE_BUTTON_PUSHED_3_SECONDS,
 } cmds_t;
 
 typedef struct
@@ -67,6 +68,7 @@ static TimerHandle_t pwm_down_timer;
 static TimerHandle_t pwm_up_timer;
 
 static TimerHandle_t aux_button_timer = NULL; // Timer para manejar el tiempo de 3 segundos
+static TimerHandle_t vege_button_timer = NULL; // Timer para manejar el tiempo de 3 segundos
 
 static int64_t last_time_pwm_down = 0;
 static int64_t last_time_pwm_up = 0;
@@ -81,6 +83,7 @@ static void aux_button_interrupt(void *arg);
 
 static void pwm_up_timer_callback(TimerHandle_t xTimer);
 static void pwm_down_timer_callback(TimerHandle_t xTimer);
+static void vege_button_timer_callback(TimerHandle_t xTimer);
 
 //--------------------DEFINICION DE DATOS INTERNOS------------------------------
 //------------------------------------------------------------------------------
@@ -188,28 +191,61 @@ static void IRAM_ATTR aux_button_interrupt(void *arg)
     }
 }
 //------------------------------------------------------------------------------
+static void vege_button_timer_callback(TimerHandle_t xTimer)
+{
+    button_events_t ev;
+    ev.cmd = VEGE_BUTTON_PUSHED_3_SECONDS;
+
+    // Enviar evento a la cola solo si el botón sigue presionado
+    if (gpio_get_level(BT_VE_FLO) == 0)
+    {
+        xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+    }
+}
+//------------------------------------------------------------------------------
 static void IRAM_ATTR vege_button_interrupt(void *arg)
 {
     button_events_t ev;
     int64_t time_now = esp_timer_get_time();
 
-    if (gpio_get_level(BT_VE_FLO) == 0)
+    if (gpio_get_level(BT_VE_FLO) == 0) // Botón presionado
     {
         start_time_flora_vege = time_now;
-    }
-    else
-    {
-        if (start_time_flora_vege != 0)
-        {
-            int64_t diff = time_now - start_time_flora_vege;
 
-            if (diff > 30000) // 30ms seconds expressed in microseconds
-            {
-                ev.cmd = VEGE_BUTTON_PUSHED;
-                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
-            }
-            start_time_flora_vege = 0;
+        if (vege_button_timer == NULL)
+        {
+            // Crear el temporizador si no existe
+            vege_button_timer = xTimerCreate("Vege Button Timer",
+                                            pdMS_TO_TICKS(3000), // 3 segundos
+                                            pdFALSE,             // No repetitivo
+                                            NULL, vege_button_timer_callback);
         }
+        // Reiniciar y empezar el temporizador
+        xTimerStartFromISR(vege_button_timer, NULL);
+    }
+    else // Botón liberado
+    {
+        // Detener el temporizador en caso de que no haya expirado
+        if (vege_button_timer != NULL && xTimerIsTimerActive(vege_button_timer))
+        {
+            xTimerStopFromISR(vege_button_timer, NULL);
+        }
+
+        // Calcular el tiempo que el botón estuvo presionado
+        int64_t diff = time_now - start_time_flora_vege;
+
+        if (start_time_flora_vege != 0 && diff >= 3000000) // 3 segundos o más
+        {
+            //ev.cmd = AUX_BUTTON_PUSHED_3_SECONDS;
+        }
+        else if (start_time_flora_vege != 0 && diff >= 30000) // 30ms seconds expressed in microseconds
+        {
+            ev.cmd = VEGE_BUTTON_PUSHED;
+            xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+        }
+
+        vege_button_timer = NULL;
+        start_time_flora_vege = 0; // Reiniciar el tiempo de inicio
     }
 }
 //------------------------------------------------------------------------------
@@ -421,6 +457,10 @@ void button_event_manager_task(void *pvParameters)
             case AUX_BUTTON_PUSHED_3_SECONDS:
 
                 display_manager_auxt();
+                break;
+
+            case VEGE_BUTTON_PUSHED_3_SECONDS:
+                display_manager_vft();
                 break;
             default:
                 break;
