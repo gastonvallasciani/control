@@ -457,7 +457,7 @@ static void global_manager_task(void *arg)
     pwm_auto_info.simul_day_status = nv_init_simul_day_status();
     if (pwm_calendar.read_ok)
     {
-        pwm_auto_info.turn_on_time = pwm_calendar.turn_off_time;
+        pwm_auto_info.turn_on_time = pwm_calendar.turn_on_time;
         pwm_auto_info.turn_off_time = pwm_calendar.turn_off_time;
     }
 

@@ -244,9 +244,6 @@ esp_err_t display_set_power(uint8_t power, char *fpower)
     
     sprintf(potactual, "%u", pot_actual);
     sprintf(numeroppf, "%lu", ppfn);
-    
-    printf("Potencia actual: %s\n", potactual);
-    printf("numeroppf %s\n", numeroppf);
 
     // set_cursor(1, 5);
     // display_write_char(vege_flora);
