@@ -478,6 +478,7 @@ static void global_manager_task(void *arg)
     global_manager_init_pwm_digital_percentage(pwm_digital_value);
     global_manager_init_flora_vege_status(flora_vege_status);
     global_manager_init_ppf(ppf);
+    
 
     printf("INICIO PRINT DEBUG \n");
     printf("PWM DIGITAL VALUE %d \n", pwm_digital_value);
@@ -508,9 +509,9 @@ static void global_manager_task(void *arg)
         pwm_manager_turn_on_pwm(pwm_manual_value);
         led_manager_pwm_output(pwm_manual_value);
         if (flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
-            display_manager_start(pwm_manual_value, 'V');
+            display_manager_start(pwm_manual_value, 'V', pwm_mode);
         else
-            display_manager_start(pwm_manual_value, 'F');
+            display_manager_start(pwm_manual_value, 'F', pwm_mode);
         pwm_value_bkp = pwm_manual_value;
     }
     else if (is_jp3_teclas_connected() == true)
@@ -518,10 +519,11 @@ static void global_manager_task(void *arg)
         pwm_manager_turn_on_pwm(pwm_digital_value);
         led_manager_pwm_output(pwm_digital_value);
         if (flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
-            display_manager_start(pwm_digital_value, 'V');
+            display_manager_start(pwm_digital_value, 'V', pwm_mode);
         else
-            display_manager_start(pwm_digital_value, 'F');
+            display_manager_start(pwm_digital_value, 'F', pwm_mode);
     }
+
 
     while (true)
     {
@@ -605,7 +607,7 @@ void global_manager_init(void)
     device_mode = global_manager_find_device_mode();
     global_manager_set_device_mode(device_mode);
 
-    global_manager_set_pwm_mode(PWM_MANUAL);
+    //global_manager_set_pwm_mode(PWM_MANUAL);
 
     pote_input_manager_init();
 
@@ -793,7 +795,7 @@ uint8_t global_manager_set_turn_on_time(struct tm turn_on_time)
         xSemaphoreGive(global_manager_semaph);
         if ((date_aux.tm_hour != turn_on_time.tm_hour) || (date_aux.tm_min != turn_on_time.tm_min))
         {
-            write_date_on_flash(PWM_DATE_OFF_KEY, global_manager_info.nv_info.pwm_auto.turn_on_time);
+            write_date_on_flash(PWM_DATE_ON_KEY, global_manager_info.nv_info.pwm_auto.turn_on_time);
         }
         return 1;
     }

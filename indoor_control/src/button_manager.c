@@ -460,7 +460,18 @@ void button_event_manager_task(void *pvParameters)
                 break;
 
             case VEGE_BUTTON_PUSHED_3_SECONDS:
-                display_manager_vft();
+                global_manager_get_pwm_mode(&pwm_mode);
+
+                if(pwm_mode == PWM_MANUAL)
+                {
+                    global_manager_set_pwm_mode(PWM_AUTOMATIC);
+                }
+                else
+                {
+                    global_manager_set_pwm_mode(PWM_MANUAL);
+                }
+
+                display_manager_vft(pwm_mode);
                 break;
             default:
                 break;

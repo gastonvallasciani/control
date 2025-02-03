@@ -22,6 +22,7 @@ typedef struct
     uint8_t pwm_value;
     display_event_cmds_t cmd;
     flora_vege_status_t vege_flora;
+    pwm_mode_t pwm_mode;
 } display_event_t;
 
 //------------------- MACROS Y DEFINES -----------------------------------------
@@ -37,14 +38,14 @@ typedef struct
 //------------------------------------------------------------------------------
 void get_screen_state(display_state_t *);
 void display_manager_init(void);
-void display_manager_start(uint8_t, char);
+void display_manager_start(uint8_t, char, pwm_mode_t);
 void display_manager_vf(flora_vege_status_t);
 void display_manager_down(uint8_t, flora_vege_status_t);
 void display_manager_up(uint8_t, flora_vege_status_t);
 void display_manager_aux(void);
 void display_manager_auxt(void);
 void display_manager_manual(uint8_t);
-void display_manager_vft();
+void display_manager_vft(pwm_mode_t pwm_mode);
 void blink_callback(TimerHandle_t);
 void time_callback(TimerHandle_t);
 esp_err_t display_blink_manager(screen_t, uint8_t);

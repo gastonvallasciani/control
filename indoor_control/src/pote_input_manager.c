@@ -112,6 +112,7 @@ static void analog_input_manager_task(void* arg)
             global_manager_get_pwm_mode(&pwm_mode);
             if((pwm_mode == PWM_MANUAL) && (screen_state == NORMAL))
             {
+                printf("Modo Manual \n");
                 ret = adc_oneshot_read(adc2_handle, ADC_POTE_INPUT, &adc_read_value[index]);
                 if(ret == ESP_OK)
                 {

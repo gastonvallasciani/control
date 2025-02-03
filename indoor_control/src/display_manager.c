@@ -255,14 +255,8 @@ static void display_manager_task(void *arg)
                 break;
             case VFT:
                 // cambio el modo (manual o automatico)
-                if (modobool == true)
-                {
-                    modobool = false;
-                }
-                else
-                {
-                    modobool = true;
-                }
+             
+                modobool = (bool)display_ev.pwm_mode;
                 display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                 break;
             case DOWN:
@@ -361,7 +355,7 @@ void display_manager_init(void)
                 NULL, configMAX_PRIORITIES - 2, NULL);
 }
 //------------------------------------------------------------------------------
-void display_manager_start(uint8_t pwm_value, char vege_flora)
+void display_manager_start(uint8_t pwm_value, char vege_flora, pwm_mode_t pwm_mode)
 {
     display_event_t display_ev;
 
@@ -427,11 +421,12 @@ void display_manager_auxt()
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
 
-void display_manager_vft()
+void display_manager_vft(pwm_mode_t pwm_mode)
 {
     display_event_t display_ev;
 
     display_ev.cmd = VFT;
+    display_ev.pwm_mode = pwm_mode;
     // display_ev.pwm_value = power;
     // display_ev.vege_flora = vege_flora;
 
@@ -1868,11 +1863,11 @@ esp_err_t get_params()
     global_manager_get_pwm_mode(&modo);
     if (modo == PWM_MANUAL)
     {
-        modobool = pdFALSE;
+        modobool = false;
     }
     else
     {
-        modobool = pdTRUE;
+        modobool = true;
     }
      global_manager_get_automatic_pwm_power(&pwm_auto);
     // FALTA GET CONTRAST
