@@ -25,12 +25,6 @@
         "vector": "c",
         "limits": "c",
         "sstream": "c",
-        "system_error": "c",
-        "pwm_manager.h": "c",
-        "pwm_auto_manager.h": "c",
-        "sdkconfig.h": "c",
-        "current_time_manager.h": "c",
-        "timers.h": "c",
-        "freertos.h": "c"
+        "system_error": "c"
     }
 }

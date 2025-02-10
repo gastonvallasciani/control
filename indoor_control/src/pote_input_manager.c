@@ -12,7 +12,6 @@
 #include "../include/board_def.h"
 #include "../include/nv_flash_manager.h"
 #include "../include/global_manager.h"
-#include "../include/display_manager.h"
 
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
@@ -85,7 +84,6 @@ static void analog_input_manager_task(void* arg)
     esp_err_t ret;
     uint16_t max_pote_reference = CUENTAS_ADC_100_PER_PWM;
     pwm_mode_t pwm_mode;
-    display_state_t screen_state;
     
     config_analog_input();
 
@@ -105,14 +103,9 @@ static void analog_input_manager_task(void* arg)
         }
         else
         {
-
-            get_screen_state(&screen_state);
-               
-
             global_manager_get_pwm_mode(&pwm_mode);
-            if((pwm_mode == PWM_MANUAL) && (screen_state == NORMAL))
+            if(pwm_mode == PWM_MANUAL)
             {
-                printf("Modo Manual \n");
                 ret = adc_oneshot_read(adc2_handle, ADC_POTE_INPUT, &adc_read_value[index]);
                 if(ret == ESP_OK)
                 {

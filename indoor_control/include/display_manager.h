@@ -13,8 +13,7 @@ typedef enum
     VF = 3,
     AUX = 4,
     AUXT = 5,
-    VFT = 6,
-    PWM_MANUAL_VALUE = 7
+    PWM_MANUAL_VALUE = 6
 } display_event_cmds_t;
 
 typedef struct
@@ -22,7 +21,6 @@ typedef struct
     uint8_t pwm_value;
     display_event_cmds_t cmd;
     flora_vege_status_t vege_flora;
-    pwm_mode_t pwm_mode;
 } display_event_t;
 
 //------------------- MACROS Y DEFINES -----------------------------------------
@@ -38,14 +36,13 @@ typedef struct
 //------------------------------------------------------------------------------
 void get_screen_state(display_state_t *);
 void display_manager_init(void);
-void display_manager_start(uint8_t, char, pwm_mode_t);
+void display_manager_start(uint8_t, char);
 void display_manager_vf(flora_vege_status_t);
 void display_manager_down(uint8_t, flora_vege_status_t);
 void display_manager_up(uint8_t, flora_vege_status_t);
 void display_manager_aux(void);
 void display_manager_auxt(void);
 void display_manager_manual(uint8_t);
-void display_manager_vft(pwm_mode_t pwm_mode);
 void blink_callback(TimerHandle_t);
 void time_callback(TimerHandle_t);
 esp_err_t display_blink_manager(screen_t, uint8_t);
@@ -59,10 +56,10 @@ esp_err_t stop_timerh(void);
 esp_err_t reset_timerh(void);
 esp_err_t clear_line(uint8_t);
 esp_err_t display_param_manager(display_event_cmds_t);
-/*esp_err_t screen_one_param(display_event_cmds_t);*/
+esp_err_t screen_one_param(display_event_cmds_t);
 esp_err_t screen_two_param(display_event_cmds_t);
 esp_err_t screen_three_param(display_event_cmds_t);
-/*esp_err_t param_modified_one(display_event_cmds_t);*/
+esp_err_t param_modified_one(display_event_cmds_t);
 esp_err_t param_modified_two(display_event_cmds_t);
 esp_err_t param_two_bis(display_event_cmds_t, struct tm *, struct tm *);
 esp_err_t param_modified_three(display_event_cmds_t);

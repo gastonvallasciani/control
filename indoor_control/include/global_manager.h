@@ -38,7 +38,7 @@ typedef struct
     flora_vege_status_t flora_vege_status;
     pwm_auto_info_t pwm_auto;
     s_out_auto_info_t s_out_auto;
-    uint32_t ppf;
+    uint16_t ppf;
 } global_manager_nv_t;
 
 typedef struct
@@ -101,8 +101,8 @@ uint8_t global_manager_get_turn_off_time(struct tm *turn_off_time);
 
 uint8_t global_manager_update_pwm_calendar_info(void);
 
-uint8_t global_manager_set_automatic_pwm_power(uint8_t auto_pwm_power);  ///////////// SET porcentaje de pwm automatico
-uint8_t global_manager_get_automatic_pwm_power(uint8_t *auto_pwm_power); ////////////// GET porcentaje de pwm de salida autoamtico
+uint8_t global_manager_set_automatic_pwm_power(uint8_t auto_pwm_power);
+uint8_t global_manager_get_automatic_pwm_power(uint8_t *auto_pwm_power);
 
 uint8_t global_manager_update_output_percent_power(void);
 
@@ -121,8 +121,8 @@ uint8_t global_manager_get_s_out_turn_on_time(struct tm *turn_on_time, uint8_t s
 uint8_t global_manager_set_s_out_time_enable_status(uint8_t time_enable_status, uint8_t s_out_index);
 uint8_t global_manager_get_s_out_time_enable_status(uint8_t *time_enable_status, uint8_t s_out_index);
 
-uint8_t global_manager_get_ppf(uint32_t *ppf);
-uint8_t global_manager_set_ppf(uint32_t ppf);
+uint8_t global_manager_get_ppf(uint16_t *ppf);
+uint8_t global_manager_set_ppf(uint16_t ppf);
 
 /*
     UPDATE PWM CALENDAR
