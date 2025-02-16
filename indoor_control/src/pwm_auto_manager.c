@@ -14,6 +14,7 @@
 #include "../include/pwm_auto_manager.h"
 #include "../include/pwm_manager.h"
 #include "../include/led_manager.h"
+#include "../include/display_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE
@@ -164,6 +165,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                     if(is_pwm_in_fading_on_state(info->current_time, info->turn_on_time))
                     {
                         pwm_manager_turn_on_pwm_simul_day_on(info->percent_power);
+                        display_manager_manual(info->percent_power);
                         //led_manager_send_pwm_info(info->percent_power, 1, true);
                         led_manager_pwm_output(info->percent_power);
                     }
@@ -172,6 +174,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                         pwm_manager_turn_on_pwm(info->percent_power);
                         //led_manager_send_pwm_info(info->percent_power, 0, false);
                         led_manager_pwm_output(info->percent_power);
+                        display_manager_manual(info->percent_power);
                     }  
                 }
                 else
@@ -179,6 +182,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                     pwm_manager_turn_on_pwm(info->percent_power);
                     //led_manager_send_pwm_info(info->percent_power, 0, false);
                     led_manager_pwm_output(info->percent_power);
+                    display_manager_manual(info->percent_power);
                 }
             }
         }
@@ -202,6 +206,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                             pwm_manager_turn_on_pwm_simul_day_on(info->percent_power);
                             //led_manager_send_pwm_info(info->percent_power, 1, true);
                             led_manager_pwm_output(info->percent_power);
+                            display_manager_manual(info->percent_power);
                         }
                         else if(is_pwm_in_fading_off_state(info->current_time, toff_aux)) 
                         {
@@ -212,12 +217,14 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                             is_fading_off_started = true;
                             //led_manager_send_pwm_info(info->percent_power, 1, true);
                             led_manager_pwm_output(info->percent_power);
+                            display_manager_manual(info->percent_power);
                         }
                         else if(info->update_output_percent_power == true)
                         {
                             pwm_manager_turn_on_pwm(info->percent_power);
                             //led_manager_send_pwm_info(info->percent_power, 0, false);
                             led_manager_pwm_output(info->percent_power);
+                            display_manager_manual(info->percent_power);
                         }
                     }
 
@@ -234,6 +241,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                             pwm_manager_turn_on_pwm(info->percent_power);
                             //led_manager_send_pwm_info(info->percent_power, 0, false);
                             led_manager_pwm_output(info->percent_power);
+                            display_manager_manual(info->percent_power);
                         }
 
                         if((is_date1_grater_than_date2(info->current_time, toff_aux) == 1) \
@@ -248,12 +256,14 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                                 is_fading_off_started = true;
                                 //led_manager_send_pwm_info(info->percent_power, 1, true);
                                 led_manager_pwm_output(info->percent_power);
+                                display_manager_manual(info->percent_power);
                             }
                             else
                             {
                                 pwm_manager_turn_off_pwm();
                                 //led_manager_send_pwm_info(0, 0, false);
                                 led_manager_pwm_output(0);
+                                display_manager_manual(0);
                                 info->output_status = PWM_OUTPUT_OFF;
                             }  
                         }
@@ -264,6 +274,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                             pwm_manager_turn_off_pwm();
                             //led_manager_send_pwm_info(0, 0, false);
                             led_manager_pwm_output(0);
+                            display_manager_manual(0);
                         }
                         else if((is_date1_grater_than_date2(info->current_time, toff_aux) == 1) \
                             && (is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
@@ -279,6 +290,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                                 is_fading_off_started = true;
                                 //led_manager_send_pwm_info(info->percent_power, 1, true);
                                 led_manager_pwm_output(info->percent_power);
+                                display_manager_manual(info->percent_power);
                             }
                             else
                             {
@@ -286,6 +298,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                                 pwm_manager_turn_off_pwm();
                                 //led_manager_send_pwm_info(0, 0, false);
                                 led_manager_pwm_output(0);
+                                display_manager_manual(0);
                             }
                         }
                     }
@@ -302,6 +315,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                             pwm_manager_turn_off_pwm();
                             //led_manager_send_pwm_info(0, 0, false);
                             led_manager_pwm_output(0);
+                            display_manager_manual(0);
                         }
                         else if((is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
                             && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
@@ -311,6 +325,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                             is_fading_off_started = false;
                             //led_manager_send_pwm_info(0, 0, false);
                             led_manager_pwm_output(0);
+                            display_manager_manual(0);
                         }
                         else if((is_date1_grater_than_date2(info->current_time, info->turn_off_time) == 1) \
                             && (is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
@@ -324,6 +339,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                             is_fading_off_started = false;
                             //led_manager_send_pwm_info(0, 0, false);
                             led_manager_pwm_output(0);
+                            display_manager_manual(0);
                             
                         }
                     }
@@ -338,6 +354,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                     is_fading_off_started = false;
                     //led_manager_send_pwm_info(0, 0, false);
                     led_manager_pwm_output(0);
+                    display_manager_manual(0);
                 }
             }
             else
@@ -350,6 +367,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                     pwm_manager_turn_on_pwm(info->percent_power);
                     //led_manager_send_pwm_info(info->percent_power, 0, false);
                     led_manager_pwm_output(info->percent_power);
+                    display_manager_manual(info->percent_power);
                 }
 
                 if((info->update_output_percent_power == true) && (!is_fading_in_progress()))
@@ -361,6 +379,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                     pwm_manager_turn_on_pwm(info->percent_power);
                     //led_manager_send_pwm_info(info->percent_power, 0, false);
                     led_manager_pwm_output(info->percent_power);
+                    display_manager_manual(info->percent_power);
                 }
 
 
@@ -374,6 +393,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                     pwm_manager_turn_off_pwm();
                     //led_manager_send_pwm_info(0, 0, false);
                     led_manager_pwm_output(0);
+                    display_manager_manual(0);
                 }
                 else if((is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
                     && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
@@ -382,6 +402,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                     pwm_manager_turn_off_pwm();
                     //led_manager_send_pwm_info(0, 0, false);
                     led_manager_pwm_output(0);
+                    display_manager_manual(0);
                 }
                 else if((is_date1_grater_than_date2(info->current_time, info->turn_off_time) == 1) \
                     && (is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
@@ -394,6 +415,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                     pwm_manager_turn_off_pwm();
                     //led_manager_send_pwm_info(0, 0, false);
                     led_manager_pwm_output(0);
+                    display_manager_manual(0);
                     
                 }
             }

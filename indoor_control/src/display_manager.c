@@ -14,6 +14,7 @@
 #include "../include/display_manager.h"
 #include "../include/display_dogs164.h"
 #include "../include/current_time_manager.h"
+#include "../include/jumpers_manager.h"
 
 //  #include "display_dogs164.c"
 
@@ -51,15 +52,15 @@ struct tm time_pwmi;
 struct tm time_pwmf;
 uint8_t power;
 char fpower[6];
-uint16_t fpowerppf;
+uint32_t fpowerppf;
 flora_vege_status_t vegeflora;
 char vegeflorachar; // con esta me manejo en el display
 simul_day_status_t dia;
 bool diabool; // con este me manejo en e display
 pwm_mode_t modo;
-bool modobool; // con esta me manejo en el display
-
-uint8_t param_one;
+bool modobool;    // con esta me manejo en el display
+uint8_t contrast; // contraste del display
+uint8_t pwm_auto;
 uint8_t param_two;
 uint8_t param_three;
 // comandos de las acciones del display
@@ -94,9 +95,10 @@ static void display_manager_task(void *arg)
     set_timer();
     set_timerh();
     start_timerh();
-
+    contrast = 10;
+    pwm_auto = 0;
     // aca asgianar valores a todas las variables globales del display
-    get_params();
+
     /*time_device.tm_hour = 12;
     time_device.tm_min = 35;
     time_i1.tm_hour = 12;
@@ -124,7 +126,6 @@ static void display_manager_task(void *arg)
     vegeflora = 1;
     dia = pdTRUE;
     modo = pdTRUE;*/
-    param_one = 1;
     param_two = 1;
     param_three = 1;
     while (true)
@@ -134,29 +135,26 @@ static void display_manager_task(void *arg)
             switch (display_ev.cmd)
             {
             case START_DISPLAY:
+                screen = NONE;
                 display_init();
-                display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
+                get_params();
+                display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
 
                 break;
             case AUX: // BOTON AUX 1 TOQUE
                 switch (state)
                 {
                 case NORMAL:
+                    get_params();
                     if (screen == SCREEN_ONE)
                     {
-                        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
+                        display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
 
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     else if (screen == SCREEN_TWO)
                     {
-                        display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
-                        ESP_LOGI(TAG, "Pantalla %u", screen);
-                    }
-                    else // screen = SCREEN_THREE
-                    {
-                        global_manager_get_current_time_info(&time_device);
-                        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
+                        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     break;
@@ -181,13 +179,20 @@ static void display_manager_task(void *arg)
 
                 break;
             case AUXT: // boton AUX 3 segundos
+
                 switch (state)
                 {
                 case NORMAL:
+                    get_params();
                     // aca tengo que entrar a la primera linea titilante en la pantanlla en la que este
+                    if (screen == SCREEN_ONE)
+                    {
+                        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                        ESP_LOGI(TAG, "Pantalla %u", screen);
+                    }
+
                     state = CONFIG_LINE;
                     line = 0;
-                    param_one = 1;
                     param_two = 1;
                     param_three = 1;
                     display_blink_manager(screen, 3); // con esta veo que pantalla estoy
@@ -201,7 +206,7 @@ static void display_manager_task(void *arg)
                     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
                     // vuelvo a la pantalla 1
                     global_manager_get_current_time_info(&time_device);
-                    display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
+                    display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                     ESP_LOGI(TAG, "Pantalla %u", screen);
 
                     break;
@@ -214,7 +219,7 @@ static void display_manager_task(void *arg)
                     // dejo de blinkear el caracter
                     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
                     global_manager_get_current_time_info(&time_device);
-                    display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
+                    display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                     ESP_LOGI(TAG, "Pantalla %u", screen);
 
                     break;
@@ -248,6 +253,12 @@ static void display_manager_task(void *arg)
                     break;
                 }
                 break;
+            case VFT:
+                // cambio el modo (manual o automatico)
+             
+                modobool = (bool)display_ev.pwm_mode;
+                display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
+                break;
             case DOWN:
                 switch (state)
                 {
@@ -262,15 +273,14 @@ static void display_manager_task(void *arg)
                         vegeflorachar = 'F';
                     }
                     global_manager_get_current_time_info(&time_device);
-                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device);
+                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                     break;
                 case CONFIG_LINE:
                     stop_timer();
                     ESP_LOGI("CONFIG_LINE", "line es %u", line);
-                    param_one = 1;
                     param_two = 1;
                     param_three = 1;
-                    display_blink_manager(screen, 0); // 0 es down
+                    display_blink_manager(screen, 1); // 0 es down
 
                     break;
                 case CONFIG_PARAM:
@@ -298,19 +308,16 @@ static void display_manager_task(void *arg)
                     }
                     printf("El char de vege_flora es %c", vegeflorachar);
                     global_manager_get_current_time_info(&time_device);
-                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device);
+                    display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                     break;
                 case CONFIG_LINE:
                     stop_timer();
-                    param_one = 1;
                     param_two = 1;
                     param_three = 1;
-                    display_blink_manager(screen, 1); // 1 es up
+                    display_blink_manager(screen, 0); // 1 es up
 
                     break;
                 case CONFIG_PARAM:
-                    ESP_LOGI("UP-CONFIG_PARAM", "Entro al config_param del UP");
-                    ESP_LOGI("UP-CONFIG_PARAM", "param_two es %u", param_two);
                     // subo numero a configurar
                     display_param_manager(UP);
 
@@ -321,7 +328,23 @@ static void display_manager_task(void *arg)
                 }
                 break;
             case PWM_MANUAL_VALUE:
+                get_params();
                 display_set_power(display_ev.pwm_value, fpower);
+                break;
+            case PWM_MODE_UPDATE:
+                power = display_ev.pwm_value;
+                get_params();
+                if (display_ev.vege_flora == FLORA_VEGE_OUTPUT_DISABLE)
+                {
+                    vegeflorachar = 'V';
+                }
+                else
+                {
+                    vegeflorachar = 'F';
+                }
+                printf("El char de vege_flora es %c", vegeflorachar);
+                global_manager_get_current_time_info(&time_device);
+                display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                 break;
             default:
                 break;
@@ -347,13 +370,14 @@ void display_manager_init(void)
                 NULL, configMAX_PRIORITIES - 2, NULL);
 }
 //------------------------------------------------------------------------------
-void display_manager_start(uint8_t pwm_value, char vege_flora)
+void display_manager_start(uint8_t pwm_value, char vege_flora, pwm_mode_t pwm_mode)
 {
     display_event_t display_ev;
 
     display_ev.cmd = START_DISPLAY;
     display_ev.pwm_value = pwm_value;
     display_ev.vege_flora = vege_flora;
+    display_ev.pwm_mode = pwm_mode;
     power = pwm_value;
     vegeflorachar = vege_flora;
     xQueueSend(display_manager_queue, &display_ev, 10);
@@ -375,6 +399,17 @@ void display_manager_up(uint8_t pwm_value, flora_vege_status_t vege_flora)
     display_event_t display_ev;
 
     display_ev.cmd = UP;
+    display_ev.pwm_value = pwm_value;
+    display_ev.vege_flora = vege_flora;
+
+    xQueueSend(display_manager_queue, &display_ev, 10);
+}
+//------------------------------------------------------------------------------
+void display_manager_pwm_mode_update(uint8_t pwm_value, flora_vege_status_t vege_flora)
+{
+    display_event_t display_ev;
+
+    display_ev.cmd = PWM_MODE_UPDATE;
     display_ev.pwm_value = pwm_value;
     display_ev.vege_flora = vege_flora;
 
@@ -413,6 +448,18 @@ void display_manager_auxt()
     xQueueSend(display_manager_queue, &display_ev, 10);
 }
 
+void display_manager_vft(pwm_mode_t pwm_mode)
+{
+    display_event_t display_ev;
+
+    display_ev.cmd = VFT;
+    display_ev.pwm_mode = pwm_mode;
+    // display_ev.pwm_value = power;
+    // display_ev.vege_flora = vege_flora;
+
+    xQueueSend(display_manager_queue, &display_ev, 10);
+}
+
 void display_manager_manual(uint8_t pwm_value)
 {
     display_event_t display_ev;
@@ -428,16 +475,64 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
 {
     switch (screen)
     {
-    case SCREEN_ONE:
+    /*case SCREEN_ONE:
         // en esta pantalla solo se modifica la ultima linea
-        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
+        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
         line = 3;
         start_timer();
-        break;
-    case SCREEN_THREE:
+        break;*/
+    case SCREEN_TWO:
         // chequeo si vino up o down
         display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
-        if (cmd == 0) // es down
+        /* if (cmd == 0) // es down
+         {
+             if (line == 0)
+             {
+                 line = 3; // voy a la ultima linea
+             }
+             else
+             {
+                 --line; // voy a la anterior linea
+             }
+         }
+         else if (cmd == 1) // es up
+         {
+             if (line == 3)
+             {
+                 line = 0; // voy a la primera linea
+             }
+             else
+             {
+                 ++(line); // voy a la siguiente linea
+             }
+         }*/
+        /*if (line == 0)
+        {
+            // blink renglon 1
+            start_timer();
+        }
+        else if (line == 1)
+        {
+            // blink renglon 2
+            start_timer();
+        }
+        else if (line == 2)
+        {
+            // blink renglon 3
+            start_timer();
+        }
+        else if (line == 3)
+        {
+            // blink renglon 4
+            ESP_LOGI("CONFIG_LINE", "line es %u", line);
+            start_timer();
+        }*/
+        // start_timer();
+        break;
+    case SCREEN_THREE:
+        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+
+        /*if (cmd == 0) // es down
         {
             if (line == 0)
             {
@@ -459,60 +554,35 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
                 ++(line); // voy a la siguiente linea
             }
         }
-        if (line == 0)
-        {
-            // blink renglon 1
-            start_timer();
-        }
-        else if (line == 1)
-        {
-            // blink renglon 2
-            start_timer();
-        }
-        else if (line == 2)
-        {
-            // blink renglon 3
-            start_timer();
-        }
-        else if (line == 3)
-        {
-            // blink renglon 4
-            ESP_LOGI("CONFIG_LINE", "line es %u", line);
-            start_timer();
-        }
-
-        break;
-    case SCREEN_TWO:
-        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
-
-        if (cmd == 0) // es down
-        {
-            if (line == 0)
-            {
-                line = 1; // voy a la ultima linea
-            }
-            else if (line == 1)
-            {
-                line = 0;
-            }
-        }
-        else if (cmd == 1) // es up
-        {
-            if (line == 0)
-            {
-                line = 1; // voy a la primera linea
-            }
-            else if (line == 1)
-            {
-                line = 0;
-            }
-        }
-        start_timer();
+        start_timer();*/
         break;
 
     default:
         break;
     }
+    if (cmd == 0) // es down
+    {
+        if (line == 0)
+        {
+            line = 3; // voy a la ultima linea
+        }
+        else
+        {
+            --line; // voy a la anterior linea
+        }
+    }
+    else if (cmd == 1) // es up
+    {
+        if (line == 3)
+        {
+            line = 0; // voy a la primera linea
+        }
+        else
+        {
+            ++(line); // voy a la siguiente linea
+        }
+    }
+    start_timer();
 
     return ESP_OK;
 }
@@ -538,11 +608,11 @@ void blink_callback(TimerHandle_t timer)
     {
         switch (screen)
         {
-        case SCREEN_ONE:
-            screen_one_line_three(time_device, diabool, modobool);
+        /*case SCREEN_ONE:
+            // screen_one_line_three(time_device, diabool, modobool);
             clear = pdFALSE;
-            break;
-        case SCREEN_THREE:
+            break;*/
+        case SCREEN_TWO:
             if (line == 0)
             {
                 screen_two_line(line, time_i1, time_f1);
@@ -561,8 +631,10 @@ void blink_callback(TimerHandle_t timer)
             }
             clear = pdFALSE;
             break;
-        case SCREEN_TWO:
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+        case SCREEN_THREE:
+
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+
             clear = pdFALSE;
             break;
         default:
@@ -619,10 +691,11 @@ esp_err_t reset_timer()
 
 void time_callback(TimerHandle_t timerh)
 { // obtengo la hora del dispositivo y printeo la linea correspondiente
-    global_manager_get_current_time_info(&time_device);
+
     if (screen == SCREEN_ONE && state == NORMAL)
     {
-        screen_one_line_three(time_device, diabool, modobool);
+        global_manager_get_current_time_info(&time_device);
+        screen_one_time_device(time_device);
     }
 }
 
@@ -676,8 +749,8 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
 {
     switch (screen)
     {
-    case SCREEN_ONE:
-        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device);
+    /*case SCREEN_ONE:
+        display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
         if (cmd == VF || cmd == AUX)
         {
             screen_one_param(cmd);
@@ -696,8 +769,8 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
             param_modified_one(DOWN);
             ESP_LOGI("PARAM_MANAGER", "Salgo de param_modified_one");
         }
-        break;
-    case SCREEN_THREE:
+        break;*/
+    case SCREEN_TWO:
         display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
         if (cmd == VF || cmd == AUX)
         {
@@ -716,8 +789,8 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
             ESP_LOGI("PARAM_MANAGER", "Salgo de param_modified_two");
         }
         break;
-    case SCREEN_TWO:
-        display_set_screen_three(&screen, time_pwmi, time_pwmf, fpower);
+    case SCREEN_THREE:
+        display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
         if (cmd == VF || cmd == AUX)
         {
             screen_three_param(cmd);
@@ -727,6 +800,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
             ESP_LOGI("PARAM_MANAGER", "Entro a param_modified_three");
             param_modified_three(UP);
             ESP_LOGI("PARAM_MANAGER", "Salgo de param_modified_three");
+            ESP_LOGI("param_modified_three", "La hora del dispositivo es %u", time_device.tm_hour);
         }
         else // cmd == DOWN
         {
@@ -742,10 +816,10 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
     return ESP_OK;
 }
 
-esp_err_t screen_one_param(display_event_cmds_t cmd)
+/*esp_err_t screen_one_param(display_event_cmds_t cmd)
 {
 
-    screen_one_line_three(time_device, diabool, modobool); // escribo linea para que no quede vacia
+    // screen_one_line_three(time_device, diabool, modobool); // escribo linea para que no quede vacia
     if (cmd == VF)
     {
         if (param_one == 4)
@@ -781,7 +855,7 @@ esp_err_t screen_one_param(display_event_cmds_t cmd)
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
 
     return ESP_OK;
-}
+}*/
 
 esp_err_t screen_two_param(display_event_cmds_t cmd)
 {
@@ -804,7 +878,7 @@ esp_err_t screen_two_param(display_event_cmds_t cmd)
     default:
         break;
     }
-    if (cmd == VF)
+    if (cmd == VF) // si el comando es VF, avanzo al siguiente
     {
         if (param_two == 4)
         {
@@ -846,12 +920,13 @@ esp_err_t screen_two_param(display_event_cmds_t cmd)
 
 esp_err_t screen_three_param(display_event_cmds_t cmd)
 {
-    screen_three_line(line, fpower, time_pwmi, time_pwmf);
+
+    screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
     if (line == 0)
     {
         if (cmd == VF)
         {
-            if (param_three == 4)
+            if (param_three == 2)
             {
                 param_three = 1;
             }
@@ -864,18 +939,10 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
         {
 
         case 1:
-            set_cursor(line, 5);
-            break;
-
-        case 2:
-            set_cursor(line, 8);
-            break;
-
-        case 3:
             set_cursor(line, 12);
             break;
 
-        case 4:
+        case 2:
             set_cursor(line, 15);
             break;
 
@@ -883,10 +950,53 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
             break;
         }
     }
-    else // line == 1
+    else if (line == 2)
     {
         if (cmd == VF)
         {
+            if (param_three == 6)
+            {
+                param_three = 1;
+            }
+            else
+            {
+                param_three++;
+            }
+        }
+        switch (param_three) // me fijo que parametro modifico
+        {
+        case 1:
+            set_cursor(line, 1);
+            break;
+        case 2:
+            set_cursor(line, 2);
+            break;
+        case 3:
+            set_cursor(line, 3);
+            break;
+        case 4:
+            set_cursor(line, 4);
+            break;
+        case 5:
+            set_cursor(line, 5);
+            break;
+        case 6:
+            set_cursor(line, 14);
+            break;
+
+        default:
+            break;
+        }
+    }
+    else if (line == 3)
+    {
+        set_cursor(line, 15);
+    }
+    else if (line == 1)
+    {
+        if (cmd == VF)
+        {
+
             if (param_three == 5)
             {
                 param_three = 1;
@@ -899,19 +1009,19 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
         switch (param_three) // me fijo que parametro modifico
         {
         case 1:
-            set_cursor(line, 10);
+            set_cursor(line, 0);
             break;
         case 2:
-            set_cursor(line, 11);
+            set_cursor(line, 6);
             break;
         case 3:
-            set_cursor(line, 12);
+            set_cursor(line, 9);
             break;
         case 4:
-            set_cursor(line, 13);
+            set_cursor(line, 12);
             break;
         case 5:
-            set_cursor(line, 14);
+            set_cursor(line, 15);
             break;
 
         default:
@@ -924,7 +1034,7 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
     return ESP_OK;
 }
 
-esp_err_t param_modified_one(display_event_cmds_t cmd)
+/*esp_err_t param_modified_one(display_event_cmds_t cmd)
 {
     ESP_LOGI("param_modified_one", "Param_one vale %u", param_one);
     if (param_one == 1)
@@ -937,7 +1047,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         {
             diabool = pdTRUE;
         }
-        screen_one_line_three(time_device, diabool, modobool);
+        // screen_one_line_three(time_device, diabool, modobool);
         set_cursor(3, 4);
     }
     if (param_one == 2)
@@ -950,7 +1060,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
         {
             modobool = pdTRUE;
         }
-        screen_one_line_three(time_device, diabool, modobool);
+        // screen_one_line_three(time_device, diabool, modobool);
         set_cursor(3, 7);
     }
     if (param_one == 3)
@@ -966,7 +1076,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
                 time_device.tm_hour += 1;
             }
             // mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            // screen_one_line_three(time_device, dia, modo);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 12);
@@ -982,7 +1092,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
                 time_device.tm_hour -= 1;
             }
             // mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            // screen_one_line_three(time_device, dia, modo);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 12);
@@ -1002,7 +1112,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
                 time_device.tm_min += 1;
             }
             // mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            // screen_one_line_three(time_device, dia, modo);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 15);
@@ -1018,7 +1128,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
                 time_device.tm_min -= 1;
             }
             // mktime(&time_device);
-            screen_one_line_three(time_device, dia, modo);
+            // screen_one_line_three(time_device, dia, modo);
             ESP_LOGI("time", "la hora vale %u", time_device.tm_hour);
             ESP_LOGI("time", "los minutos valen %u", time_device.tm_min);
             set_cursor(3, 15);
@@ -1026,7 +1136,7 @@ esp_err_t param_modified_one(display_event_cmds_t cmd)
     }
     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_ON);
     return ESP_OK;
-}
+}*/
 
 esp_err_t param_modified_two(display_event_cmds_t cmd)
 {
@@ -1200,6 +1310,7 @@ esp_err_t param_two_bis(display_event_cmds_t cmd, struct tm *time_i, struct tm *
 esp_err_t param_modified_three(display_event_cmds_t cmd)
 {
     ESP_LOGI("param_modified_three", "Param_three vale %u", param_three);
+    ESP_LOGI("param_modified_three", "Line %u", line);
     if (line == 0)
     {
         switch (param_three)
@@ -1207,123 +1318,66 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
         case 1:
             if (cmd == UP)
             {
-                if (time_pwmi.tm_hour == 23)
+                ESP_LOGI("param_modified_three", "Subo hora del dispositivo");
+                if (time_device.tm_hour == 23)
                 {
-                    time_pwmi.tm_hour = 0;
+                    time_device.tm_hour = 0;
                 }
                 else
                 {
-                    time_pwmi.tm_hour += 1;
+                    time_device.tm_hour += 1;
                 }
-                mktime(&time_pwmi);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(0, 5);
+                mktime(&time_device);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+                set_cursor(0, 12);
             }
             else
             {
-                if (time_pwmi.tm_hour == 0)
+                ESP_LOGI("param_modified_three", "Bajo hora del dispositivo");
+                if (time_device.tm_hour == 0)
                 {
-                    time_pwmi.tm_hour = 23;
+                    time_device.tm_hour = 23;
                 }
                 else
                 {
-                    time_pwmi.tm_hour -= 1;
+                    time_device.tm_hour -= 1;
                 }
-                mktime(&time_pwmi);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(0, 5);
+                ESP_LOGI("param_modified_three", "La hora del dispositivo es %u", time_device.tm_hour);
+                mktime(&time_device);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+                set_cursor(0, 12);
             }
             break;
 
         case 2:
             if (cmd == UP)
             {
-                if (time_pwmi.tm_min == 59)
+                ESP_LOGI("param_modified_three", "Subo minutos del dispositivo");
+                if (time_device.tm_min == 59)
                 {
-                    time_pwmi.tm_min = 0;
+                    time_device.tm_min = 0;
                 }
                 else
                 {
-                    time_pwmi.tm_min += 1;
+                    time_device.tm_min += 1;
                 }
-                mktime(&time_pwmi);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(0, 8);
-            }
-            else
-            {
-                if (time_pwmi.tm_min == 0)
-                {
-                    time_pwmi.tm_min = 59;
-                }
-                else
-                {
-                    time_pwmi.tm_min -= 1;
-                }
-                mktime(&time_pwmi);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(0, 8);
-            }
-            break;
-
-        case 3:
-            if (cmd == UP)
-            {
-                if (time_pwmf.tm_hour == 23)
-                {
-                    time_pwmf.tm_hour = 0;
-                }
-                else
-                {
-                    time_pwmf.tm_hour += 1;
-                }
-                mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(0, 12);
-            }
-            else
-            {
-                if (time_pwmf.tm_hour == 0)
-                {
-                    time_pwmf.tm_hour = 23;
-                }
-                else
-                {
-                    time_pwmf.tm_hour -= 1;
-                }
-                mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
-                set_cursor(0, 12);
-            }
-            break;
-
-        case 4:
-            if (cmd == UP)
-            {
-                if (time_pwmf.tm_min == 59)
-                {
-                    time_pwmf.tm_min = 0;
-                }
-                else
-                {
-                    time_pwmf.tm_min += 1;
-                }
-                mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                mktime(&time_device);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
                 set_cursor(0, 15);
             }
             else
             {
-                if (time_pwmf.tm_min == 0)
+                ESP_LOGI("param_modified_three", "Bajo minutos del dispositivo");
+                if (time_device.tm_min == 0)
                 {
-                    time_pwmf.tm_min = 59;
+                    time_device.tm_min = 59;
                 }
                 else
                 {
-                    time_pwmf.tm_min -= 1;
+                    time_device.tm_min -= 1;
                 }
-                mktime(&time_pwmf);
-                screen_three_line(line, fpower, time_pwmi, time_pwmf);
+                mktime(&time_device);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
                 set_cursor(0, 15);
             }
             break;
@@ -1332,7 +1386,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
             break;
         }
     }
-    else
+    else if (line == 2)
     {
         switch (param_three)
         {
@@ -1362,8 +1416,8 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                 }
             }
 
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
-            set_cursor(line, 10);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+            set_cursor(line, 1);
             break;
         case 2:
             if (cmd == UP)
@@ -1390,8 +1444,8 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[1]--;
                 }
             }
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
-            set_cursor(line, 11);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+            set_cursor(line, 2);
             break;
         case 3:
             if (cmd == UP)
@@ -1417,8 +1471,8 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[2]--;
                 }
             }
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
-            set_cursor(line, 12);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+            set_cursor(line, 3);
             break;
         case 4:
             if (cmd == UP)
@@ -1444,8 +1498,8 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[3]--;
                 }
             }
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
-            set_cursor(line, 13);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+            set_cursor(line, 4);
             break;
         case 5:
             if (cmd == UP)
@@ -1471,10 +1525,210 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
                     fpower[4]--;
                 }
             }
-            screen_three_line(line, fpower, time_pwmi, time_pwmf);
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+            set_cursor(line, 5);
+            break;
+        case 6:
+            if (cmd == UP)
+            {
+                if (pwm_auto == 100)
+                {
+                    pwm_auto = 0;
+                }
+                else
+                {
+
+                    pwm_auto++;
+                }
+            }
+
+            else
+            {
+                if (pwm_auto == 0)
+                {
+                    pwm_auto = 100;
+                }
+                else
+                {
+
+                    pwm_auto--;
+                }
+            }
+
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
             set_cursor(line, 14);
             break;
+        default:
+            break;
+        }
+    }
+    else if (line == 3) // estoy en contraste
+    {
+        if (cmd == UP)
+        {
+            if (contrast == 16)
+            {
+                contrast = 1;
+            }
+            else
+            {
+                contrast++;
+            }
+        }
 
+        else
+        {
+            if (contrast == 1)
+            {
+                contrast = 16;
+            }
+            else
+            {
+                contrast--;
+            }
+        }
+        set_contrast(contrast);
+
+        screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+        set_cursor(line, 15);
+    }
+    else if (line == 1)
+    {
+        switch (param_three)
+        {
+        case 1:
+            if (diabool == true)
+            {
+                diabool = false;
+            }
+            else
+            {
+                diabool = true;
+            }
+            screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto); // escribo la linea para que no quede en blanco
+            set_cursor(line, 0);
+            break;
+        case 2:
+            if (cmd == UP)
+            {
+                if (time_pwmi.tm_hour == 23)
+                {
+                    time_pwmi.tm_hour = 0;
+                }
+                else
+                {
+                    time_pwmi.tm_hour += 1;
+                }
+                mktime(&time_pwmi);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 6);
+            }
+            else
+            {
+                if (time_pwmi.tm_hour == 0)
+                {
+                    time_pwmi.tm_hour = 23;
+                }
+                else
+                {
+                    time_pwmi.tm_hour -= 1;
+                }
+                mktime(&time_pwmi);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 6);
+            }
+
+            break;
+        case 3:
+            if (cmd == UP)
+            {
+                if (time_pwmi.tm_min == 59)
+                {
+                    time_pwmi.tm_min = 0;
+                }
+                else
+                {
+                    time_pwmi.tm_min += 1;
+                }
+                mktime(&time_pwmi);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 9);
+            }
+            else
+            {
+                if (time_pwmi.tm_min == 0)
+                {
+                    time_pwmi.tm_min = 59;
+                }
+                else
+                {
+                    time_pwmi.tm_min -= 1;
+                }
+                mktime(&time_pwmi);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 9);
+            }
+            break;
+        case 4:
+            if (cmd == UP)
+            {
+                if (time_pwmf.tm_hour == 23)
+                {
+                    time_pwmf.tm_hour = 0;
+                }
+                else
+                {
+                    time_pwmf.tm_hour += 1;
+                }
+                mktime(&time_pwmf);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 12);
+            }
+            else
+            {
+                if (time_pwmf.tm_hour == 0)
+                {
+                    time_pwmf.tm_hour = 23;
+                }
+                else
+                {
+                    time_pwmf.tm_hour -= 1;
+                }
+                mktime(&time_pwmf);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 12);
+            }
+            break;
+        case 5:
+            if (cmd == UP)
+            {
+                if (time_pwmf.tm_min == 59)
+                {
+                    time_pwmf.tm_min = 0;
+                }
+                else
+                {
+                    time_pwmf.tm_min += 1;
+                }
+                mktime(&time_pwmf);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 15);
+            }
+            else
+            {
+                if (time_pwmf.tm_min == 0)
+                {
+                    time_pwmf.tm_min = 59;
+                }
+                else
+                {
+                    time_pwmf.tm_min -= 1;
+                }
+                mktime(&time_pwmf);
+                screen_three_line(line, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
+                set_cursor(1, 15);
+            }
+            break;
         default:
             break;
         }
@@ -1486,7 +1740,7 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
 {
     switch (screen)
     {
-    case SCREEN_ONE:
+    /*case SCREEN_ONE:
         // set dia
         ESP_LOGI("Display_manager", "Guardo los parametros de la pantalla 1");
         if (diabool == false)
@@ -1510,47 +1764,58 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         global_manager_set_pwm_mode(modo);
         // set horario device
         current_time_manager_set_current_time(time_device);
+        break;*/
+    case SCREEN_TWO:
+        ESP_LOGI("Display_manager", "Guardo los parametros de la pantalla 2");
+        // set horario 1 final e inicial
+        global_manager_set_s_out_turn_on_time(time_i1, 0);
+        global_manager_set_s_out_turn_off_time(time_f1, 0);
+        // set horario 2 final e inicial
+        global_manager_set_s_out_turn_on_time(time_i2, 1);
+        global_manager_set_s_out_turn_off_time(time_f2, 1);
+        // set horario 3 final e inicial
+        global_manager_set_s_out_turn_on_time(time_i3, 2);
+        global_manager_set_s_out_turn_off_time(time_f3, 2);
+        // set horario 4 final e inicial
+        global_manager_set_s_out_turn_on_time(time_i4, 3);
+        global_manager_set_s_out_turn_off_time(time_f4, 3);
+
         break;
     case SCREEN_THREE:
         ESP_LOGI("Display_manager", "Guardo los parametros de la pantalla 3");
-        if (line == 0)
-        { // set horario 1 final e inicial
-            global_manager_set_s_out_turn_on_time(time_i1, 0);
-            global_manager_set_s_out_turn_off_time(time_f1, 0);
-        }
-        if (line == 1)
+
+        // set horario final e inicial de pwm
+        global_manager_set_turn_on_time(time_pwmi);
+        global_manager_set_turn_off_time(time_pwmf);
+        // set horario device
+        current_time_manager_set_current_time(time_device);
+        // set contrast (falta funcion)
+        // set dia
+        if (diabool == false)
         {
-            // set horario 2 final e inicial
-            global_manager_set_s_out_turn_on_time(time_i2, 1);
-            global_manager_set_s_out_turn_off_time(time_f2, 1);
+            dia = SIMUL_DAY_OFF;
         }
-        if (line == 2)
+        else
         {
-            // set horario 3 final e inicial
-            global_manager_set_s_out_turn_on_time(time_i3, 2);
-            global_manager_set_s_out_turn_off_time(time_f3, 2);
+            dia = SIMUL_DAY_ON;
         }
-        if (line == 3)
+        global_manager_set_simul_day_status(dia);
+        // set modo
+        if (modobool == false)
         {
-            // set horario 4 final e inicial
-            global_manager_set_s_out_turn_on_time(time_i4, 3);
-            global_manager_set_s_out_turn_off_time(time_f4, 3);
+            modo = PWM_MANUAL;
         }
-        break;
-    case SCREEN_TWO:
-        ESP_LOGI("Display_manager", "Guardo los parametros de la pantalla 2");
-        if (line == 0)
+        else
         {
-            // set horario final e inicial de pwm
-            global_manager_set_turn_on_time(time_pwmi);
-            global_manager_set_turn_off_time(time_pwmf);
+            modo = PWM_AUTOMATIC;
         }
-        if (line == 1)
-        {
-            // set potencia total
-            fpowerppf = atoi(fpower);
-            global_manager_set_ppf(fpowerppf);
-        }
+        global_manager_set_pwm_mode(modo);
+        // set potencia total
+        fpowerppf = atoi(fpower);
+        global_manager_set_ppf(fpowerppf);
+        printf("Valor convertido: %lu\n", fpowerppf);
+        global_manager_set_automatic_pwm_power(pwm_auto);  ///////////// SET porcentaje de pwm automatico
+
         break;
 
     default:
@@ -1581,13 +1846,25 @@ esp_err_t get_params()
 
     // obtengo horario de pwm
     global_manager_get_turn_on_time(&time_pwmi);
+    printf("La hora de inicio de PWM es %u:%u \n", time_pwmi.tm_hour, time_pwmi.tm_min);
     global_manager_get_turn_off_time(&time_pwmf);
+    printf("La hora de off de PWM es %u:%u \n", time_pwmf.tm_hour, time_pwmf.tm_min);
 
     // obtengo potencia total
     global_manager_get_ppf(&fpowerppf);
-    sprintf(fpower, "%05d", fpowerppf);
+    printf("La potencia total es %d \n", (int)fpowerppf);
+    sprintf(fpower, "%05d", (int)fpowerppf);
     // obtengo potencia porcentaje
-    global_manager_get_pwm_digital_percentage(&power);
+
+    if (is_jp3_teclas_connected() == true)
+    {
+        global_manager_get_pwm_digital_percentage(&power);
+    }
+    else
+    {
+        global_manager_get_pwm_analog_percentage(&power);
+        printf("La potencia es %u \n", power);
+    }
 
     // obtengo vegeflora
     global_manager_get_flora_vege_status(&vegeflora);
@@ -1613,12 +1890,16 @@ esp_err_t get_params()
     global_manager_get_pwm_mode(&modo);
     if (modo == PWM_MANUAL)
     {
-        modobool = pdFALSE;
+        printf("MODO MANUAL \n");
+        modobool = false;
     }
     else
     {
-        modobool = pdTRUE;
+        printf("MODO AUTOMATIC \n");
+        modobool = true;
     }
+     global_manager_get_automatic_pwm_power(&pwm_auto);
+    // FALTA GET CONTRAST
     return ESP_OK;
 }
 //---------------------------- END OF FILE -------------------------------------

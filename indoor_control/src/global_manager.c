@@ -457,7 +457,7 @@ static void global_manager_task(void *arg)
     pwm_auto_info.simul_day_status = nv_init_simul_day_status();
     if (pwm_calendar.read_ok)
     {
-        pwm_auto_info.turn_on_time = pwm_calendar.turn_off_time;
+        pwm_auto_info.turn_on_time = pwm_calendar.turn_on_time;
         pwm_auto_info.turn_off_time = pwm_calendar.turn_off_time;
     }
 
@@ -478,6 +478,7 @@ static void global_manager_task(void *arg)
     global_manager_init_pwm_digital_percentage(pwm_digital_value);
     global_manager_init_flora_vege_status(flora_vege_status);
     global_manager_init_ppf(ppf);
+    
 
     printf("INICIO PRINT DEBUG \n");
     printf("PWM DIGITAL VALUE %d \n", pwm_digital_value);
@@ -502,25 +503,39 @@ static void global_manager_task(void *arg)
         flora_vege_turn_on();
     }
 
-    if (is_jp3_teclas_connected() == false)
+    if(pwm_mode == PWM_MANUAL)
     {
-        global_manager_get_pwm_analog_percentage(&pwm_manual_value);
-        pwm_manager_turn_on_pwm(pwm_manual_value);
-        led_manager_pwm_output(pwm_manual_value);
-        if (flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
-            display_manager_start(pwm_manual_value, 'V');
-        else
-            display_manager_start(pwm_manual_value, 'F');
-        pwm_value_bkp = pwm_manual_value;
+        printf("MODO MANUAL \n");
+        if (is_jp3_teclas_connected() == false)
+        {
+            global_manager_get_pwm_analog_percentage(&pwm_manual_value);
+            pwm_manager_turn_on_pwm(pwm_manual_value);
+            led_manager_pwm_output(pwm_manual_value);
+            if (flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
+                display_manager_start(pwm_manual_value, 'V', pwm_mode);
+            else
+                display_manager_start(pwm_manual_value, 'F', pwm_mode);
+            pwm_value_bkp = pwm_manual_value;
+        }
+        else if (is_jp3_teclas_connected() == true)
+        {
+            pwm_manager_turn_on_pwm(pwm_digital_value);
+            led_manager_pwm_output(pwm_digital_value);
+            if (flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
+                display_manager_start(pwm_digital_value, 'V', pwm_mode);
+            else
+                display_manager_start(pwm_digital_value, 'F', pwm_mode);
+        }
     }
-    else if (is_jp3_teclas_connected() == true)
+    else if(pwm_mode == PWM_AUTOMATIC)
     {
-        pwm_manager_turn_on_pwm(pwm_digital_value);
-        led_manager_pwm_output(pwm_digital_value);
+        printf("MODO AUTOMATIC \n");
+        pwm_manager_turn_off_pwm();
+        led_manager_pwm_output(0);
         if (flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
-            display_manager_start(pwm_digital_value, 'V');
-        else
-            display_manager_start(pwm_digital_value, 'F');
+                display_manager_start(0, 'V', pwm_mode);
+            else
+                display_manager_start(0, 'F', pwm_mode);
     }
 
     while (true)
@@ -605,7 +620,7 @@ void global_manager_init(void)
     device_mode = global_manager_find_device_mode();
     global_manager_set_device_mode(device_mode);
 
-    global_manager_set_pwm_mode(PWM_MANUAL);
+    //global_manager_set_pwm_mode(PWM_MANUAL);
 
     pote_input_manager_init();
 
@@ -793,7 +808,7 @@ uint8_t global_manager_set_turn_on_time(struct tm turn_on_time)
         xSemaphoreGive(global_manager_semaph);
         if ((date_aux.tm_hour != turn_on_time.tm_hour) || (date_aux.tm_min != turn_on_time.tm_min))
         {
-            write_date_on_flash(PWM_DATE_OFF_KEY, global_manager_info.nv_info.pwm_auto.turn_on_time);
+            write_date_on_flash(PWM_DATE_ON_KEY, global_manager_info.nv_info.pwm_auto.turn_on_time);
         }
         return 1;
     }
@@ -862,6 +877,18 @@ uint8_t global_manager_set_pwm_automatic_info(pwm_auto_info_t pwm_auto)
     if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {
         global_manager_info.nv_info.pwm_auto = pwm_auto;
+        xSemaphoreGive(global_manager_semaph);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_set_pwm_in_automatic(void)
+{
+    if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        global_manager_info.nv_info.pwm_auto.update_output_percent_power = true;
         xSemaphoreGive(global_manager_semaph);
         return 1;
     }
@@ -1194,7 +1221,7 @@ uint8_t global_manager_get_s_out_time_enable_status(uint8_t *time_enable_status,
     return 0;
 }
 //------------------------------------------------------------------------------
-uint8_t global_manager_get_ppf(uint16_t *ppf)
+uint8_t global_manager_get_ppf(uint32_t *ppf)
 {
     if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {
@@ -1206,9 +1233,9 @@ uint8_t global_manager_get_ppf(uint16_t *ppf)
     return 0;
 }
 //------------------------------------------------------------------------------
-uint8_t global_manager_set_ppf(uint16_t ppf)
+uint8_t global_manager_set_ppf(uint32_t ppf)
 {
-    uint16_t ppf_aux = 0;
+    uint32_t ppf_aux = 0;
 
     if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {
