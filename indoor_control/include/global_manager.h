@@ -125,6 +125,8 @@ uint8_t global_manager_get_ppf(uint32_t *ppf);
 uint8_t global_manager_set_ppf(uint32_t ppf);
 
 uint8_t global_manager_set_pwm_in_automatic(void);
+uint8_t global_manager_get_automatic_pwm_output_percent_power(uint8_t *output_percent_power);
+
 /*
     UPDATE PWM CALENDAR
     -------------------

@@ -330,6 +330,8 @@ void button_event_manager_task(void *pvParameters)
     uint8_t pwm_analog_per_value = 0;
     pwm_mode_t pwm_mode;
     display_state_t screen_state;
+    uint8_t output_percent_power = 0;
+
     config_buttons_isr();
 
     while (true)
@@ -466,7 +468,8 @@ void button_event_manager_task(void *pvParameters)
                 {
                     global_manager_set_pwm_mode(PWM_AUTOMATIC);
                     global_manager_set_pwm_in_automatic();
-                    display_manager_pwm_mode_update(0, flora_vege_status);
+                    global_manager_get_automatic_pwm_output_percent_power(&output_percent_power);
+                    display_manager_pwm_mode_update(output_percent_power, flora_vege_status);
                     led_manager_pwm_output(0);
                     pwm_manager_turn_off_pwm();
                 }

@@ -973,6 +973,18 @@ uint8_t global_manager_get_automatic_pwm_output_status(uint8_t *auto_pwm_output_
     return 0;
 }
 //------------------------------------------------------------------------------
+uint8_t global_manager_get_automatic_pwm_output_percent_power(uint8_t *output_percent_power)
+{
+    if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        *output_percent_power = global_manager_info.nv_info.pwm_auto.percent_power;
+        xSemaphoreGive(global_manager_semaph);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
 uint8_t global_manager_set_s_out_automatic_info(s_out_auto_info_t s_out_auto)
 {
     if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))

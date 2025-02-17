@@ -57,47 +57,71 @@ static void s_out_manager_task(void *arg)
 {
     uint8_t pwm_analog_per_value, pwm_analog_per_value_ant;
     uint8_t pwm_digital_per_value, pwm_digital_per_value_ant;
+    pwm_mode_t pwm_mode;
+    uint8_t auto_pwm_output_status, auto_pwm_output_status_ant;
 
     pwm_analog_per_value_ant = 0;
     pwm_digital_per_value_ant = 0;
+    auto_pwm_output_status_ant = 0;
 
     while (true)
     {
         if(global_manager_is_device_in_phase_3() == true)
         {
-            if(is_jp3_teclas_connected() == false)
-            {
-                global_manager_get_pwm_analog_percentage(&pwm_analog_per_value);
-                if(pwm_analog_per_value != pwm_analog_per_value_ant)
-                {
-                    if(pwm_analog_per_value > 0)
-                    {
-                        gpio_set_level(S_OUT, 1);
-                    }
-                    else
-                    {
-                        gpio_set_level(S_OUT, 0);
-                    }   
-                }
-                pwm_analog_per_value_ant = pwm_analog_per_value;
+            global_manager_get_pwm_mode(&pwm_mode);
 
-            }
-            else if (is_jp3_teclas_connected() == true)
+            if (pwm_mode == PWM_MANUAL)
             {
-                global_manager_get_pwm_digital_percentage(&pwm_digital_per_value);
-                if(pwm_digital_per_value != pwm_digital_per_value_ant)
+                if(is_jp3_teclas_connected() == false)
                 {
-                    if(pwm_digital_per_value > 0)
+                    global_manager_get_pwm_analog_percentage(&pwm_analog_per_value);
+                    if(pwm_analog_per_value != pwm_analog_per_value_ant)
+                    {
+                        if(pwm_analog_per_value > 0)
+                        {
+                            gpio_set_level(S_OUT, 1);
+                        }
+                        else
+                        {
+                            gpio_set_level(S_OUT, 0);
+                        }   
+                    }
+                    pwm_analog_per_value_ant = pwm_analog_per_value;
+
+                }
+                else if (is_jp3_teclas_connected() == true)
+                {
+                    global_manager_get_pwm_digital_percentage(&pwm_digital_per_value);
+                    if(pwm_digital_per_value != pwm_digital_per_value_ant)
+                    {
+                        if(pwm_digital_per_value > 0)
+                        {
+                            gpio_set_level(S_OUT, 1);
+                        }
+                        else
+                        {
+                            gpio_set_level(S_OUT, 0);
+                        }   
+                    }
+                    pwm_digital_per_value_ant = pwm_digital_per_value;
+                }
+            }
+            else if(pwm_mode == PWM_AUTOMATIC)
+            {
+                global_manager_get_automatic_pwm_output_status(&auto_pwm_output_status);
+                if(auto_pwm_output_status != auto_pwm_output_status_ant)
+                {
+                    if(auto_pwm_output_status == 1)
                     {
                         gpio_set_level(S_OUT, 1);
                     }
                     else
                     {
                         gpio_set_level(S_OUT, 0);
-                    }   
+                    }
                 }
-                pwm_digital_per_value_ant = pwm_digital_per_value;
-            }
+                auto_pwm_output_status_ant = auto_pwm_output_status;
+            }    
         }
 
         vTaskDelay(100 / portTICK_PERIOD_MS);
