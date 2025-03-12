@@ -62,6 +62,7 @@ bool diabool; // con este me manejo en e display
 pwm_mode_t modo;
 bool modobool;    // con esta me manejo en el display
 uint8_t contrast; // contraste del display
+bool ddots_state; // variable para el timer de la hora y parpadear los dos puntos
 
 uint8_t param_two;
 uint8_t param_three;
@@ -103,6 +104,7 @@ static void display_manager_task(void *arg)
     power = 0;
     param_two = 1;
     param_three = 1;
+    ddots_state = false;
     while (true)
     {
         if (xQueueReceive(display_manager_queue, &display_ev, portMAX_DELAY) == pdTRUE)
@@ -885,6 +887,18 @@ void time_callback(TimerHandle_t timerh)
     {
         global_manager_get_current_time_info(&time_device);
         screen_one_time_device(time_device);
+        if (ddots_state == true)
+        {
+            set_cursor(0, 13);
+            display_write_string(":");
+            ddots_state = false;
+        }
+        else
+        {
+            set_cursor(0, 13);
+            display_write_string(" ");
+            ddots_state = true;
+        }
     }
 }
 
