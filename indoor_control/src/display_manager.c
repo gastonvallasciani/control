@@ -50,6 +50,8 @@ struct tm time_i4;
 struct tm time_f4;
 struct tm time_pwmi;
 struct tm time_pwmf;
+uint8_t pwm_man;  // potencia manual del pwm
+uint8_t pwm_auto; // potencia del pwm en automatico
 uint8_t power;
 char fpower[6];
 uint32_t fpowerppf;
@@ -60,7 +62,7 @@ bool diabool; // con este me manejo en e display
 pwm_mode_t modo;
 bool modobool;    // con esta me manejo en el display
 uint8_t contrast; // contraste del display
-uint8_t pwm_auto;
+
 uint8_t param_two;
 uint8_t param_three;
 // comandos de las acciones del display
@@ -97,35 +99,8 @@ static void display_manager_task(void *arg)
     start_timerh();
     contrast = 10;
     pwm_auto = 0;
-    // aca asgianar valores a todas las variables globales del display
-
-    /*time_device.tm_hour = 12;
-    time_device.tm_min = 35;
-    time_i1.tm_hour = 12;
-    time_i1.tm_min = 35;
-    time_f1.tm_hour = 12;
-    time_f1.tm_min = 35;
-    time_i2.tm_hour = 12;
-    time_i2.tm_min = 35;
-    time_f2.tm_hour = 12;
-    time_f2.tm_min = 35;
-    time_i3.tm_hour = 12;
-    time_i3.tm_min = 35;
-    time_f3.tm_hour = 12;
-    time_f3.tm_min = 35;
-    time_i4.tm_hour = 12;
-    time_i4.tm_min = 35;
-    time_f4.tm_hour = 12;
-    time_f4.tm_min = 35;
-    time_pwmi.tm_hour = 12;
-    time_pwmi.tm_min = 35;
-    time_pwmf.tm_hour = 12;
-    time_pwmf.tm_min = 35;
-    power = 45;
-    strcpy(fpower, "10000");
-    vegeflora = 1;
-    dia = pdTRUE;
-    modo = pdTRUE;*/
+    pwm_man = 0;
+    power = 0;
     param_two = 1;
     param_three = 1;
     while (true)
@@ -138,6 +113,37 @@ static void display_manager_task(void *arg)
                 screen = NONE;
                 display_init();
                 get_params();
+                // elijo la potencia en base al modo en que estoy
+                if (modobool == false)
+                {
+                    power = pwm_man;
+                }
+                else
+                {
+                    if (compare_times(time_pwmi, time_device) == GREATER) // el horario de inicio del pwm es mayor  que el del equipo, no está la  salida prendida
+                    {
+                        power = 0;
+                    }
+                    else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm pro ende muestro la potencia
+                    {
+                        power = pwm_auto;
+                    }
+                    else // horairo de inicio de pwm menor al del equipo
+                    {
+                        if (compare_times(time_pwmf, time_device) == GREATER) // si el horario final es superior al del equipo, está activa la salida del pwm
+                        {
+                            power = pwm_auto;
+                        }
+                        else if (compare_times(time_pwmf, time_device) == EQUAL) // horario final iguala l del dispositivo, ya se acaba asique muestro cero
+                        {
+                            power = 0;
+                        }
+                        else // horario final del dispositivo menor al del equipo, la salida pwm esta apagada
+                        {
+                            power = 0;
+                        }
+                    }
+                }
                 display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
 
                 break;
@@ -146,6 +152,37 @@ static void display_manager_task(void *arg)
                 {
                 case NORMAL:
                     get_params();
+                    // elijo la potencia en base al modo en que estoy
+                    if (modobool == false)
+                    {
+                        power = pwm_man;
+                    }
+                    else
+                    {
+                        if (compare_times(time_pwmi, time_device) == GREATER) // el horario de inicio del pwm es mayor  que el del equipo, no está la  salida prendida
+                        {
+                            power = 0;
+                        }
+                        else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm pro ende muestro la potencia
+                        {
+                            power = pwm_auto;
+                        }
+                        else // horairo de inicio de pwm menor al del equipo
+                        {
+                            if (compare_times(time_pwmf, time_device) == GREATER) // si el horario final es superior al del equipo, está activa la salida del pwm
+                            {
+                                power = pwm_auto;
+                            }
+                            else if (compare_times(time_pwmf, time_device) == EQUAL) // horario final iguala l del dispositivo, ya se acaba asique muestro cero
+                            {
+                                power = 0;
+                            }
+                            else // horario final del dispositivo menor al del equipo, la salida pwm esta apagada
+                            {
+                                power = 0;
+                            }
+                        }
+                    }
                     if (screen == SCREEN_ONE)
                     {
                         display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
@@ -153,7 +190,37 @@ static void display_manager_task(void *arg)
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
                     else if (screen == SCREEN_TWO)
-                    {
+                    { // elijo la potencia en base al modo en que estoy
+                        if (modobool == false)
+                        {
+                            power = pwm_man;
+                        }
+                        else
+                        {
+                            if (compare_times(time_pwmi, time_device) == GREATER) // el horario de inicio del pwm es mayor  que el del equipo, no está la  salida prendida
+                            {
+                                power = 0;
+                            }
+                            else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm pro ende muestro la potencia
+                            {
+                                power = pwm_auto;
+                            }
+                            else // horairo de inicio de pwm menor al del equipo
+                            {
+                                if (compare_times(time_pwmf, time_device) == GREATER) // si el horario final es superior al del equipo, está activa la salida del pwm
+                                {
+                                    power = pwm_auto;
+                                }
+                                else if (compare_times(time_pwmf, time_device) == EQUAL) // horario final iguala l del dispositivo, ya se acaba asique muestro cero
+                                {
+                                    power = 0;
+                                }
+                                else // horario final del dispositivo menor al del equipo, la salida pwm esta apagada
+                                {
+                                    power = 0;
+                                }
+                            }
+                        }
                         display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
                     }
@@ -165,9 +232,9 @@ static void display_manager_task(void *arg)
                     display_param_manager(AUX); // tengo que pasarle un numero para indicar que boton toqué
                     break;
                 case CONFIG_PARAM:
+                    save_params();
                     state = CONFIG_LINE;
                     // dejo de blinkear el caracter
-                    save_params();
                     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
                     // la funcion que me hace salir de la linea y vuelve titilante
                     display_blink_manager(screen, 3); // vuelvo al blink line
@@ -184,6 +251,37 @@ static void display_manager_task(void *arg)
                 {
                 case NORMAL:
                     get_params();
+                    // elijo la potencia en base al modo en que estoy
+                    if (modobool == false)
+                    {
+                        power = pwm_man;
+                    }
+                    else
+                    {
+                        if (compare_times(time_pwmi, time_device) == GREATER) // el horario de inicio del pwm es mayor  que el del equipo, no está la  salida prendida
+                        {
+                            power = 0;
+                        }
+                        else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm pro ende muestro la potencia
+                        {
+                            power = pwm_auto;
+                        }
+                        else // horairo de inicio de pwm menor al del equipo
+                        {
+                            if (compare_times(time_pwmf, time_device) == GREATER) // si el horario final es superior al del equipo, está activa la salida del pwm
+                            {
+                                power = pwm_auto;
+                            }
+                            else if (compare_times(time_pwmf, time_device) == EQUAL) // horario final iguala l del dispositivo, ya se acaba asique muestro cero
+                            {
+                                power = 0;
+                            }
+                            else // horario final del dispositivo menor al del equipo, la salida pwm esta apagada
+                            {
+                                power = 0;
+                            }
+                        }
+                    }
                     // aca tengo que entrar a la primera linea titilante en la pantanlla en la que este
                     if (screen == SCREEN_ONE)
                     {
@@ -206,6 +304,37 @@ static void display_manager_task(void *arg)
                     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
                     // vuelvo a la pantalla 1
                     global_manager_get_current_time_info(&time_device);
+                    // elijo la potencia en base al modo en que estoy
+                    if (modobool == false)
+                    {
+                        power = pwm_man;
+                    }
+                    else
+                    {
+                        if (compare_times(time_pwmi, time_device) == GREATER) // el horario de inicio del pwm es mayor  que el del equipo, no está la  salida prendida
+                        {
+                            power = 0;
+                        }
+                        else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm pro ende muestro la potencia
+                        {
+                            power = pwm_auto;
+                        }
+                        else // horairo de inicio de pwm menor al del equipo
+                        {
+                            if (compare_times(time_pwmf, time_device) == GREATER) // si el horario final es superior al del equipo, está activa la salida del pwm
+                            {
+                                power = pwm_auto;
+                            }
+                            else if (compare_times(time_pwmf, time_device) == EQUAL) // horario final iguala l del dispositivo, ya se acaba asique muestro cero
+                            {
+                                power = 0;
+                            }
+                            else // horario final del dispositivo menor al del equipo, la salida pwm esta apagada
+                            {
+                                power = 0;
+                            }
+                        }
+                    }
                     display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                     ESP_LOGI(TAG, "Pantalla %u", screen);
 
@@ -219,6 +348,37 @@ static void display_manager_task(void *arg)
                     // dejo de blinkear el caracter
                     display_send_command(COMMAND_DISPLAY | COMMAND_DISPLAY_ON | COMMAND_CURSOR_OFF | COMMAND_BLINK_OFF);
                     global_manager_get_current_time_info(&time_device);
+                    // elijo la potencia en base al modo en que estoy
+                    if (modobool == false)
+                    {
+                        power = pwm_man;
+                    }
+                    else
+                    {
+                        if (compare_times(time_pwmi, time_device) == GREATER) // el horario de inicio del pwm es mayor  que el del equipo, no está la  salida prendida
+                        {
+                            power = 0;
+                        }
+                        else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm pro ende muestro la potencia
+                        {
+                            power = pwm_auto;
+                        }
+                        else // horairo de inicio de pwm menor al del equipo
+                        {
+                            if (compare_times(time_pwmf, time_device) == GREATER) // si el horario final es superior al del equipo, está activa la salida del pwm
+                            {
+                                power = pwm_auto;
+                            }
+                            else if (compare_times(time_pwmf, time_device) == EQUAL) // horario final iguala l del dispositivo, ya se acaba asique muestro cero
+                            {
+                                power = 0;
+                            }
+                            else // horario final del dispositivo menor al del equipo, la salida pwm esta apagada
+                            {
+                                power = 0;
+                            }
+                        }
+                    }
                     display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                     ESP_LOGI(TAG, "Pantalla %u", screen);
 
@@ -255,8 +415,37 @@ static void display_manager_task(void *arg)
                 break;
             case VFT:
                 // cambio el modo (manual o automatico)
-             
                 modobool = (bool)display_ev.pwm_mode;
+                if (modobool == false)
+                {
+                    power = pwm_man;
+                }
+                else
+                {
+                    if (compare_times(time_pwmi, time_device) == GREATER) // el horario de inicio del pwm es mayor  que el del equipo, no está la  salida prendida
+                    {
+                        power = 0;
+                    }
+                    else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm pro ende muestro la potencia
+                    {
+                        power = pwm_auto;
+                    }
+                    else // horairo de inicio de pwm menor al del equipo
+                    {
+                        if (compare_times(time_pwmf, time_device) == GREATER) // si el horario final es superior al del equipo, está activa la salida del pwm
+                        {
+                            power = pwm_auto;
+                        }
+                        else if (compare_times(time_pwmf, time_device) == EQUAL) // horario final iguala l del dispositivo, ya se acaba asique muestro cero
+                        {
+                            power = 0;
+                        }
+                        else // horario final del dispositivo menor al del equipo, la salida pwm esta apagada
+                        {
+                            power = 0;
+                        }
+                    }
+                }
                 display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                 break;
             case DOWN:
@@ -1786,6 +1975,7 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
 
         // set horario final e inicial de pwm
         global_manager_set_turn_on_time(time_pwmi);
+        printf("La hora de inicio del pwm guardada es %u : %u \n", time_pwmi.tm_hour, time_pwmi.tm_min);
         global_manager_set_turn_off_time(time_pwmf);
         // set horario device
         current_time_manager_set_current_time(time_device);
@@ -1814,7 +2004,7 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         fpowerppf = atoi(fpower);
         global_manager_set_ppf(fpowerppf);
         printf("Valor convertido: %lu\n", fpowerppf);
-        global_manager_set_automatic_pwm_power(pwm_auto);  ///////////// SET porcentaje de pwm automatico
+        global_manager_set_automatic_pwm_power(pwm_auto); ///////////// SET porcentaje de pwm automatico
 
         break;
 
@@ -1858,13 +2048,15 @@ esp_err_t get_params()
 
     if (is_jp3_teclas_connected() == true)
     {
-        global_manager_get_pwm_digital_percentage(&power);
+        global_manager_get_pwm_digital_percentage(&pwm_man);
     }
     else
     {
-        global_manager_get_pwm_analog_percentage(&power);
+        global_manager_get_pwm_analog_percentage(&pwm_man);
         printf("La potencia es %u \n", power);
     }
+    // obtengo el porcentaje de automatico
+    global_manager_get_automatic_pwm_power(&pwm_auto);
 
     // obtengo vegeflora
     global_manager_get_flora_vege_status(&vegeflora);
@@ -1898,9 +2090,33 @@ esp_err_t get_params()
         printf("MODO AUTOMATIC \n");
         modobool = true;
     }
-     global_manager_get_automatic_pwm_power(&pwm_auto);
+
     // FALTA GET CONTRAST
     return ESP_OK;
+}
+
+compare_t compare_times(struct tm t1, struct tm t2)
+{
+    if (t1.tm_hour > t2.tm_hour) // hora del 1 mayor a la del 2
+    {
+        return GREATER; // t1 es mayor a t2 en horas
+    }
+    if (t1.tm_hour == t2.tm_hour)
+    {
+        if (t1.tm_min > t2.tm_min)
+        {
+            return GREATER; // t1 mayor a t2 en minutos
+        }
+        if (t1.tm_min < t2.tm_min) // los minutos de t1 son menores a los de t2
+        {
+            return LESSER;
+        }
+        if (t1.tm_min == t2.tm_min)
+        {
+            return EQUAL; // los horarios son iguales
+        }
+    }
+    return LESSER;
 }
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------

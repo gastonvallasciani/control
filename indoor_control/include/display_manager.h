@@ -15,8 +15,15 @@ typedef enum
     AUXT = 5,
     VFT = 6,
     PWM_MANUAL_VALUE = 7,
-    PWM_MODE_UPDATE = 8,
+    PWM_MODE_UPDATE = 8
 } display_event_cmds_t;
+
+typedef enum
+{
+    GREATER = 0,
+    LESSER = 1,
+    EQUAL = 2
+} compare_t;
 
 typedef struct
 {
@@ -70,6 +77,6 @@ esp_err_t param_modified_three(display_event_cmds_t);
 esp_err_t save_params(void);
 esp_err_t get_params(void);
 void display_manager_pwm_mode_update(uint8_t pwm_value, flora_vege_status_t vege_flora);
-
+compare_t compare_times(struct tm, struct tm);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* DISPLAY_MANAGER_H__ */
