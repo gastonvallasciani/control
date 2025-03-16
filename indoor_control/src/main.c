@@ -25,7 +25,6 @@ void app_main()
     printf("Project: Indoor control \n");
     get_version(version, &version_len);
     printf("Phase: %d, Version number: %s \n", PHASE_NUMBER, version);
-
     while (true)
     {
         vTaskDelay(10 / portTICK_PERIOD_MS);

@@ -42,6 +42,8 @@
 
 #define J1 GPIO_NUM_5
 
+#define J4 GPIO_NUM_36
+
 // DISPLAY
 #define RST_DSPY GPIO_NUM_15
 

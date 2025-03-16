@@ -238,10 +238,10 @@ esp_err_t display_set_power(uint8_t power, char *fpower)
     uint32_t ppfn;
     int fpowercc;
     fpowercc = atoi(fpower);
-    
+
     int pot_actual = fpowercc * power / 100;
     ppfn = 3.17 * pot_actual;
-    
+
     sprintf(potactual, "%u", pot_actual);
     sprintf(numeroppf, "%lu", ppfn);
 
@@ -266,7 +266,7 @@ esp_err_t display_set_power(uint8_t power, char *fpower)
     display_write_string("     ");
     set_cursor(2, 4);
     display_write_string(numeroppf); // escribo el numero del ppf
-    set_cursor(2, 10);  
+    set_cursor(2, 10);
     display_write_string("     ");
     if (pot_actual <= 99999 && pot_actual > 9999)
     {
@@ -373,8 +373,8 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     float ppfn;
 
     int fpowercc = atoi(fpower); // potencia total
- 
-    float pot_actual = fpowercc * power/100;
+
+    float pot_actual = fpowercc * power / 100;
 
     ppfn = 3.17 * pot_actual;
 
@@ -439,7 +439,7 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     set_cursor(2, 4);
     display_write_string(numeroppf); // escribo el numero del ppf
 
-    set_cursor(2, 10);  
+    set_cursor(2, 10);
     display_write_string("     ");
 
     if (pot_actual <= 99999 && pot_actual > 9999)
@@ -472,10 +472,18 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     set_cursor(3, 1);
     if (dia == true)
     {
-        dia_m = "SI";
-        display_send_data(0x12);
-        set_cursor(3, 2);
-        display_send_data(0x13);
+        if (modo == false)
+        {
+            dia_m = "--";
+            display_write_string(dia_m);
+        }
+        else
+        {
+            dia_m = "SI";
+            display_send_data(0x12);
+            set_cursor(3, 2);
+            display_send_data(0x13);
+        }
     }
     else
     {
