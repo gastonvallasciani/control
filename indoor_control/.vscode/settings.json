@@ -31,6 +31,7 @@
         "sdkconfig.h": "c",
         "current_time_manager.h": "c",
         "timers.h": "c",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "time.h": "c"
     }
 }

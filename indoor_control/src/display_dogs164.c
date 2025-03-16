@@ -847,12 +847,16 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, stru
     }
 
     // Tercera fila
-    set_cursor(2, 0);
-    display_send_data(0xDB);
-    set_cursor(2, 1);
-    display_write_string(fpower);
-    set_cursor(2, 6);
-    display_write_string("W");
+    if (is_jp1_dspy_connected() == 1) // jumper del GPIO35 conectado
+    {
+        set_cursor(2, 0);
+        display_send_data(0xDB);
+        set_cursor(2, 1);
+        display_write_string(fpower);
+        set_cursor(2, 6);
+        display_write_string("W");
+    }
+
     set_cursor(2, 8);
     display_write_string("PWM:");
     if (pwm_auto < 10)
@@ -874,19 +878,22 @@ esp_err_t display_set_screen_three(screen_t *screen, struct tm time_device, stru
     display_write_string("%");
 
     // Cuarta fila
-    set_cursor(3, 0);
-    display_write_string(contraste);
-    if (level < 10)
+    if (is_jp1_dspy_connected() == 1) // jumper del GPIO35  conectado
     {
-        set_cursor(3, 14);
-        display_write_string("0");
-        set_cursor(3, 15);
-        display_write_string(contrast_level);
-    }
-    else
-    {
-        set_cursor(3, 14);
-        display_write_string(contrast_level);
+        set_cursor(3, 0);
+        display_write_string(contraste);
+        if (level < 10)
+        {
+            set_cursor(3, 14);
+            display_write_string("0");
+            set_cursor(3, 15);
+            display_write_string(contrast_level);
+        }
+        else
+        {
+            set_cursor(3, 14);
+            display_write_string(contrast_level);
+        }
     }
     return ESP_OK;
 }
@@ -1030,12 +1037,15 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_devicee, struct tm time
 
         break;
     case 2:
-        set_cursor(2, 0);
-        display_send_data(0xDB);
-        set_cursor(2, 1);
-        display_write_string(fpower);
-        set_cursor(2, 6);
-        display_write_string("W");
+        if (is_jp1_dspy_connected() == 1) // jumper del GPIO35 conectado
+        {
+            set_cursor(2, 0);
+            display_send_data(0xDB);
+            set_cursor(2, 1);
+            display_write_string(fpower);
+            set_cursor(2, 6);
+            display_write_string("W");
+        }
         set_cursor(2, 8);
         display_write_string("PWM:");
         if (pwm_auto < 10)
@@ -1057,19 +1067,22 @@ esp_err_t screen_three_line(uint8_t line, struct tm time_devicee, struct tm time
         display_write_string("%");
         break;
     case 3:
-        set_cursor(3, 0);
-        display_write_string(contraste);
-        if (level < 10)
+        if (is_jp1_dspy_connected() == 1) // jumper del GPIO35 conectado
         {
-            set_cursor(3, 14);
-            display_write_string("0");
-            set_cursor(3, 15);
-            display_write_string(contrast_level);
-        }
-        else
-        {
-            set_cursor(3, 14);
-            display_write_string(contrast_level);
+            set_cursor(3, 0);
+            display_write_string(contraste);
+            if (level < 10)
+            {
+                set_cursor(3, 14);
+                display_write_string("0");
+                set_cursor(3, 15);
+                display_write_string(contrast_level);
+            }
+            else
+            {
+                set_cursor(3, 14);
+                display_write_string(contrast_level);
+            }
         }
         break;
     default:

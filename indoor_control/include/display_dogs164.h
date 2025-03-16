@@ -10,6 +10,7 @@
 
 #include "driver/i2c.h"
 #include "esp_log.h"
+#include "../include/jumpers_manager.h"
 // #include "../include/display_manager.h"
 
 #define MODE_COMMAND 0x00

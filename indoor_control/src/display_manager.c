@@ -471,11 +471,19 @@ static void display_manager_task(void *arg)
                     ESP_LOGI("CONFIG_LINE", "line es %u", line);
                     param_two = 1;
                     param_three = 1;
+                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE)
+                    {
+                        param_three = 6;
+                    }
                     display_blink_manager(screen, 1); // 0 es down
 
                     break;
                 case CONFIG_PARAM:
                     // bajo numero a configurar
+                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE)
+                    {
+                        param_three = 6;
+                    }
                     display_param_manager(DOWN);
 
                     break;
@@ -505,11 +513,19 @@ static void display_manager_task(void *arg)
                     stop_timer();
                     param_two = 1;
                     param_three = 1;
+                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE)
+                    {
+                        param_three = 6;
+                    }
                     display_blink_manager(screen, 0); // 1 es up
 
                     break;
                 case CONFIG_PARAM:
                     // subo numero a configurar
+                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE)
+                    {
+                        param_three = 6;
+                    }
                     display_param_manager(UP);
 
                     break;
@@ -755,7 +771,14 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
     {
         if (line == 0)
         {
-            line = 3; // voy a la ultima linea
+            if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE) // jumper del GPIO35 no conectado y es la pantalla 3
+            {
+                line = 2;
+            }
+            else
+            {
+                line = 3; // voy a la ultima linea
+            }
         }
         else
         {
@@ -764,13 +787,27 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
     }
     else if (cmd == 1) // es up
     {
-        if (line == 3)
+        if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE) // jumper del GPIO35 no conectado y es la pantalla 3
         {
-            line = 0; // voy a la primera linea
+            if (line == 2)
+            {
+                line = 0; // voy a la primera linea
+            }
+            else
+            {
+                ++(line); // voy a la siguiente linea
+            }
         }
         else
         {
-            ++(line); // voy a la siguiente linea
+            if (line == 3)
+            {
+                line = 0; // voy a la primera linea
+            }
+            else
+            {
+                ++(line); // voy a la siguiente linea
+            }
         }
     }
     start_timer();
@@ -1155,45 +1192,55 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
     }
     else if (line == 2)
     {
-        if (cmd == VF)
+        if (is_jp1_dspy_connected() == 1) // jumper del GPIO35 conectado
         {
-            if (param_three == 6)
+            if (cmd == VF)
             {
-                param_three = 1;
+                if (param_three == 6)
+                {
+                    param_three = 1;
+                }
+                else
+                {
+                    param_three++;
+                }
             }
-            else
+            switch (param_three) // me fijo que parametro modifico
             {
-                param_three++;
+            case 1:
+                set_cursor(line, 1);
+                break;
+            case 2:
+                set_cursor(line, 2);
+                break;
+            case 3:
+                set_cursor(line, 3);
+                break;
+            case 4:
+                set_cursor(line, 4);
+                break;
+            case 5:
+                set_cursor(line, 5);
+                break;
+            case 6:
+                set_cursor(line, 14);
+                break;
+
+            default:
+                break;
             }
         }
-        switch (param_three) // me fijo que parametro modifico
+        else
         {
-        case 1:
-            set_cursor(line, 1);
-            break;
-        case 2:
-            set_cursor(line, 2);
-            break;
-        case 3:
-            set_cursor(line, 3);
-            break;
-        case 4:
-            set_cursor(line, 4);
-            break;
-        case 5:
-            set_cursor(line, 5);
-            break;
-        case 6:
             set_cursor(line, 14);
-            break;
-
-        default:
-            break;
         }
     }
     else if (line == 3)
     {
-        set_cursor(line, 15);
+        if (is_jp1_dspy_connected() == 1) // jumper del GPIO35 conectado
+        {
+            set_cursor(line, 15);
+        }
     }
     else if (line == 1)
     {
