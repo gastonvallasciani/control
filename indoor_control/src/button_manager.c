@@ -381,20 +381,20 @@ void button_event_manager_task(void *pvParameters)
                     get_screen_state(&screen_state);
                     if (screen_state == NORMAL)
                     {
-                        global_manager_get_pwm_digital_percentage(&pwm_digital_per_value);
-                        if (pwm_digital_per_value > 10)
-                        {
-                            pwm_digital_per_value--;
-                        }
-                        else if (pwm_digital_per_value == 10)
-                        {
-                            pwm_digital_per_value = 0;
-                        }
-                        printf("Boton PWM DW presionado, pwm digital value: %d \n", pwm_digital_per_value);
-                        global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
                         global_manager_get_pwm_mode(&pwm_mode);
                         if (pwm_mode == PWM_MANUAL)
                         {
+                            global_manager_get_pwm_digital_percentage(&pwm_digital_per_value);
+                            if (pwm_digital_per_value > 10)
+                            {
+                                pwm_digital_per_value--;
+                            }
+                            else if (pwm_digital_per_value == 10)
+                            {
+                                pwm_digital_per_value = 0;
+                            }
+                            printf("Boton PWM DW presionado, pwm digital value: %d \n", pwm_digital_per_value);
+                            global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
                             pwm_manager_turn_on_pwm(pwm_digital_per_value);
                             led_manager_pwm_output(pwm_digital_per_value);
                         }
@@ -418,21 +418,23 @@ void button_event_manager_task(void *pvParameters)
                     get_screen_state(&screen_state);
                     if (screen_state == NORMAL)
                     {
-                        global_manager_get_pwm_digital_percentage(&pwm_digital_per_value);
-
-                        if (pwm_digital_per_value == 0)
-                        {
-                            pwm_digital_per_value = 10;
-                        }
-                        else if (pwm_digital_per_value < 100)
-                        {
-                            pwm_digital_per_value++;
-                        }
-                        printf("Boton PWM UP presionado, pwm digital value: %d \n", pwm_digital_per_value);
-                        global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
                         global_manager_get_pwm_mode(&pwm_mode);
                         if (pwm_mode == PWM_MANUAL)
                         {
+
+                            global_manager_get_pwm_digital_percentage(&pwm_digital_per_value);
+
+                            if (pwm_digital_per_value == 0)
+                            {
+                                pwm_digital_per_value = 10;
+                            }
+                            else if (pwm_digital_per_value < 100)
+                            {
+                                pwm_digital_per_value++;
+                            }
+                            printf("Boton PWM UP presionado, pwm digital value: %d \n", pwm_digital_per_value);
+                            global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
+                        
                             pwm_manager_turn_on_pwm(pwm_digital_per_value);
                             printf("Boton PWM DW presionado, pwm analog value: %d \n", pwm_analog_per_value);
                             led_manager_pwm_output(pwm_digital_per_value);
@@ -469,7 +471,7 @@ void button_event_manager_task(void *pvParameters)
                     global_manager_set_pwm_mode(PWM_AUTOMATIC);
                     global_manager_set_pwm_in_automatic();
                     global_manager_get_automatic_pwm_output_percent_power(&output_percent_power);
-                    display_manager_pwm_mode_update(output_percent_power, flora_vege_status);
+                    display_manager_pwm_mode_update(0, flora_vege_status);
                     led_manager_pwm_output(0);
                     pwm_manager_turn_off_pwm();
                 }

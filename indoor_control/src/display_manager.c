@@ -505,7 +505,7 @@ static void display_manager_task(void *arg)
                     {
                         vegeflorachar = 'F';
                     }
-                    printf("El char de vege_flora es %c", vegeflorachar);
+                    //printf("El char de vege_flora es %c", vegeflorachar);
                     global_manager_get_current_time_info(&time_device);
                     display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                     break;
