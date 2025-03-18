@@ -471,8 +471,9 @@ static void display_manager_task(void *arg)
                     ESP_LOGI("CONFIG_LINE", "line es %u", line);
                     param_two = 1;
                     param_three = 1;
-                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE)
+                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE && line == 2)
                     {
+
                         param_three = 6;
                     }
                     display_blink_manager(screen, 1); // 0 es down
@@ -480,7 +481,7 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_PARAM:
                     // bajo numero a configurar
-                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE)
+                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE && line== 2)
                     {
                         param_three = 6;
                     }
@@ -505,7 +506,7 @@ static void display_manager_task(void *arg)
                     {
                         vegeflorachar = 'F';
                     }
-                    //printf("El char de vege_flora es %c", vegeflorachar);
+                    // printf("El char de vege_flora es %c", vegeflorachar);
                     global_manager_get_current_time_info(&time_device);
                     display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                     break;
@@ -513,7 +514,7 @@ static void display_manager_task(void *arg)
                     stop_timer();
                     param_two = 1;
                     param_three = 1;
-                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE)
+                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE && line== 2)
                     {
                         param_three = 6;
                     }
@@ -522,7 +523,7 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_PARAM:
                     // subo numero a configurar
-                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE)
+                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE && line== 2)
                     {
                         param_three = 6;
                     }
@@ -1033,6 +1034,7 @@ esp_err_t display_param_manager(display_event_cmds_t cmd)
         display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
         if (cmd == VF || cmd == AUX)
         {
+            ESP_LOGE("PARAM_MANAGER", "Line es %u", line);
             screen_three_param(cmd);
         }
         else if (cmd == UP)
@@ -1244,6 +1246,8 @@ esp_err_t screen_three_param(display_event_cmds_t cmd)
     }
     else if (line == 1)
     {
+        ESP_LOGE("PARAM_MANAGER", "Entre en el if del line 1");
+        ESP_LOGE("PARAM_MANAGER", "Param_three es %u", param_three);
         if (cmd == VF)
         {
 
