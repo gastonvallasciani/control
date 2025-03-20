@@ -30,6 +30,8 @@ static uint8_t is_date1_grater_than_date2(struct tm date1, struct tm date2);
 static void is_first_turn_on_time_greater_than_current_time(s_out_auto_info_t *info);
 static int is_within_range(struct tm target, struct tm start, struct tm end);
 static void must_be_s_out_output_off(s_out_auto_info_t *info);
+static uint8_t is_turn_on_and_off_schedule_disable(struct tm date_on, struct tm date_off);
+
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -50,6 +52,11 @@ static uint8_t is_date1_grater_than_date2(struct tm date1, struct tm date2)
         return 1;
     }
     return 0;
+}
+//------------------------------------------------------------------------------
+static uint8_t is_turn_on_and_off_schedule_disable(struct tm date_on, struct tm date_off) {
+    return (date_on.tm_hour == 0 && date_on.tm_min == 0 &&
+        date_off.tm_hour == 0 && date_off.tm_min == 0) ? 1 : 0;
 }
 //------------------------------------------------------------------------------
 static int is_within_range(struct tm target, struct tm start, struct tm end)
@@ -85,6 +92,15 @@ static int is_within_range(struct tm target, struct tm start, struct tm end)
 //------------------------------------------------------------------------------
 static void s_out_auto_manager_handler_per_s_out(s_out_auto_info_t *info, uint8_t s_out_index)
 {
+    if(is_turn_on_and_off_schedule_disable(info->s_out_auto[s_out_index].turn_on_time, info->s_out_auto[s_out_index].turn_off_time))  
+    {
+        return;
+    }
+    else
+    {
+        info->s_out_auto[s_out_index].enable = true;
+    }	
+        	
     if(info->s_out_auto[s_out_index].enable == true)
     {
         if(info->output_status == S_OUT_OUTPUT_OFF)
