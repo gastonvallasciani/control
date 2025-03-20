@@ -468,7 +468,7 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_LINE:
                     stop_timer();
-                    ESP_LOGI("CONFIG_LINE", "line es %u", line);
+                    ESP_LOGI("CONFIG_LINE_DOWN", "line es %u", line);
                     param_two = 1;
                     param_three = 1;
                     if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE && line == 2)
@@ -481,7 +481,7 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_PARAM:
                     // bajo numero a configurar
-                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE && line== 2)
+                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE && line == 2)
                     {
                         param_three = 6;
                     }
@@ -511,10 +511,11 @@ static void display_manager_task(void *arg)
                     display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                     break;
                 case CONFIG_LINE:
+                    ESP_LOGI("CONFIG_LINE_UP", "line es %u", line);
                     stop_timer();
                     param_two = 1;
                     param_three = 1;
-                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE && line== 2)
+                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE && line == 1)
                     {
                         param_three = 6;
                     }
@@ -523,7 +524,7 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_PARAM:
                     // subo numero a configurar
-                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE && line== 2)
+                    if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE && line == 2)
                     {
                         param_three = 6;
                     }
@@ -774,7 +775,7 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
         {
             if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE) // jumper del GPIO35 no conectado y es la pantalla 3
             {
-                line = 2;
+                line = 2; //si no tengo el jumper, no se ve la ultima linea
             }
             else
             {
