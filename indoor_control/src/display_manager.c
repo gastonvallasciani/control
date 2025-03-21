@@ -115,6 +115,7 @@ static void display_manager_task(void *arg)
                 screen = NONE;
                 display_init();
                 get_params();
+                set_contrast(contrast);
                 // elijo la potencia en base al modo en que estoy
                 if (modobool == false)
                 {
@@ -775,7 +776,7 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
         {
             if (is_jp1_dspy_connected() == 0 && screen == SCREEN_THREE) // jumper del GPIO35 no conectado y es la pantalla 3
             {
-                line = 2; //si no tengo el jumper, no se ve la ultima linea
+                line = 2; // si no tengo el jumper, no se ve la ultima linea
             }
             else
             {
@@ -2077,6 +2078,8 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
     default:
         break;
     }
+    // GET CONTRAST
+    global_manager_set_display_contrast(contrast);
     return ESP_OK;
 }
 
@@ -2157,7 +2160,8 @@ esp_err_t get_params()
         modobool = true;
     }
 
-    // FALTA GET CONTRAST
+    // GET CONTRAST
+    global_manager_get_display_contrast(&contrast);
     return ESP_OK;
 }
 
