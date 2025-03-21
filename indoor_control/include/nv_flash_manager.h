@@ -30,6 +30,8 @@
 #define S_OUT_4_DATE_OFF_KEY "s_out_4_off\0"
 #define S_OUT_4_DATE_ENABLE "s_out_4_enable\0"
 #define PPF_KEY "ppf_key\0"
+#define DISPLAY_CONTRAST_KEY "cont_key\0"
+
 
 
 
@@ -44,6 +46,7 @@
 #define S_OUT_3_DATE_ENABLE_DEFAULT 0 // disable
 #define S_OUT_4_DATE_ENABLE_DEFAULT 0 // disable
 #define PPF_DEFAULT 1000
+#define CONTRASTE_DEFAULT 10
 
 
 //------------------- TYPEDEF --------------------------------------------------

@@ -42,11 +42,13 @@ static uint8_t nv_init_auto_percent_power(void);
 static flora_vege_status_t nv_init_flora_vege_status(void);
 static s_out_conf_t nv_init_s_out_calendar(uint8_t s_out_num);
 static uint16_t nv_init_ppf(void);
+static uint8_t nv_init_display_contrast_value(void);
 
 static uint8_t global_manager_init_automatic_pwm_params(pwm_auto_info_t pwm_auto);
 static uint8_t global_manager_init_pwm_mode(pwm_mode_t pwm_mode);
 static uint8_t global_manager_init_flora_vege_status(flora_vege_status_t flora_vege_status);
 static uint8_t global_manager_init_ppf(uint16_t ppf);
+static uint8_t global_manager_init_display_contrast(uint8_t display_contrast);
 
 static uint8_t global_manager_init_automatic_s_out_params(s_out_config_info_t s_out_auto_, uint8_t s_out_num);
 
@@ -99,6 +101,18 @@ static uint8_t global_manager_init_ppf(uint16_t ppf)
     if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {
         global_manager_info.nv_info.ppf = ppf;
+        xSemaphoreGive(global_manager_semaph);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+static uint8_t global_manager_init_display_contrast(uint8_t display_contrast)
+{
+    if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        global_manager_info.nv_info.display_contrast = display_contrast;
         xSemaphoreGive(global_manager_semaph);
         return 1;
     }
@@ -370,6 +384,29 @@ static uint8_t nv_init_pwm_digital_value(void)
     return (ret_value);
 }
 //------------------------------------------------------------------------------
+static uint8_t nv_init_display_contrast_value(void)
+{
+    uint32_t value;
+    uint8_t ret_value;
+
+    if (read_uint32_from_flash(DISPLAY_CONTRAST_KEY, &value))
+    {
+#ifdef DEBUG_MODULE
+        printf("DISPLAY_CONTRAST READ: %lu \n", value);
+#endif
+
+        ret_value = (uint8_t)value;
+    }
+    else
+    {
+#ifdef DEBUG_MODULE
+        printf("DISPLAY_CONTRAST READING FAILED \n");
+#endif
+        ret_value = 10;
+    }
+    return (ret_value);
+}
+//------------------------------------------------------------------------------
 static pwm_mode_t nv_init_pwm_mode(void)
 {
     uint32_t value;
@@ -448,6 +485,7 @@ static void global_manager_task(void *arg)
     calendar_t pwm_calendar = nv_init_pwm_calendar();
     flora_vege_status_t flora_vege_status = nv_init_flora_vege_status();
     uint16_t ppf = nv_init_ppf();
+    uint8_t display_contrast = nv_init_display_contrast_value();
 
     s_out_auto_info_t s_out_auto_info;
     s_out_conf_t s_out_conf;
@@ -478,6 +516,7 @@ static void global_manager_task(void *arg)
     global_manager_init_pwm_digital_percentage(pwm_digital_value);
     global_manager_init_flora_vege_status(flora_vege_status);
     global_manager_init_ppf(ppf);
+    global_manager_init_display_contrast(display_contrast);
     
 
     printf("INICIO PRINT DEBUG \n");
@@ -496,6 +535,8 @@ static void global_manager_task(void *arg)
 
     printf("AUTO PERCENT POWER %d \n", pwm_auto_info.percent_power);
     printf("SIMUL DAY STATUS %d \n", pwm_auto_info.simul_day_status);
+    printf("PPF VALUE %d \n", ppf);
+    printf("DISPLAY CONTRAST %d \n", display_contrast);
     printf("FIN PRINT DEBUG \n");
 
     if (flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
@@ -930,6 +971,35 @@ uint8_t global_manager_get_automatic_pwm_power(uint8_t *auto_pwm_power)
     if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {
         *auto_pwm_power = global_manager_info.nv_info.pwm_auto.percent_power;
+        xSemaphoreGive(global_manager_semaph);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_set_display_contrast(uint8_t display_contrast)
+{
+    uint8_t aux = 0;
+
+    if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        aux = global_manager_info.nv_info.display_contrast;
+        global_manager_info.nv_info.display_contrast = display_contrast;
+        xSemaphoreGive(global_manager_semaph);
+        if (aux != display_contrast)
+            write_parameter_on_flash_uint32(DISPLAY_CONTRAST_KEY, (uint32_t)display_contrast);
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_get_display_contrast(uint8_t *display_contrast)
+{
+    if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        *display_contrast = global_manager_info.nv_info.display_contrast;
         xSemaphoreGive(global_manager_semaph);
         return 1;
     }

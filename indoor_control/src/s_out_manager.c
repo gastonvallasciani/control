@@ -58,11 +58,11 @@ static void s_out_manager_task(void *arg)
     uint8_t pwm_analog_per_value, pwm_analog_per_value_ant;
     uint8_t pwm_digital_per_value, pwm_digital_per_value_ant;
     pwm_mode_t pwm_mode;
-    uint8_t auto_pwm_output_status, auto_pwm_output_status_ant;
+    uint8_t auto_pwm_output_status;
 
     pwm_analog_per_value_ant = 0;
     pwm_digital_per_value_ant = 0;
-    auto_pwm_output_status_ant = 0;
+    gpio_set_level(S_OUT, 0);
 
     while (true)
     {
@@ -109,25 +109,20 @@ static void s_out_manager_task(void *arg)
             else if(pwm_mode == PWM_AUTOMATIC)
             {
                 global_manager_get_automatic_pwm_output_status(&auto_pwm_output_status);
-                if(auto_pwm_output_status != auto_pwm_output_status_ant)
+
+                if(auto_pwm_output_status == 1)
                 {
-                    if(auto_pwm_output_status == 1)
-                    {
-                        gpio_set_level(S_OUT, 1);
-                    }
-                    else
-                    {
-                        gpio_set_level(S_OUT, 0);
-                    }
+                    gpio_set_level(S_OUT, 1);
                 }
-                auto_pwm_output_status_ant = auto_pwm_output_status;
+                else
+                {
+                    gpio_set_level(S_OUT, 0);
+                }
+
             }    
         }
 
         vTaskDelay(100 / portTICK_PERIOD_MS);
-
-        
-        
     }
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------

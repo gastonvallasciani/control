@@ -70,6 +70,7 @@ static void first_time_flash(void)
     init_parameter_in_flash_uint32(S_OUT_3_DATE_ENABLE, S_OUT_3_DATE_ENABLE_DEFAULT);
     init_parameter_in_flash_uint32(S_OUT_4_DATE_ENABLE, S_OUT_4_DATE_ENABLE_DEFAULT);
     init_parameter_in_flash_uint32(PPF_KEY, PPF_DEFAULT);
+    init_parameter_in_flash_uint32(DISPLAY_CONTRAST_KEY, CONTRASTE_DEFAULT);
 
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
