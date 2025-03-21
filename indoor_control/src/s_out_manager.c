@@ -55,13 +55,11 @@ static void s_out_config(void)
 //------------------------------------------------------------------------------
 static void s_out_manager_task(void *arg)
 {
-    uint8_t pwm_analog_per_value, pwm_analog_per_value_ant;
-    uint8_t pwm_digital_per_value, pwm_digital_per_value_ant;
+    uint8_t pwm_analog_per_value;
+    uint8_t pwm_digital_per_value;
     pwm_mode_t pwm_mode;
     uint8_t auto_pwm_output_status;
 
-    pwm_analog_per_value_ant = 0;
-    pwm_digital_per_value_ant = 0;
     gpio_set_level(S_OUT, 0);
 
     while (true)
@@ -75,35 +73,30 @@ static void s_out_manager_task(void *arg)
                 if(is_jp3_teclas_connected() == false)
                 {
                     global_manager_get_pwm_analog_percentage(&pwm_analog_per_value);
-                    if(pwm_analog_per_value != pwm_analog_per_value_ant)
+                    
+                    if(pwm_analog_per_value > 0)
                     {
-                        if(pwm_analog_per_value > 0)
-                        {
-                            gpio_set_level(S_OUT, 1);
-                        }
-                        else
-                        {
-                            gpio_set_level(S_OUT, 0);
-                        }   
+                        gpio_set_level(S_OUT, 1);
                     }
-                    pwm_analog_per_value_ant = pwm_analog_per_value;
+                    else
+                    {
+                        gpio_set_level(S_OUT, 0);
+                    }   
 
                 }
                 else if (is_jp3_teclas_connected() == true)
                 {
                     global_manager_get_pwm_digital_percentage(&pwm_digital_per_value);
-                    if(pwm_digital_per_value != pwm_digital_per_value_ant)
+                    
+                    if(pwm_digital_per_value > 0)
                     {
-                        if(pwm_digital_per_value > 0)
-                        {
-                            gpio_set_level(S_OUT, 1);
-                        }
-                        else
-                        {
-                            gpio_set_level(S_OUT, 0);
-                        }   
+                        gpio_set_level(S_OUT, 1);
                     }
-                    pwm_digital_per_value_ant = pwm_digital_per_value;
+                    else
+                    {
+                        gpio_set_level(S_OUT, 0);
+                    }   
+                    
                 }
             }
             else if(pwm_mode == PWM_AUTOMATIC)
