@@ -78,5 +78,7 @@ esp_err_t save_params(void);
 esp_err_t get_params(void);
 void display_manager_pwm_mode_update(uint8_t pwm_value, flora_vege_status_t vege_flora);
 compare_t compare_times(struct tm, struct tm);
+uint8_t colision_times(struct tm, struct tm, struct tm, struct tm);
+uint8_t checkOverlap(struct tm, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* DISPLAY_MANAGER_H__ */

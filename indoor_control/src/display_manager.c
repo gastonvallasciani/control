@@ -48,6 +48,16 @@ struct tm time_i3;
 struct tm time_f3;
 struct tm time_i4;
 struct tm time_f4;
+struct tm time_i1_aux;
+struct tm time_f1_aux;
+struct tm time_i2_aux;
+struct tm time_f2_aux;
+struct tm time_i3_aux;
+struct tm time_f3_aux;
+struct tm time_i4_aux;
+struct tm time_f4_aux;
+bool flag_times;
+uint8_t check_time;
 struct tm time_pwmi;
 struct tm time_pwmf;
 uint8_t pwm_man;  // potencia manual del pwm
@@ -105,6 +115,8 @@ static void display_manager_task(void *arg)
     param_two = 1;
     param_three = 1;
     ddots_state = false;
+    flag_times = false;
+    check_time = 0;
     while (true)
     {
         if (xQueueReceive(display_manager_queue, &display_ev, portMAX_DELAY) == pdTRUE)
@@ -235,6 +247,22 @@ static void display_manager_task(void *arg)
                     display_param_manager(AUX); // tengo que pasarle un numero para indicar que boton toqué
                     break;
                 case CONFIG_PARAM:
+                    if (flag_times == true) // significa que entre a modificar horarios
+                    {
+                        check_time = checkOverlap(time_i1, time_f1, time_i2, time_f2, time_i3, time_f3, time_i4, time_f4);
+                        ESP_LOGW("CHECK TIME", "Check time es %u", check_time);
+                        if (check_time > 0) // si hubo overlap, vuelvo a los horarios anteriores
+                        {
+                            time_i1 = time_i1_aux;
+                            time_f1 = time_f1_aux;
+                            time_i2 = time_i2_aux;
+                            time_f2 = time_f2_aux;
+                            time_i3 = time_i3_aux;
+                            time_f3 = time_f3_aux;
+                            time_i4 = time_i4_aux;
+                            time_f4 = time_f4_aux;
+                        }
+                    }
                     save_params();
                     state = CONFIG_LINE;
                     // dejo de blinkear el caracter
@@ -344,6 +372,22 @@ static void display_manager_task(void *arg)
                     break;
                 case CONFIG_PARAM:
                     // vuelvo a NORMAL a la pagina correspondiente
+                    if (flag_times == true) // significa que entre a modificar horarios
+                    {
+                        check_time = checkOverlap(time_i1, time_f1, time_i2, time_f2, time_i3, time_f3, time_i4, time_f4);
+                        ESP_LOGW("CHECK TIME", "Check time es %u", check_time);
+                        if (check_time > 0) // si hubo overlap, vuelvo a los horarios anteriores
+                        {
+                            time_i1 = time_i1_aux;
+                            time_f1 = time_f1_aux;
+                            time_i2 = time_i2_aux;
+                            time_f2 = time_f2_aux;
+                            time_i3 = time_i3_aux;
+                            time_f3 = time_f3_aux;
+                            time_i4 = time_i4_aux;
+                            time_f4 = time_f4_aux;
+                        }
+                    }
                     save_params();
                     state = NORMAL;
                     stop_timer();
@@ -694,6 +738,7 @@ esp_err_t display_blink_manager(screen_t screen, uint8_t cmd)
     case SCREEN_TWO:
         // chequeo si vino up o down
         display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
+        flag_times = true; // entre para configurar los horarios
         /* if (cmd == 0) // es down
          {
              if (line == 0)
@@ -2035,6 +2080,14 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         // set horario 4 final e inicial
         global_manager_set_s_out_turn_on_time(time_i4, 3);
         global_manager_set_s_out_turn_off_time(time_f4, 3);
+        time_i1_aux = time_i1;
+        time_f1_aux = time_f1;
+        time_i2_aux = time_i2;
+        time_f2_aux = time_f2;
+        time_i3_aux = time_i3;
+        time_f3_aux = time_f3;
+        time_i4_aux = time_i4;
+        time_f4_aux = time_f4;
 
         break;
     case SCREEN_THREE:
@@ -2102,6 +2155,14 @@ esp_err_t get_params()
     //
     global_manager_get_s_out_turn_on_time(&time_i4, 3);
     global_manager_get_s_out_turn_off_time(&time_f4, 3);
+    time_i1_aux = time_i1;
+    time_f1_aux = time_f1;
+    time_i2_aux = time_i2;
+    time_f2_aux = time_f2;
+    time_i3_aux = time_i3;
+    time_f3_aux = time_f3;
+    time_i4_aux = time_i4;
+    time_f4_aux = time_f4;
 
     // obtengo horario de pwm
     global_manager_get_turn_on_time(&time_pwmi);
@@ -2188,5 +2249,160 @@ compare_t compare_times(struct tm t1, struct tm t2)
     }
     return LESSER;
 }
+
+uint8_t colision_times(struct tm ih1, struct tm fh1, struct tm ih2, struct tm fh2) // funcion que me dice si dos horarios se superponen
+{
+    uint8_t sp = 0;
+
+    ESP_LOGI("Colision_times", "Hora inicial 1 es: %u :%u", ih1.tm_hour, ih1.tm_min);
+    ESP_LOGI("Colision_times", "Hora final 1 es: %u :%u", fh1.tm_hour, fh1.tm_min);
+    ESP_LOGI("Colision_times", "Hora inicial 2 es: %u :%u", ih2.tm_hour, ih2.tm_min);
+    ESP_LOGI("Colision_times", "Hora final 2 es: %u :%u", fh2.tm_hour, fh2.tm_min);
+
+    // caso que horario de encendido sea igual a apagado en h1
+    if (ih1.tm_hour == fh1.tm_hour && ih1.tm_min == fh1.tm_min)
+    {
+        if (ih1.tm_hour == 0 && ih1.tm_min == 0)
+        {
+            sp = 0;
+        }
+        else
+        {
+            sp = 1;
+        }
+    }
+    // caso que horario de encendido sea igual a apagado en h2
+    if (ih2.tm_hour == fh2.tm_hour && ih2.tm_min == fh2.tm_min)
+    {
+        if (ih2.tm_hour == 0 && ih2.tm_min == 0)
+        {
+            sp = 0;
+        }
+        else
+        {
+            sp = 1;
+        }
+    }
+    if (ih1.tm_hour == fh1.tm_hour && ih1.tm_min > fh1.tm_min)
+    {
+        if (ih2.tm_hour > ih1.tm_hour)
+        {
+            sp = 1;
+        }
+        if (ih2.tm_hour == ih1.tm_hour)
+        {
+            if (ih2.tm_min >= ih1.tm_min || fh2.tm_min > ih1.tm_min)
+            {
+                sp = 1;
+            }
+        }
+    }
+    if (ih2.tm_hour == fh2.tm_hour && ih2.tm_min > fh2.tm_min)
+    {
+        if (ih1.tm_hour > ih2.tm_hour)
+        {
+            sp = 1;
+        }
+        if (ih1.tm_hour == ih2.tm_hour)
+        {
+            if (ih1.tm_min >= ih2.tm_min || fh1.tm_min > ih2.tm_min)
+            {
+                sp = 1;
+            }
+        }
+    }
+    // caso superposicion en una parte de h2 en h1
+    if (ih1.tm_hour <= ih2.tm_hour && ih2.tm_hour <= fh1.tm_hour)
+    { // aca falta tener en cuenta los minutos
+        if (ih1.tm_hour == 0 && ih1.tm_min == 0)
+        {
+            sp = 0;
+        }
+        else
+        {
+            sp = 1;
+        }
+    }
+    // caso superposicion en una parte de h1 en h2
+    if (ih2.tm_hour <= ih1.tm_hour && ih1.tm_hour <= fh2.tm_hour)
+    { // aca falta tener en cuenta los minutos
+        if (ih1.tm_hour == 0 && ih1.tm_min == 0)
+        {
+            sp = 0;
+        }
+        else
+        {
+            sp = 1;
+        }
+    }
+    // caso en que h2 se superponga con misma hora y entre minutos en h1. mismo dia
+    if (ih1.tm_hour == fh1.tm_hour && ih2.tm_hour == ih1.tm_hour)
+    {
+        if (ih2.tm_min >= ih1.tm_min && fh1.tm_min > ih2.tm_min)
+        {
+            sp = 1;
+        }
+    }
+    // caso en que h1 se superponga con misma hora y entre minutos en h2. mismo dia
+    if (ih2.tm_hour == fh2.tm_hour && ih1.tm_hour == ih2.tm_hour)
+    {
+        if (ih1.tm_min >= ih2.tm_min && fh2.tm_min > ih1.tm_min)
+        {
+            sp = 1;
+        }
+    }
+    // caso de que se pase al dia siguiente
+    if (ih1.tm_hour > fh1.tm_hour)
+    {
+        if (ih2.tm_hour >= ih1.tm_hour)
+        {
+            sp = 1;
+        }
+        if (fh1.tm_hour > ih2.tm_hour)
+        {
+            sp = 1;
+        }
+    }
+    if (ih2.tm_hour > fh2.tm_hour)
+    {
+        if (ih1.tm_hour >= ih2.tm_hour)
+        {
+            sp = 1;
+        }
+        if (fh2.tm_hour > ih1.tm_hour)
+        {
+            sp = 1;
+        }
+    }
+
+    ESP_LOGE("Colision_times", "SP es: %u", sp);
+    return sp;
+}
+
+uint8_t checkOverlap(struct tm ih1, struct tm fh1, struct tm ih2, struct tm fh2, struct tm ih3, struct tm fh3, struct tm ih4, struct tm fh4)
+{
+    uint8_t arr[] = {0, 0, 0, 0, 0, 0};
+    uint8_t suma = 0;
+    uint8_t i = 0;
+
+    arr[0] = colision_times(ih1, fh1, ih2, fh2);
+
+    arr[1] = colision_times(ih1, fh1, ih3, fh3);
+
+    arr[2] = colision_times(ih1, fh1, ih4, fh4);
+
+    arr[3] = colision_times(ih2, fh2, ih3, fh3);
+
+    arr[4] = colision_times(ih2, fh2, ih4, fh4);
+
+    arr[5] = colision_times(ih3, fh3, ih4, fh4);
+
+    for (i = 0; i < 6; i++)
+    {
+        suma += arr[i];
+    }
+    return suma;
+}
+
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------
