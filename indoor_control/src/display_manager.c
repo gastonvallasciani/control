@@ -2318,6 +2318,10 @@ uint8_t colision_times(struct tm ih1, struct tm fh1, struct tm ih2, struct tm fh
         {
             sp = 0;
         }
+        else if (ih2.tm_hour == fh1.tm_hour && ih2.tm_min >= fh1.tm_min)
+        {
+            sp=0;
+        }
         else
         {
             sp = 1;
@@ -2329,6 +2333,10 @@ uint8_t colision_times(struct tm ih1, struct tm fh1, struct tm ih2, struct tm fh
         if (ih1.tm_hour == 0 && ih1.tm_min == 0)
         {
             sp = 0;
+        }
+        else if (ih1.tm_hour == fh2.tm_hour && ih1.tm_min >= fh2.tm_min)
+        {
+            sp=0;
         }
         else
         {
