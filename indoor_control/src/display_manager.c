@@ -718,6 +718,8 @@ void display_manager_manual(uint8_t pwm_value)
 {
     display_event_t display_ev;
 
+    printf(" UPDATE DISPLAY PWM VALUE: El valor de pwm_value es %u \n", pwm_value);
+
     display_ev.cmd = PWM_MANUAL_VALUE;
     display_ev.pwm_value = pwm_value;
     // display_ev.vege_flora = vege_flora;

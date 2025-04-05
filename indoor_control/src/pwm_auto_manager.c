@@ -164,13 +164,18 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                 {
                     if(is_pwm_in_fading_on_state(info->current_time, info->turn_on_time))
                     {
-                        pwm_manager_turn_on_pwm_simul_day_on(info->percent_power);
-                        display_manager_manual(info->percent_power);
-                        //led_manager_send_pwm_info(info->percent_power, 1, true);
-                        led_manager_pwm_output(info->percent_power);
+                        #ifdef DEBUG_MODULE
+                            printf("SIMUL DAY STATUS = ON \n");
+                            printf("OUTPUT PERCENT POWER %d \n", info->percent_power);
+                        #endif
+                        pwm_manager_turn_on_pwm_simul_day_on(info->percent_power);                        
                     }
                     else
                     {
+                        #ifdef DEBUG_MODULE
+                            printf("SIMUL DAY STATUS = OFF, NORMAL AUTO MODE \n");
+                        #endif
+
                         pwm_manager_turn_on_pwm(info->percent_power);
                         //led_manager_send_pwm_info(info->percent_power, 0, false);
                         led_manager_pwm_output(info->percent_power);

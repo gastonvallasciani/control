@@ -12,6 +12,7 @@
 #include "../include/global_manager.h"
 #include "driver/ledc.h"
 #include "../include/led_manager.h"
+#include "../include/display_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 //#define DEBUG_MODULE 
@@ -122,6 +123,9 @@ static void init_fading_on(uint8_t duty_cycle, manual_fading_info_t *manual_fadi
     manual_fading_info->step_number = 0;
     manual_fading_info->max_number_of_steps = MAX_DUTY_CYCLE_STEPS;
     manual_fading_info->step_duty_cycle = (manual_fading_info->duty_cycle - 10) / manual_fading_info->max_number_of_steps;
+    
+    display_manager_manual(manual_fading_info->out_duty_cycle);
+    led_manager_pwm_output(manual_fading_info->out_duty_cycle);
 }
 //------------------------------------------------------------------------------
 static void init_fading_off(uint8_t duty_cycle, manual_fading_info_t *manual_fading_info)
@@ -137,6 +141,9 @@ static void init_fading_off(uint8_t duty_cycle, manual_fading_info_t *manual_fad
     manual_fading_info->step_number = 0;
     manual_fading_info->max_number_of_steps = MAX_DUTY_CYCLE_STEPS;
     manual_fading_info->step_duty_cycle = manual_fading_info->duty_cycle / manual_fading_info->max_number_of_steps;
+
+    display_manager_manual(manual_fading_info->out_duty_cycle);
+    led_manager_pwm_output(manual_fading_info->out_duty_cycle);
 }
 //------------------------------------------------------------------------------
 static void stop_fading(manual_fading_info_t *manual_fading_info)
@@ -158,6 +165,9 @@ static void update_fading(manual_fading_info_t *manual_fading_info)
             ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, manual_fading_info->target_duty_cycle, 10);
             ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 
+            display_manager_manual(manual_fading_info->out_duty_cycle);
+            led_manager_pwm_output(manual_fading_info->out_duty_cycle);
+
             manual_fading_info->step_number++;
             manual_fading_info->out_duty_cycle += manual_fading_info->step_duty_cycle;
 
@@ -175,6 +185,9 @@ static void update_fading(manual_fading_info_t *manual_fading_info)
                 ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, manual_fading_info->target_duty_cycle, 10);
                 ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 
+                display_manager_manual(manual_fading_info->out_duty_cycle);
+                led_manager_pwm_output(manual_fading_info->out_duty_cycle);
+
                 manual_fading_info->fading_status = FADING_STOP;
             }
         }
@@ -188,6 +201,9 @@ static void update_fading(manual_fading_info_t *manual_fading_info)
             ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, manual_fading_info->target_duty_cycle, 10);
             ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 
+            display_manager_manual(manual_fading_info->out_duty_cycle);
+            led_manager_pwm_output(manual_fading_info->out_duty_cycle);
+
             manual_fading_info->step_number++;
             manual_fading_info->out_duty_cycle -= manual_fading_info->step_duty_cycle;
 
@@ -200,6 +216,10 @@ static void update_fading(manual_fading_info_t *manual_fading_info)
 
                 ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, manual_fading_info->target_duty_cycle, 10);
                 ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
+
+                display_manager_manual(manual_fading_info->out_duty_cycle);
+                led_manager_pwm_output(manual_fading_info->out_duty_cycle);
+
                 manual_fading_info->fading_status = FADING_STOP;
             }
         }
