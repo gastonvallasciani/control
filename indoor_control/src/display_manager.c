@@ -38,6 +38,11 @@ TimerHandle_t timerh;
 int intervalh = 1000; // ms de timer, cada 1 segundo refresco la hora
 int timeridh = 2;
 
+// timer para parpadear los simbolos del dia cuando está la rampa
+TimerHandle_t timer_dia;
+int interval_dia = 1000; // ms de timer, cada 1 segundo refresco la hora
+int timerid_dia = 3;
+
 // variables globales de parametros a escribir en el display
 struct tm time_device;
 struct tm time_i1;
@@ -63,12 +68,15 @@ struct tm time_pwmf;
 uint8_t pwm_man;  // potencia manual del pwm
 uint8_t pwm_auto; // potencia del pwm en automatico
 uint8_t power;
+uint8_t pwm_dia_rise;
 char fpower[6];
 uint32_t fpowerppf;
 flora_vege_status_t vegeflora;
 char vegeflorachar; // con esta me manejo en el display
 simul_day_status_t dia;
 bool diabool; // con este me manejo en e display
+bool flag_dia;
+bool amanecer;
 pwm_mode_t modo;
 bool modobool;    // con esta me manejo en el display
 uint8_t contrast; // contraste del display
@@ -107,7 +115,9 @@ static void display_manager_task(void *arg)
     clear = pdFALSE;
     set_timer();
     set_timerh();
+    set_timer_dia();
     start_timerh();
+    start_timer_dia();
     contrast = 10;
     pwm_auto = 0;
     pwm_man = 0;
@@ -116,7 +126,10 @@ static void display_manager_task(void *arg)
     param_three = 1;
     ddots_state = false;
     flag_times = false;
+    flag_dia = false;
     check_time = 0;
+    pwm_dia_rise = 0;
+    amanecer = pdFALSE;
     while (true)
     {
         if (xQueueReceive(display_manager_queue, &display_ev, portMAX_DELAY) == pdTRUE)
@@ -178,7 +191,7 @@ static void display_manager_task(void *arg)
                         {
                             power = 0;
                         }
-                        else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm pro ende muestro la potencia
+                        else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm por ende muestro la potencia
                         {
                             power = pwm_auto;
                         }
@@ -582,7 +595,9 @@ static void display_manager_task(void *arg)
                 }
                 break;
             case PWM_MANUAL_VALUE:
+                ESP_LOGI("PWM_MANUAL_VALUE", "PWM_MANUAL_VALUE");
                 get_params();
+                pwm_dia_rise = display_ev.pwm_value;
                 display_set_power(display_ev.pwm_value, fpower);
                 break;
             case PWM_MODE_UPDATE:
@@ -596,7 +611,6 @@ static void display_manager_task(void *arg)
                 {
                     vegeflorachar = 'F';
                 }
-                printf("El char de vege_flora es %c", vegeflorachar);
                 global_manager_get_current_time_info(&time_device);
                 display_set_screen_one(&screen, fpower, display_ev.pwm_value, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
                 break;
@@ -1031,6 +1045,126 @@ esp_err_t reset_timerh()
     if (xTimerReset(timerh, 0) != pdPASS)
     {
         printf("Error al reiniciar el temporizadorh de FreeRTOS.\n");
+    }
+    return ESP_OK;
+}
+
+void time_callback_dia(TimerHandle_t timerh)
+{ //
+    uint8_t diff = 0;
+    if (screen == SCREEN_ONE && state == NORMAL && modobool == pdTRUE && diabool == pdTRUE)
+    {
+        if (time_device.tm_hour == time_pwmi.tm_hour) // caso que los 15min sucedan dentro de una misma hora
+        {
+            if (time_device.tm_min >= time_pwmi.tm_min)
+            {
+                if (time_device.tm_min - time_pwmi.tm_min <= 15)
+                {
+                    // amanecer = pdTRUE;
+                    set_cursor(3, 1);
+                    if (flag_dia == false)
+                    {
+                        display_write_string("  ");
+                        flag_dia = pdTRUE;
+                    }
+                    else
+                    {
+                        display_send_data(0x12);
+                        set_cursor(3, 2);
+                        display_send_data(0x13);
+                        flag_dia = pdFALSE;
+                    }
+                }
+                else if (pwm_dia_rise != pwm_auto)
+                {
+                    set_cursor(3, 1);
+                    if (flag_dia == false)
+                    {
+                        display_write_string("  ");
+                        flag_dia = pdTRUE;
+                    }
+                    else
+                    {
+                        display_send_data(0x12);
+                        set_cursor(3, 2);
+                        display_send_data(0x13);
+                        flag_dia = pdFALSE;
+                    }
+                }
+            }
+        }
+        else if (time_device.tm_hour == time_pwmi.tm_hour + 1) // caso que los 15min sucedean en horas de pwm y device distintas
+        {
+            diff = 60 - time_pwmi.tm_min;
+            if (diff + time_device.tm_min <= 15)
+            {
+                set_cursor(3, 1);
+                if (flag_dia == false)
+                {
+                    display_write_string("  ");
+                    flag_dia = pdTRUE;
+                }
+                else
+                {
+                    display_send_data(0x12);
+                    set_cursor(3, 2);
+                    display_send_data(0x13);
+                    flag_dia = pdFALSE;
+                }
+            }
+        }
+        else
+        {
+            set_cursor(3, 1);
+            display_send_data(0x12);
+            set_cursor(3, 2);
+            display_send_data(0x13);
+        }
+    }
+}
+
+esp_err_t set_timer_dia()
+{
+    timer_dia = xTimerCreate("timer_dia", pdMS_TO_TICKS(interval_dia), pdTRUE, (void *)timerid_dia, time_callback_dia);
+    if (timerh == NULL)
+    {
+        ESP_LOGI("TIMER_dia", "No se creó el timer");
+    }
+    else
+    {
+        ESP_LOGI("TIMER_dia", "El timer se creó correctamente");
+    }
+    return ESP_OK;
+}
+
+esp_err_t start_timer_dia()
+{
+    if (xTimerStart(timer_dia, 0) != pdPASS)
+    {
+        ESP_LOGI("TIMER_dia", "Error al iniciar el timer_dia");
+    }
+    else
+    {
+        ESP_LOGI("TIMER_dia", "Inicio de timer_dia");
+    }
+    return ESP_OK;
+}
+
+esp_err_t stop_timer_dia()
+{
+    if (xTimerStop(timer_dia, 0) != pdPASS)
+    {
+        printf("Error al detener el temporizador_dia de FreeRTOS.\n");
+    }
+    ESP_LOGI("TIMER_dia", "Paro el timer_dia");
+    return ESP_OK;
+}
+
+esp_err_t reset_timer_dia()
+{
+    if (xTimerReset(timer_dia, 0) != pdPASS)
+    {
+        printf("Error al reiniciar el temporizador_dia de FreeRTOS.\n");
     }
     return ESP_OK;
 }
@@ -2322,7 +2456,7 @@ uint8_t colision_times(struct tm ih1, struct tm fh1, struct tm ih2, struct tm fh
         }
         else if (ih2.tm_hour == fh1.tm_hour && ih2.tm_min >= fh1.tm_min)
         {
-            sp=0;
+            sp = 0;
         }
         else
         {
@@ -2338,7 +2472,7 @@ uint8_t colision_times(struct tm ih1, struct tm fh1, struct tm ih2, struct tm fh
         }
         else if (ih1.tm_hour == fh2.tm_hour && ih1.tm_min >= fh2.tm_min)
         {
-            sp=0;
+            sp = 0;
         }
         else
         {

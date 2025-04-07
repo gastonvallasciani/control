@@ -56,6 +56,7 @@ void display_manager_manual(uint8_t);
 void display_manager_vft(pwm_mode_t pwm_mode);
 void blink_callback(TimerHandle_t);
 void time_callback(TimerHandle_t);
+void time_callback_dia(TimerHandle_t);
 esp_err_t display_blink_manager(screen_t, uint8_t);
 esp_err_t set_timer(void);
 esp_err_t start_timer(void);
@@ -65,6 +66,10 @@ esp_err_t set_timerh(void);
 esp_err_t start_timerh(void);
 esp_err_t stop_timerh(void);
 esp_err_t reset_timerh(void);
+esp_err_t set_timer_dia(void);
+esp_err_t start_timer_dia(void);
+esp_err_t stop_timer_dia(void);
+esp_err_t reset_timer_dia(void);
 esp_err_t clear_line(uint8_t);
 esp_err_t display_param_manager(display_event_cmds_t);
 /*esp_err_t screen_one_param(display_event_cmds_t);*/
