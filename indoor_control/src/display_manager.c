@@ -15,6 +15,7 @@
 #include "../include/display_dogs164.h"
 #include "../include/current_time_manager.h"
 #include "../include/jumpers_manager.h"
+#include "../include/pwm_manager.h"
 
 //  #include "display_dogs164.c"
 
@@ -44,6 +45,7 @@ int interval_dia = 1000; // ms de timer, cada 1 segundo refresco la hora
 int timerid_dia = 3;
 
 // variables globales de parametros a escribir en el display
+fading_status_t fade_stat;
 struct tm time_device;
 struct tm time_i1;
 struct tm time_f1;
@@ -130,6 +132,14 @@ static void display_manager_task(void *arg)
     check_time = 0;
     pwm_dia_rise = 0;
     amanecer = pdFALSE;
+    get_fading_status(&fade_stat);
+    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
+    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
+    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
+    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
+    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
+    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
+
     while (true)
     {
         if (xQueueReceive(display_manager_queue, &display_ev, portMAX_DELAY) == pdTRUE)
@@ -180,37 +190,6 @@ static void display_manager_task(void *arg)
                 {
                 case NORMAL:
                     get_params();
-                    // elijo la potencia en base al modo en que estoy
-                    if (modobool == false)
-                    {
-                        power = pwm_man;
-                    }
-                    else
-                    {
-                        if (compare_times(time_pwmi, time_device) == GREATER) // el horario de inicio del pwm es mayor  que el del equipo, no está la  salida prendida
-                        {
-                            power = 0;
-                        }
-                        else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm por ende muestro la potencia
-                        {
-                            power = pwm_auto;
-                        }
-                        else // horairo de inicio de pwm menor al del equipo
-                        {
-                            if (compare_times(time_pwmf, time_device) == GREATER) // si el horario final es superior al del equipo, está activa la salida del pwm
-                            {
-                                power = pwm_auto;
-                            }
-                            else if (compare_times(time_pwmf, time_device) == EQUAL) // horario final iguala l del dispositivo, ya se acaba asique muestro cero
-                            {
-                                power = 0;
-                            }
-                            else // horario final del dispositivo menor al del equipo, la salida pwm esta apagada
-                            {
-                                power = 0;
-                            }
-                        }
-                    }
                     if (screen == SCREEN_ONE)
                     {
                         display_set_screen_two(&screen, time_i1, time_i2, time_i3, time_i4, time_f1, time_f2, time_f3, time_f4);
@@ -231,21 +210,36 @@ static void display_manager_task(void *arg)
                             }
                             else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm pro ende muestro la potencia
                             {
-                                power = pwm_auto;
+                                power = pwm_dia_rise;
                             }
                             else // horairo de inicio de pwm menor al del equipo
                             {
                                 if (compare_times(time_pwmf, time_device) == GREATER) // si el horario final es superior al del equipo, está activa la salida del pwm
                                 {
-                                    power = pwm_auto;
+                                    if (fade_stat == FADING_IN_PROGRESS)
+                                    {
+                                        power = pwm_dia_rise;
+                                    }
+                                    else
+                                    {
+                                        power = pwm_auto;
+                                    }
                                 }
                                 else if (compare_times(time_pwmf, time_device) == EQUAL) // horario final iguala l del dispositivo, ya se acaba asique muestro cero
                                 {
+
                                     power = 0;
                                 }
                                 else // horario final del dispositivo menor al del equipo, la salida pwm esta apagada
                                 {
-                                    power = 0;
+                                    if (time_pwmi.tm_hour > time_pwmf.tm_hour)
+                                    {
+                                        power = pwm_auto;
+                                    }
+                                    else
+                                    {
+                                        power = 0;
+                                    }
                                 }
                             }
                         }
@@ -1049,68 +1043,25 @@ esp_err_t reset_timerh()
     return ESP_OK;
 }
 
-void time_callback_dia(TimerHandle_t timerh)
+void time_callback_dia(TimerHandle_t timer_dia)
 { //
-    uint8_t diff = 0;
     if (screen == SCREEN_ONE && state == NORMAL && modobool == pdTRUE && diabool == pdTRUE)
     {
-        if (time_device.tm_hour == time_pwmi.tm_hour) // caso que los 15min sucedan dentro de una misma hora
+        get_fading_status(&fade_stat);
+        if (fade_stat == FADING_IN_PROGRESS)
         {
-            if (time_device.tm_min >= time_pwmi.tm_min)
+            set_cursor(3, 1);
+            if (flag_dia == false)
             {
-                if (time_device.tm_min - time_pwmi.tm_min <= 15)
-                {
-                    // amanecer = pdTRUE;
-                    set_cursor(3, 1);
-                    if (flag_dia == false)
-                    {
-                        display_write_string("  ");
-                        flag_dia = pdTRUE;
-                    }
-                    else
-                    {
-                        display_send_data(0x12);
-                        set_cursor(3, 2);
-                        display_send_data(0x13);
-                        flag_dia = pdFALSE;
-                    }
-                }
-                else if (pwm_dia_rise != pwm_auto)
-                {
-                    set_cursor(3, 1);
-                    if (flag_dia == false)
-                    {
-                        display_write_string("  ");
-                        flag_dia = pdTRUE;
-                    }
-                    else
-                    {
-                        display_send_data(0x12);
-                        set_cursor(3, 2);
-                        display_send_data(0x13);
-                        flag_dia = pdFALSE;
-                    }
-                }
+                display_write_string("  ");
+                flag_dia = pdTRUE;
             }
-        }
-        else if (time_device.tm_hour == time_pwmi.tm_hour + 1) // caso que los 15min sucedean en horas de pwm y device distintas
-        {
-            diff = 60 - time_pwmi.tm_min;
-            if (diff + time_device.tm_min <= 15)
+            else
             {
-                set_cursor(3, 1);
-                if (flag_dia == false)
-                {
-                    display_write_string("  ");
-                    flag_dia = pdTRUE;
-                }
-                else
-                {
-                    display_send_data(0x12);
-                    set_cursor(3, 2);
-                    display_send_data(0x13);
-                    flag_dia = pdFALSE;
-                }
+                display_send_data(0x12);
+                set_cursor(3, 2);
+                display_send_data(0x13);
+                flag_dia = pdFALSE;
             }
         }
         else
@@ -1119,6 +1070,7 @@ void time_callback_dia(TimerHandle_t timerh)
             display_send_data(0x12);
             set_cursor(3, 2);
             display_send_data(0x13);
+            flag_dia = pdFALSE;
         }
     }
 }

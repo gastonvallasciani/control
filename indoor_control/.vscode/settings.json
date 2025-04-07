@@ -32,6 +32,7 @@
         "current_time_manager.h": "c",
         "timers.h": "c",
         "freertos.h": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "semphr.h": "c"
     }
 }
