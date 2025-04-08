@@ -355,21 +355,36 @@ static void display_manager_task(void *arg)
                         }
                         else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm pro ende muestro la potencia
                         {
-                            power = pwm_auto;
+                            power = pwm_dia_rise;
                         }
                         else // horairo de inicio de pwm menor al del equipo
                         {
                             if (compare_times(time_pwmf, time_device) == GREATER) // si el horario final es superior al del equipo, está activa la salida del pwm
                             {
-                                power = pwm_auto;
+                                if (fade_stat == FADING_IN_PROGRESS)
+                                {
+                                    power = pwm_dia_rise;
+                                }
+                                else
+                                {
+                                    power = pwm_auto;
+                                }
                             }
                             else if (compare_times(time_pwmf, time_device) == EQUAL) // horario final iguala l del dispositivo, ya se acaba asique muestro cero
                             {
+
                                 power = 0;
                             }
                             else // horario final del dispositivo menor al del equipo, la salida pwm esta apagada
                             {
-                                power = 0;
+                                if (time_pwmi.tm_hour > time_pwmf.tm_hour)
+                                {
+                                    power = pwm_auto;
+                                }
+                                else
+                                {
+                                    power = 0;
+                                }
                             }
                         }
                     }
@@ -415,21 +430,36 @@ static void display_manager_task(void *arg)
                         }
                         else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm pro ende muestro la potencia
                         {
-                            power = pwm_auto;
+                            power = pwm_dia_rise;
                         }
                         else // horairo de inicio de pwm menor al del equipo
                         {
                             if (compare_times(time_pwmf, time_device) == GREATER) // si el horario final es superior al del equipo, está activa la salida del pwm
                             {
-                                power = pwm_auto;
+                                if (fade_stat == FADING_IN_PROGRESS)
+                                {
+                                    power = pwm_dia_rise;
+                                }
+                                else
+                                {
+                                    power = pwm_auto;
+                                }
                             }
                             else if (compare_times(time_pwmf, time_device) == EQUAL) // horario final iguala l del dispositivo, ya se acaba asique muestro cero
                             {
+
                                 power = 0;
                             }
                             else // horario final del dispositivo menor al del equipo, la salida pwm esta apagada
                             {
-                                power = 0;
+                                if (time_pwmi.tm_hour > time_pwmf.tm_hour)
+                                {
+                                    power = pwm_auto;
+                                }
+                                else
+                                {
+                                    power = 0;
+                                }
                             }
                         }
                     }
