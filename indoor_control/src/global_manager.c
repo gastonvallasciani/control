@@ -846,6 +846,7 @@ uint8_t global_manager_set_turn_on_time(struct tm turn_on_time)
     {
         date_aux = global_manager_info.nv_info.pwm_auto.turn_on_time;
         global_manager_info.nv_info.pwm_auto.turn_on_time = turn_on_time;
+        global_manager_info.nv_info.pwm_auto.turn_on_time.tm_sec = 0; // Set seconds to 0 for consistency
         xSemaphoreGive(global_manager_semaph);
         if ((date_aux.tm_hour != turn_on_time.tm_hour) || (date_aux.tm_min != turn_on_time.tm_min))
         {
@@ -877,6 +878,7 @@ uint8_t global_manager_set_turn_off_time(struct tm turn_off_time)
     {
         date_aux = global_manager_info.nv_info.pwm_auto.turn_off_time;
         global_manager_info.nv_info.pwm_auto.turn_off_time = turn_off_time;
+        global_manager_info.nv_info.pwm_auto.turn_off_time.tm_sec = 0; // Set seconds to 0 for consistency
         xSemaphoreGive(global_manager_semaph);
 
         if ((date_aux.tm_hour != turn_off_time.tm_hour) || (date_aux.tm_min != turn_off_time.tm_min))
@@ -1085,6 +1087,7 @@ uint8_t global_manager_set_s_out_turn_off_time(struct tm turn_off_time, uint8_t 
 
     if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {
+        turn_off_time.tm_sec = 0; // Set seconds to 0 for consistency
         date_aux = global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_off_time;
         global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_off_time = turn_off_time;
 
@@ -1173,6 +1176,7 @@ uint8_t global_manager_set_s_out_turn_on_time(struct tm turn_on_time, uint8_t s_
 
     if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {
+        turn_on_time.tm_sec = 0; // Set seconds to 0 for consistency
         date_aux = global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_on_time;
         global_manager_info.nv_info.s_out_auto.s_out_auto[s_out_index].turn_on_time = turn_on_time;
 

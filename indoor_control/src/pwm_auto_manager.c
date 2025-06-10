@@ -46,34 +46,17 @@ static void subtract_15_minutes(struct tm *t)
     *t = *localtime(&rawtime); // Convierte de nuevo a struct tm
 }
 //------------------------------------------------------------------------------
-static int is_within_range(struct tm target, struct tm start, struct tm end)
-{
-    if (start.tm_hour < end.tm_hour || 
-       (start.tm_hour == end.tm_hour && start.tm_min < end.tm_min) ||
-       (start.tm_hour == end.tm_hour && start.tm_min == end.tm_min && start.tm_sec <= end.tm_sec)) {
-        // Caso normal (ejemplo: de 9:00:00 a 17:00:00)
-        if ((target.tm_hour > start.tm_hour || 
-            (target.tm_hour == start.tm_hour && target.tm_min > start.tm_min) ||
-            (target.tm_hour == start.tm_hour && target.tm_min == start.tm_min && target.tm_sec >= start.tm_sec)) &&
-            (target.tm_hour < end.tm_hour || 
-            (target.tm_hour == end.tm_hour && target.tm_min < end.tm_min) ||
-            (target.tm_hour == end.tm_hour && target.tm_min == end.tm_min && target.tm_sec <= end.tm_sec))) {
-            return 1;
-        } else {
-            return 0;
-        }
+static int is_within_range(struct tm target, struct tm start, struct tm end) {
+    int target_sec = target.tm_hour * 3600 + target.tm_min * 60 + target.tm_sec;
+    int start_sec  = start.tm_hour  * 3600 + start.tm_min  * 60 + start.tm_sec;
+    int end_sec    = end.tm_hour    * 3600 + end.tm_min    * 60 + end.tm_sec;
+
+    if (start_sec <= end_sec) {
+        // Caso normal: el rango no cruza la medianoche
+        return (target_sec >= start_sec && target_sec <= end_sec);
     } else {
-        // Rango cruza la medianoche (ejemplo: de 22:00:00 a 2:00:00)
-        if ((target.tm_hour > start.tm_hour || 
-            (target.tm_hour == start.tm_hour && target.tm_min > start.tm_min) ||
-            (target.tm_hour == start.tm_hour && target.tm_min == start.tm_min && target.tm_sec >= start.tm_sec)) ||
-            (target.tm_hour < end.tm_hour || 
-            (target.tm_hour == end.tm_hour && target.tm_min < end.tm_min) ||
-            (target.tm_hour == end.tm_hour && target.tm_min == end.tm_min && target.tm_sec <= end.tm_sec))) {
-            return 1;
-        } else {
-            return 0;
-        }
+        // Caso especial: el rango cruza la medianoche
+        return (target_sec >= start_sec || target_sec <= end_sec);
     }
 }
 //------------------------------------------------------------------------------
