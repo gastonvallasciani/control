@@ -651,6 +651,11 @@ void get_screen_state(display_state_t *state_info)
     *state_info = state;
 }
 //------------------------------------------------------------------------------
+void get_screen_number(screen_t *number_info)
+{
+    *number_info = screen;
+}
+//------------------------------------------------------------------------------
 void display_manager_init(void)
 {
     set_i2c();
