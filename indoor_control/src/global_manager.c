@@ -543,6 +543,10 @@ static void global_manager_task(void *arg)
     {
         flora_vege_turn_on();
     }
+    else
+    {
+        flora_vege_turn_off();
+    }
 
     if(pwm_mode == PWM_MANUAL)
     {
