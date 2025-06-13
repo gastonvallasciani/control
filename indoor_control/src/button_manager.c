@@ -397,9 +397,13 @@ void button_event_manager_task(void *pvParameters)
                             global_manager_set_pwm_digital_percentage(pwm_digital_per_value);
                             pwm_manager_turn_on_pwm(pwm_digital_per_value);
                             led_manager_pwm_output(pwm_digital_per_value);
+                            display_manager_down(pwm_digital_per_value, flora_vege_status); // Envio evento button down en al display
                         }
                     }
-                    display_manager_down(pwm_digital_per_value, flora_vege_status); // Envio evento button down en al display
+                    else if (screen_state != NORMAL)
+                    {
+                        display_manager_down(pwm_digital_per_value, flora_vege_status); // Envio evento button down en al display
+                    }
                 }
                 else
                 {
@@ -438,9 +442,13 @@ void button_event_manager_task(void *pvParameters)
                             pwm_manager_turn_on_pwm(pwm_digital_per_value);
                             printf("Boton PWM DW presionado, pwm analog value: %d \n", pwm_analog_per_value);
                             led_manager_pwm_output(pwm_digital_per_value);
+                            display_manager_up(pwm_digital_per_value, flora_vege_status); // Envio evento button up en al display
                         }
                     }
-                    display_manager_up(pwm_digital_per_value, flora_vege_status); // Envio evento button up en al display
+                    if (screen_state != NORMAL)
+                    {
+                        display_manager_up(pwm_digital_per_value, flora_vege_status); // Envio evento button up en al display
+                    }
                 }
                 else
                 {
