@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 #include <stdio.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -30,6 +31,7 @@ static uint8_t is_date1_grater_than_date2(struct tm date1, struct tm date2);
 static uint8_t is_pwm_in_fading_on_state(struct tm current_time, struct tm turn_on_time);
 static void subtract_15_minutes(struct tm *t); 
 static int is_within_range(struct tm target, struct tm start, struct tm end);
+static bool is_time_diff_less_than_15min(struct tm h1, struct tm h2); 
 
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
@@ -38,6 +40,16 @@ static int is_within_range(struct tm target, struct tm start, struct tm end);
 //------------------------------------------------------------------------------
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
+//------------------------------------------------------------------------------
+static bool is_time_diff_less_than_15min(struct tm h1, struct tm h2) 
+{
+    int min1 = h1.tm_hour * 60 + h1.tm_min;
+    int min2 = h2.tm_hour * 60 + h2.tm_min;
+
+    int diff = abs(min1 - min2);
+
+    return (diff < 15) ? true : false;
+}
 //------------------------------------------------------------------------------
 static void subtract_15_minutes(struct tm *t) 
 {
@@ -143,7 +155,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                     printf("PWM_AUTO_WORKING_PWM_ON \n");
                 #endif
                 info->output_status = PWM_OUTPUT_ON;
-                if(info->simul_day_status == true)
+                if((info->simul_day_status == true) && (is_time_diff_less_than_15min(info->turn_on_time, info->turn_off_time) == false))
                 {
                     if(is_pwm_in_fading_on_state(info->current_time, info->turn_on_time))
                     {
@@ -176,7 +188,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
         }
         else if(info->output_status == PWM_OUTPUT_ON)
         {
-            if(info->simul_day_status == true) 
+            if((info->simul_day_status == true) && (is_time_diff_less_than_15min(info->turn_on_time, info->turn_off_time) == false))
             {
                 if(is_within_range(info->current_time, info->turn_on_time, info->turn_off_time))
                 {
