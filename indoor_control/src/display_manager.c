@@ -619,10 +619,22 @@ static void display_manager_task(void *arg)
                 }
                 break;
             case PWM_MANUAL_VALUE:
-                ESP_LOGI("PWM_MANUAL_VALUE", "PWM_MANUAL_VALUE");
-                get_params();
-                pwm_dia_rise = display_ev.pwm_value;
-                display_set_power(display_ev.pwm_value, fpower);
+                switch (state)
+                {
+                    case NORMAL:
+                        //pwm_dia_rise = display_ev.pwm_value;
+                        //power = display_ev.pwm_value;
+                        get_params();
+                        pwm_dia_rise = display_ev.pwm_value;
+                        if (screen == SCREEN_ONE)
+                        {
+                            ESP_LOGI("PWM_MANUAL_VALUE", "PWM_MANUAL_VALUE");
+                            display_set_power(display_ev.pwm_value, fpower);
+                        }
+                    break;
+                    default:
+                        break;
+                }
                 break;
             case PWM_MODE_UPDATE:
                 power = display_ev.pwm_value;
