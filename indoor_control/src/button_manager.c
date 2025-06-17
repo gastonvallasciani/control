@@ -264,10 +264,26 @@ void button_event_manager_task(void * pvParameters)
 
     global_manager_set_flora_vege_status(flora_vege_status);
 
+   /* if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
+    {
+        flora_vege_manager_turn_on();
+        led_manager_rele_vege_on();
+    }*/
+
     if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
     {
         flora_vege_manager_turn_on();
         led_manager_rele_vege_on();
+        printf("Vege 1 status: %d \n", flora_vege_status);
+        global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_ENABLE);
+    }
+    else
+    {
+        flora_vege_manager_turn_off();
+        led_manager_rele_vege_off();
+        printf("Flora 2 status: %d \n", flora_vege_status);
+        global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_DISABLE);
+
     }
     
 
@@ -381,7 +397,7 @@ void button_manager_init(void)
     button_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(button_events_t));
 
     xTaskCreate(button_event_manager_task, "button_event_manager_task", 
-               configMINIMAL_STACK_SIZE*5, NULL, configMAX_PRIORITIES, NULL);             
+               configMINIMAL_STACK_SIZE*5, NULL, configMAX_PRIORITIES-1, NULL);             
 }
 //--------------------FIN DEL ARCHIVO-------------------------------------------
 //------------------------------------------------------------------------------

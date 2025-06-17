@@ -113,20 +113,30 @@ static void global_manager_task(void* arg)
         global_manager_get_pwm_analog_percentage(&pwm_manual_value);
         pwm_manager_turn_on_pwm(pwm_manual_value);
         led_manager_pwm_output(pwm_manual_value);
+        
         if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
+        {
             display_manager_start(pwm_manual_value, 'V');
+        }
         else
+        {
             display_manager_start(pwm_manual_value, 'F');
+        }
         pwm_value_bkp = pwm_manual_value;
     }
     else if (is_jp3_teclas_connected() == true)
     {
         pwm_manager_turn_on_pwm(pwm_digital_value);
         led_manager_pwm_output(pwm_digital_value);
+        
         if(flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
+        {
             display_manager_start(pwm_digital_value, 'V');
+        }
         else
+        {
             display_manager_start(pwm_digital_value, 'F');
+        }
     }
 
     while(true)
@@ -167,6 +177,7 @@ void global_manager_init(void)
     global_manager_semaph = xSemaphoreCreateBinary(); 
 
     led_manager_init();
+    flora_vege_manager_init();
     pwm_manager_init();
     button_manager_init();
     display_manager_init();
@@ -190,7 +201,7 @@ void global_manager_init(void)
 
     pote_input_manager_init();
 
-    flora_vege_manager_init();
+    
 }
 //------------------------------------------------------------------------------
 
