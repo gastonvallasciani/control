@@ -93,6 +93,9 @@ uint8_t line;
 screen_t screen;       // variable para saber en que pantalla estoy
 display_state_t state; // variable para saber el estado del display
 
+// variable para no modificar la hora
+bool change_time_device;
+
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
 static QueueHandle_t display_manager_queue;
@@ -132,13 +135,8 @@ static void display_manager_task(void *arg)
     check_time = 0;
     pwm_dia_rise = 0;
     amanecer = pdFALSE;
+    change_time_device = pdFALSE;
     get_fading_status(&fade_stat);
-    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
-    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
-    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
-    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
-    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
-    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
 
     while (true)
     {
@@ -483,7 +481,10 @@ static void display_manager_task(void *arg)
                     {
                         vegeflorachar = 'F';
                     }
-                    display_set_vege_flora(vegeflorachar);
+                    if (screen == SCREEN_ONE)
+                    {
+                        display_set_vege_flora(vegeflorachar);
+                    }
                     break;
                 case CONFIG_LINE:
                     // aca no hace nada
@@ -621,19 +622,19 @@ static void display_manager_task(void *arg)
             case PWM_MANUAL_VALUE:
                 switch (state)
                 {
-                    case NORMAL:
-                        //pwm_dia_rise = display_ev.pwm_value;
-                        //power = display_ev.pwm_value;
-                        get_params();
-                        pwm_dia_rise = display_ev.pwm_value;
-                        if (screen == SCREEN_ONE)
-                        {
-                            ESP_LOGI("PWM_MANUAL_VALUE", "PWM_MANUAL_VALUE");
-                            display_set_power(display_ev.pwm_value, fpower);
-                        }
+                case NORMAL:
+                    // pwm_dia_rise = display_ev.pwm_value;
+                    // power = display_ev.pwm_value;
+                    get_params();
+                    pwm_dia_rise = display_ev.pwm_value;
+                    if (screen == SCREEN_ONE)
+                    {
+                        ESP_LOGI("PWM_MANUAL_VALUE", "PWM_MANUAL_VALUE");
+                        display_set_power(display_ev.pwm_value, fpower);
+                    }
                     break;
-                    default:
-                        break;
+                default:
+                    break;
                 }
                 break;
             case PWM_MODE_UPDATE:
@@ -1749,6 +1750,7 @@ esp_err_t param_modified_three(display_event_cmds_t cmd)
     ESP_LOGI("param_modified_three", "Line %u", line);
     if (line == 0)
     {
+        change_time_device = pdTRUE;
         switch (param_three)
         {
         case 1:
@@ -2233,7 +2235,12 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         printf("La hora de inicio del pwm guardada es %u : %u \n", time_pwmi.tm_hour, time_pwmi.tm_min);
         global_manager_set_turn_off_time(time_pwmf);
         // set horario device
-        current_time_manager_set_current_time(time_device);
+        if (change_time_device == pdTRUE)
+        {
+            current_time_manager_set_current_time(time_device);
+            change_time_device = pdFALSE;
+        }
+
         // set contrast (falta funcion)
         // set dia
         if (diabool == false)
