@@ -8,6 +8,7 @@
 #include "../include/nv_flash_manager.h"
 #include "../include/global_manager.h"
 #include "../include/s_run_manager.h"
+#include "../include/wifi_manager.h"
 #include "esp_log.h"
 #define PHASE_NUMBER 3
 
@@ -21,6 +22,8 @@ void app_main()
     global_manager_init();
 
     s_run_manager_init();
+
+    wifi_manager_init();
 
     printf("Project: Indoor control \n");
     get_version(version, &version_len);

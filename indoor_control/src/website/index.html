@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: rgb(255, 254, 247);
+        }
+
+        .image_box {
+            text-align: center;
+        }
+
+        .imagen {
+            display: block;
+            margin: 15px;
+            width: 85%;
+        }
+
+        .linea {
+            border-top: 1px solid black;
+            /* Puedes ajustar el grosor, estilo y color según tus preferencias */
+            width: 100%;
+            /* Ajusta el ancho de la línea según tus necesidades */
+            margin: 5px 0;
+            /* Ajusta el margen superior e inferior para separar la línea de otros elementos */
+        }
+
+        .Datos_Equipo {
+            background: rgb(62, 98, 89);
+            background: linear-gradient(150deg, rgb(104, 155, 142) 35%, rgb(62, 98, 89) 70%);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
+            border-radius: 10px;
+            margin: 15px;
+            padding: 10px;
+
+        }
+
+        .Datos_Equipo__NombreRedyHora {
+            display: flex;
+            justify-content: space-between;
+            margin: 2px;
+            padding: 2px;
+        }
+
+        .Datos_Equipo__ContraseniaRedyVersion {
+            display: flex;
+            justify-content: space-around;
+            margin: 2px;
+            padding: 2px;
+        }
+
+
+        .Potencia-Vege {
+            background: rgb(155, 130, 141);
+            background: linear-gradient(150deg, rgb(172, 138, 152) 35%, rgb(122, 102, 110) 70%);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
+            border-radius: 10px;
+            margin: 15px;
+            padding: 10px;
+        }
+
+        .Potencia-Vege__PotenciayModo {
+            display: flex;
+
+            justify-content: space-between;
+            margin: 2px;
+            padding: 2px;
+        }
+
+
+        .Potencia-Vege__Horarios {
+            display: flex;
+            justify-content: space-between;
+            margin: 2px;
+            padding: 2px;
+        }
+
+        .Potencia-Vege__Horarios--Apagado {
+            margin-left: 15px;
+        }
+
+        .Potencia-Vege__dia {
+            margin: 2px;
+            padding: 2px;
+        }
+
+        .Potencia-Vege__ModoVEGE {
+            margin: 2px;
+            padding: 2px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .Triac {
+            background: rgb(148, 163, 156);
+            background: linear-gradient(150deg, rgba(148, 163, 156, 1) 35%, rgba(92, 108, 100, 1) 70%);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
+            border-radius: 10px;
+            margin: 15px;
+            padding: 10px;
+        }
+
+        .Triac__modo {
+            margin: 2px;
+            padding: 2px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .botonf {
+            display: flex;
+            justify-content: center;
+            margin: 5px;
+        }
+
+        .button {
+            background-color: black;
+            color: white;
+            cursor: pointer;
+            padding: 5px 10px;
+            margin: 5px;
+            font-size: 15px;
+        }
+
+        .circle {
+            width: 15px;
+            height: 15px;
+            /* Color de inicio del círculo */
+            border-radius: 50%;
+        }
+
+        .circletext {
+            display: flex;
+            flex-direction: row-reverse;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="image_box">
+        <img src="/logo" class="imagen">
+    </div>
+
+    <div class="Potencia-Vege">
+        <div><strong>Modo:</strong> <span id="PWM_modo"> ---</span></div>
+        <div class="linea"></div>
+        <div class="Potencia-Vege__PotenciayModo">
+            <div><strong>Potencia:</strong><span id="PWM_Intensidad"> --</span>%</div>
+
+        </div>
+
+        <div class="Potencia-Vege__Horarios">
+            <div class="Potencia-Vege__Horarios--Encendido">
+                <strong>Encendido:</strong><span id="PWM_horarioih"> --</span>:<span id="PWM_horarioim"> --</span>
+
+            </div>
+            <div class="circletext">
+                <div class="circle" id="colorCirclePwm"></div>
+            </div>
+            <div class="Potencia-Vege__Horarios--Apagado">
+                <strong>Apagado:</strong><span id="PWM_horariofh"> --</span>:<span id="PWM_horariofm"> --</span>
+            </div>
+        </div>
+        <div class="Potencia-Vege__dia">
+            <strong>Amanecer / Atardecer:</strong><span id="PWM_DIA"> ---</span>
+        </div>
+        <div class="linea"></div>
+        <div class="Triac__modo">
+            <div><strong>Control 220V</strong>
+            </div>
+            <div class="circletext">
+                <div class="circle" id="colorCircleTriac"></div>
+            </div>
+        </div>
+        <table>
+
+            <tr>
+                <th style="width: 30px;"></th>
+                <th>Encendido</th>
+                <th>Apagado</th>
+                <th style="width: 70px;">Habilitado</th>
+            </tr>
+
+            <tr>
+                <div class="Triac-h1">
+                    <th><label>T1</label></th>
+                    <th><span id="TRIAC_horarioi1_h">--</span>:<span id="TRIAC_horarioi1_m">--</span></th>
+                    <th><span id="TRIAC_horariof1_h">--</span>:<span id="TRIAC_horariof1_m">--</span></th>
+                    <th>
+                        <p id="h1e" style="display: none;color: darkgreen;">&#x2714</p>
+                        <p id="h1d" style="display: none;color: red;">X</p>
+                    </th>
+                </div>
+            </tr>
+            <tr>
+                <div class="Triac-h2">
+                    <th><label>T2</label></th>
+                    <th><span id="TRIAC_horarioi2_h">--</span>:<span id="TRIAC_horarioi2_m">--</span></th>
+                    <th><span id="TRIAC_horariof2_h">--</span>:<span id="TRIAC_horariof2_m">--</span></th>
+                    <th>
+                        <p id="h2e" style="display: none;color: darkgreen;">&#x2714</p>
+                        <p id="h2d" style="display: none;color: red;">X</p>
+                    </th>
+                </div>
+            </tr>
+            <tr>
+                <div class="Triac-h3">
+                    <th><label>T3</label></th>
+                    <th><span id="TRIAC_horarioi3_h">--</span>:<span id="TRIAC_horarioi3_m">--</span></th>
+                    <th><span id="TRIAC_horariof3_h">--</span>:<span id="TRIAC_horariof3_m">--</span></th>
+                    <th>
+                        <p id="h3e" style="display: none;color: darkgreen;">&#x2714</p>
+                        <p id="h3d" style="display: none;color: red;">X</p>
+                    </th>
+                </div>
+            </tr>
+            <tr>
+                <div class="Triac-h4">
+                    <th><label>T4</label></th>
+                    <th><span id="TRIAC_horarioi4_h">--</span>:<span id="TRIAC_horarioi4_m">--</span></th>
+                    <th><span id="TRIAC_horariof4_h">--</span>:<span id="TRIAC_horariof4_m">--</span></th>
+                    <th>
+                        <p id="h4e" style="display: none; color: darkgreen;">&#x2714</p>
+                        <p id="h4d" style="display: none; color: red;">X</p>
+                    </th>
+                </div>
+            </tr>
+        </table>
+        <div class="linea"></div>
+        <div class="Potencia-Vege__ModoVEGE">
+            <div><strong>Etapa:</strong><strong><span id="VEGEFLOR_modo">---</span></strong></div>
+
+        </div>
+    </div>
+
+    <div class="Datos_Equipo">
+        <div class="Datos_Equipo__NombreRedyHora">
+            <div><strong>Red/Equipo:</strong> <span id="ID">---</span></div>
+            <div><strong>Hora:</strong><span id="Hora_h">--</span>:<span id="Hora_m">--</span></div>
+        </div>
+        <div class="Datos_Equipo__ContraseniaRedyVersion">
+            <div><strong>Versión:</strong> <span id="Version">--</span></div>
+        </div>
+
+    </div>
+
+
+
+    <div class="botonf">
+        <button class="button" onclick="window.location.href ='/config'">
+            Configuracion
+        </button>
+    </div>
+
+    <script>
+        function formatNumber(number) { //funcion para agregar un cero si es que el numero es menor a 10 para mostrarlo
+            if (number >= 0 && number < 10) {
+                return '0' + number;
+            } else {
+                return number;
+            }
+        }
+        window.addEventListener('load', () => {
+            setInterval(() => {
+                fetch("/data_hora").then(res => {
+                    if (!res.ok)
+                        console.error("Error en adquirir los datos de la hora")
+                    return res.json()
+                }).then(data => {
+                    console.log(data)
+                    document.getElementById("Hora_h").textContent = formatNumber(data.Hora_h);
+                    document.getElementById("Hora_m").textContent = formatNumber(data.Hora_m);
+                })
+                fetch("/data_pwm").then(res => {
+                    if (!res.ok)
+                        console.error("Error en adquirir los datos del pwm")
+                    return res.json()
+                }).then(data => {
+                    console.log(data)
+                    document.getElementById("PWM_Intensidad").textContent = data.intensidad;
+                    document.getElementById("PWM_modo").textContent = data.Modo;
+                    document.getElementById("PWM_horarioih").textContent = formatNumber(data.ih1h);
+                    document.getElementById("PWM_horarioim").textContent = formatNumber(data.ih1m);
+                    document.getElementById("PWM_horariofh").textContent = formatNumber(data.fh1h);
+                    document.getElementById("PWM_horariofm").textContent = formatNumber(data.fh1m);
+                    document.getElementById("PWM_DIA").textContent = data.DIA;
+                    const circleDiv = document.getElementById("colorCirclePwm");
+                    if (data.State == "OFF") {
+                        circleDiv.style.backgroundColor = "red";
+                    }
+                    else if (data.State == "ON") {
+                        circleDiv.style.backgroundColor = "darkgreen";
+                    }
+                    else {
+                        circleDiv.style.backgroundColor = "orange";
+                    }
+
+                })
+                fetch("/data_triac").then(res => {
+                    if (!res.ok)
+                        console.error("Error en adquirir los datos del triac")
+                    return res.json()
+                }).then(data => {
+                    console.log(data)
+                    //document.getElementById("TRIAC_modo").textContent = data.Modo;
+                    if (data.cb1 == true) {
+                        document.getElementById('h1d').style.display = 'none'
+                        document.getElementById('h1e').style.display = 'block'
+                    }
+                    else {
+                        document.getElementById('h1e').style.display = 'none'
+                        document.getElementById('h1d').style.display = 'block'
+                    }
+                    if (data.cb2 == true) {
+                        document.getElementById('h2d').style.display = 'none'
+                        document.getElementById('h2e').style.display = 'block'
+                    }
+                    else {
+                        document.getElementById('h2e').style.display = 'none'
+                        document.getElementById('h2d').style.display = 'block'
+                    }
+                    if (data.cb3 == true) {
+                        document.getElementById('h3d').style.display = 'none'
+                        document.getElementById('h3e').style.display = 'block'
+                    }
+                    else {
+                        document.getElementById('h3e').style.display = 'none'
+                        document.getElementById('h3d').style.display = 'block'
+                    }
+                    if (data.cb4 == true) {
+                        document.getElementById('h4d').style.display = 'none'
+                        document.getElementById('h4e').style.display = 'block'
+                    }
+                    else {
+                        document.getElementById('h4e').style.display = 'none'
+                        document.getElementById('h4d').style.display = 'block'
+                    }
+                    document.getElementById("TRIAC_horarioi1_h").textContent = formatNumber(data.ih1h);
+                    document.getElementById("TRIAC_horarioi1_m").textContent = formatNumber(data.ih1m);
+                    document.getElementById("TRIAC_horariof1_h").textContent = formatNumber(data.fh1h);
+                    document.getElementById("TRIAC_horariof1_m").textContent = formatNumber(data.fh1m);
+                    document.getElementById("TRIAC_horarioi2_h").textContent = formatNumber(data.ih2h);
+                    document.getElementById("TRIAC_horarioi2_m").textContent = formatNumber(data.ih2m);
+                    document.getElementById("TRIAC_horariof2_h").textContent = formatNumber(data.fh2h);
+                    document.getElementById("TRIAC_horariof2_m").textContent = formatNumber(data.fh2m);
+                    document.getElementById("TRIAC_horarioi3_h").textContent = formatNumber(data.ih3h);
+                    document.getElementById("TRIAC_horarioi3_m").textContent = formatNumber(data.ih3m);
+                    document.getElementById("TRIAC_horariof3_h").textContent = formatNumber(data.fh3h);
+                    document.getElementById("TRIAC_horariof3_m").textContent = formatNumber(data.fh3m);
+                    document.getElementById("TRIAC_horarioi4_h").textContent = formatNumber(data.ih4h);
+                    document.getElementById("TRIAC_horarioi4_m").textContent = formatNumber(data.ih4m);
+                    document.getElementById("TRIAC_horariof4_h").textContent = formatNumber(data.fh4h);
+                    document.getElementById("TRIAC_horariof4_m").textContent = formatNumber(data.fh4m);
+                    const circleDiv = document.getElementById("colorCircleTriac");
+                    if (data.State == "OFF") {
+                        circleDiv.style.backgroundColor = "red";
+                    }
+                    else if (data.State == "ON") {
+                        circleDiv.style.backgroundColor = "darkgreen";
+                    }
+                    else {
+                        circleDiv.style.backgroundColor = "orange";
+                    }
+                })
+                fetch("/data_red").then(res => {
+                    if (!res.ok)
+                        console.error("Error en adquirir los datos de red")
+                    return res.json()
+                }).then(data => {
+                    console.log(data);
+                    document.getElementById("ID").textContent = data.ID;
+                    //document.getElementById("PASS").textContent = data.PASS;
+
+                })
+                fetch("/data_vegeflor").then(res => {
+                    if (!res.ok)
+                        console.error("Error en adquirir los datos de vegeflor")
+                    return res.json()
+                }).then(data => {
+                    console.log(data)
+                    document.getElementById("VEGEFLOR_modo").textContent = data.Modo;
+                    const modoveg = document.getElementById("VEGEFLOR_modo");
+                    if (modoveg.textContent == "Vegetativo") {
+                        modoveg.style.color = "darkgreen";
+                    }
+                    else {
+                        modoveg.style.color = "red";
+                    }
+                })
+
+                /*const triacState = "ON";
+                const circleDiv = document.getElementById("colorCircleTriac");
+                if (triacState == "OFF") {
+                    circleDiv.style.backgroundColor = "red";
+                }
+                else {
+                    circleDiv.style.backgroundColor = "green";
+                }
+
+                const pwmState = "OFF";
+                const circleDiv2 = document.getElementById("colorCirclePwm");
+                if (pwmState == "OFF") {
+                    circleDiv2.style.backgroundColor = "orange";
+                }
+                else {
+                    circleDiv2.style.backgroundColor = "green";
+                }*/
+
+            }, 2000)
+
+            fetch("/version").then(res => {
+                if (!res.ok)
+                    console.error("Error en adquirir los datos de version")
+                return res.json()
+            }).then(data => {
+                console.log(data)
+                document.getElementById("Version").textContent = data.Version;
+            })
+        })
+
+    </script>
+</body>
+
+</html>

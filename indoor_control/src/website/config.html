@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: rgb(255, 254, 247);
+        }
+
+        .image_box {
+            text-align: center;
+        }
+
+        .imagen {
+            display: block;
+            margin: 15px;
+            width: 85%;
+        }
+
+
+
+        input[type="range"] {
+            height: 4px;
+            background-color: #ddd;
+            border: none;
+            outline: none;
+            appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            width: 15px;
+            /* Ancho del punto arrastrable */
+            height: 10px;
+            /* Altura del punto arrastrable */
+            background-color: #5a718a;
+            /* Color del punto arrastrable */
+            border-radius: 0;
+            /* Bordes rectos */
+            cursor: pointer;
+            /* Cambiar cursor al pasar el ratón */
+            -webkit-appearance: none;
+            /* Eliminar apariencia nativa */
+        }
+
+        input[type="submit"] {
+            background-color: transparent;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px 10px;
+            margin: 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid white;
+            box-shadow: 2px 1.5px 0px 0px hsl(0, 0%, 9%);
+
+        }
+
+        .submit_box {
+            display: flex;
+            justify-content: center;
+            margin: 7px;
+        }
+
+        .boton_hora {
+            background-color: transparent;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px 10px;
+            margin: 5px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid white;
+            box-shadow: 2px 1.5px 0px 0px hsl(0, 0%, 9%);
+        }
+
+        .boton_hora::after {
+            content: "\21BB";
+            font-size: 16px;
+            margin-left: 5px;
+            /* Espacio entre el texto y el icono */
+            position: absolute;
+            right: 10px;
+            /* Ajusta la posición del icono a la derecha del botón */
+        }
+
+        select {
+            padding: 2px;
+            font-size: 15px;
+            border: 2px solid gray;
+            border-radius: 5px;
+            background-color: #f2f2f2;
+        }
+
+        input[type="time"] {
+            padding: 2px;
+            font-size: 11px;
+            border: 1px solid gray;
+            border-radius: 5px;
+            width: 85px;
+        }
+
+        table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            margin: 5px;
+
+        }
+
+        th,
+        td,
+        tr {
+            padding: 2px;
+            text-align: center;
+        }
+
+        .RH-form {
+            font-size: 15px;
+            background: rgb(62, 98, 89);
+            background: linear-gradient(150deg, rgb(104, 155, 142) 35%, rgb(62, 98, 89) 62%);
+            border-radius: 15px;
+            box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
+            max-height: 300px;
+
+        }
+
+        .RH-form__title {
+            font-size: 17px;
+            color: black;
+        }
+
+        .RH-form__data {
+            font-size: 15px;
+            display: flex;
+            flex-direction: column;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            color: black;
+        }
+
+        .RH-form__text {
+            display: block;
+            margin-bottom: 5px;
+            margin-top: 5px;
+        }
+
+        .RH-form__text label {
+            display: block;
+        }
+
+        .RH-form__text input {
+            width: 70%;
+        }
+
+
+        #ID {
+            font-size: 15px;
+        }
+
+        #PASS {
+            font-size: 15px;
+        }
+
+        #nombre {
+            font-size: 12px;
+            border-radius: 5px;
+            height: 22px;
+            margin-bottom: 5px;
+            margin-top: 5px;
+        }
+
+        #Contrasenia {
+            font-size: 12px;
+            border-radius: 5px;
+            height: 22px;
+            margin-bottom: 5px;
+            margin-top: 5px;
+        }
+
+        .pwm_triac_vege-form {
+            font-size: 17px;
+            background: rgb(155, 130, 141);
+            background: linear-gradient(150deg, rgb(172, 138, 152) 35%, rgb(122, 102, 110) 70%);
+            border-radius: 15px;
+            box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
+            max-height: 900px;
+
+        }
+
+        .pwm_triac_vege-form__modo__toggle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 15px;
+            padding: 5px;
+        }
+
+        .pwm_triac_vege-form__modo__title {
+            text-align: center;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 230px;
+            height: 40px;
+            background-color: rgb(255, 255, 255);
+            border-radius: 40px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .switch .slider {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 30px;
+            border-radius: 30px;
+            background-color: black;
+            top: 5px;
+            left: 5px;
+            transition: all 0.3s;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+            /* Nueva propiedad de sombra */
+        }
+
+        input[type='checkbox']:checked+.switch .slider {
+            transform: translateX(120px);
+        }
+
+        input[type='checkbox']:checked+.switch {}
+
+        .offscreen {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .switch .texto-izquierda,
+        .switch .texto-derecha {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgb(182, 182, 182);
+            z-index: 2;
+        }
+
+        .switch .texto-izquierda {
+            left: 25px;
+        }
+
+        .switch .texto-derecha {
+            right: 10px;
+        }
+
+
+        .pwm_triac-form__potencia {}
+
+        .pwm_triac-form__triac {}
+
+        .PWM-form__box1 {
+            background-color: rgb(113, 91, 100);
+            border-radius: 15px;
+            padding: 5px;
+            margin-top: 2px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 1px 1px 1px 1px hsl(187, 4%, 38%);
+        }
+
+        .PWM-form__h2--range {
+            color: white;
+            background-color: rgb(113, 91, 100);
+            border-radius: 15px;
+            padding: 10px;
+            display: grid;
+        }
+
+        .PWM-form__h2--range label {
+            font-size: 1.5em;
+        }
+
+        .PWM-form__box2 {
+            font-size: 15px;
+            margin: 15px;
+            color: black;
+        }
+
+        .PWM-h1 {
+            display: flex;
+            justify-content: space-around;
+            margin: 10px;
+        }
+
+        #rangoValor {
+            color: white;
+        }
+
+        #rango {
+            margin-top: 10px;
+        }
+
+        .pwm_triac_vege-form__vegeflor {
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        .Triac-form__title {
+            /*text-align: center;*/
+            text-align: center;
+            margin: 2px;
+        }
+
+        .Triac-form__select {
+            text-align: center;
+        }
+
+        .Vegeflor-form__title {
+            /*text-align: center;*/
+            text-align: center;
+            margin: 2px;
+        }
+
+
+
+        @media screen and (min-width: 350px) {
+            #rangoValor {
+                font-size: 30px;
+            }
+
+
+            .pwm_triac_vege-form {
+                margin: 15px;
+                padding: 15px;
+            }
+
+            .RH-form {
+                margin: 15px;
+                padding: 15px;
+            }
+
+            .Hora-form {
+                margin: 15px;
+                padding: 15px;
+            }
+        }
+
+        @media screen and (min-width: 400px) {
+
+            #rangoValor {
+                font-size: 35px;
+            }
+        }
+
+
+        @media screen and (min-width: 450px) {
+
+            #rangoValor {
+                font-size: 40px;
+            }
+
+        }
+
+        @media screen and (min-width: 500px) {
+
+            #rangoValor {
+                font-size: 45px;
+            }
+        }
+
+        @media screen and (max-width: 300px) {
+            #rangoValor {
+                font-size: 25px;
+            }
+        }
+
+        @media screen and (max-width: 349px) {
+
+            #rangoValor {
+                font-size: 25px;
+            }
+
+            .pwm_triac_vege-form {
+                margin: 10px;
+                padding: 5px;
+            }
+
+            .RH-form {
+                margin: 10px;
+                padding: 5px;
+            }
+
+            .Hora-form {
+                margin: 10px;
+                padding: 5px;
+            }
+        }
+
+        .vegeflor-form__form {
+            font-size: 15px;
+            margin-top: 5px;
+            text-align: center;
+
+        }
+
+        .button {
+            background-color: black;
+            color: white;
+            cursor: pointer;
+            padding: 5px 10px;
+            margin: 5px;
+            font-size: 15px;
+        }
+
+        .botonf {
+            display: flex;
+            justify-content: center;
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="image_box">
+        <img src="/logo" class="imagen">
+    </div>
+
+    <div class="pwm_triac_vege-form">
+        <form action="/pwm_triac_vege" method="post" id="pwm_triac_vege">
+            <div class="pwm_triac_vege-form__modo">
+                <div class="pwm_triac_vege-form__modo__title">
+                    <h2>Modo</h2>
+                </div>
+
+                <div class="pwm_triac_vege-form__modo__toggle">
+                    <input type="checkbox" id="toggle" name="toggle" class="offscreen" onchange="status_triac_modo()">
+                    <label for="toggle" class="switch">
+                        <span class="texto-izquierda">Manual</span>
+                        <span class="slider"></span>
+                        <span class="texto-derecha">Automatico</span>
+                    </label>
+
+                </div>
+
+            </div>
+
+            <div class="pwm_triac_vege-form__potencia">
+                <div class="PWM-form__box1">
+                    <div class="PWM-form__h2--range">
+                        <label>Potencia</label>
+                        <input type="range" id="rango" name="rango" min="10" max="100" value="0"
+                            onchange="updateRangoValue()">
+                    </div>
+                    <div class="PWM-form__Valor">
+                        <span id="rangoValor"></span>
+                    </div>
+
+                </div>
+                <div class="PWM-form__box2">
+                    <div>
+                        <label>Amanecer / Atardecer:</label>
+                        <select id="opciones" name="Opciones">
+                            <option value="Si">SI</option>
+                            <option value="No">NO</option>
+                        </select>
+                    </div>
+                    <table>
+                        <tr>
+                            <th>Encendido</th>
+                            <th>Apagado</th>
+                        </tr>
+                        <tr>
+                            <div class="PWM-h1">
+                                <th><input type="time" id="ih_pwm" name="ih_pwm" value="00:00"></th>
+                                <th><input type="time" id="fh_pwm" name="fh_pwm" value="00:00"></th>
+                            </div>
+                        </tr>
+                    </table>
+
+
+                </div>
+            </div>
+            <div class="pwm_triac_vege-form__triac">
+
+                <div class="Triac-form__title">
+                    <h2>Control 220V</h2>
+                </div>
+                <div class="Triac-form__select">
+                    <label>Estado:</label>
+                    <select id="modos_triac" name="modos_triac">
+                        <option value="Encendido">ACTIVAR</option>
+                        <option value="Apagado">NO</option>
+                    </select>
+                </div>
+                <table>
+
+                    <tr>
+                        <th style="width: 30px;"></th>
+                        <th>Encendido</th>
+                        <th>Apagado</th>
+                        <th style="width: 70px;">Habilitar</th>
+                    </tr>
+
+                    <tr>
+                        <div class="Triac-h1">
+                            <th><label>T1</label></th>
+                            <th><input type="time" id="ih1" name="ih1" value="00:00"></th>
+                            <th><input type="time" id="fh1" name="fh1" value="00:00"></th>
+                            <th><input type="checkbox" id="checkboxh1" name="checkboxh1"></th>
+                        </div>
+                    </tr>
+                    <tr>
+                        <div class="Triac-h2">
+                            <th><label>T2</label></th>
+                            <th><input type="time" id="ih2" name="ih2" value="00:00"></th>
+                            <th><input type="time" id="fh2" name="fh2" value="00:00"></th>
+                            <th><input type="checkbox" id="checkboxh2" name="checkboxh2"></th>
+                        </div>
+                    </tr>
+                    <tr>
+                        <div class="Triac-h3">
+                            <th><label>T3</label></th>
+                            <th><input type="time" id="ih3" name="ih3" value="00:00"></th>
+                            <th><input type="time" id="fh3" name="fh3" value="00:00"></th>
+                            <th> <input type="checkbox" id="checkboxh3" name="checkboxh3"></th>
+                        </div>
+                    </tr>
+                    <tr>
+                        <div class="Triac-h4">
+                            <th><label>T4</label></th>
+                            <th><input type="time" id="ih4" name="ih4" value="00:00"></th>
+                            <th><input type="time" id="fh4" name="fh4" value="00:00"></th>
+                            <th> <input type="checkbox" id="checkboxh4" name="checkboxh4"></th>
+                        </div>
+                    </tr>
+                </table>
+            </div>
+            <div class="pwm_triac_vege-form__vegeflor">
+                <div class="Vegeflor-form__title">
+                    <h2>Vegetativo/Floración</h2>
+                </div>
+                <div class="vegeflor-form__form">
+                    <label>Estado:</label>
+                    <select id="modo_vegeflor" name="modo_vegeflor">
+                        <option value="Vegetativo">VEGETATIVO</option>
+                        <option value="Floracion">FLORACION</option>
+                    </select>
+
+                </div>
+            </div>
+            <div class="submit_box">
+                <input type="submit" value="Actualizar">
+            </div>
+        </form>
+    </div>
+
+    <div class="RH-form">
+        <div class="RH-form__title">
+            <h2>Datos de red</h2>
+        </div>
+
+        <form action="/red" method="post" id="red_form">
+            <div class="RH-form__text">
+                <label for="Nombre">Nuevo Nombre:</label>
+                <input type="text" id="nombre" name="nombre">
+            </div>
+            <div class="RH-form__text">
+                <label for="Contraseña">Nueva Contraseña:</label>
+                <input type="text" id="Contrasenia" name="Contrasenia">
+            </div>
+
+            <div class="submit_box" _vege>
+                <input type="submit" value="Actualizar">
+            </div>
+
+        </form>
+    </div>
+
+
+
+    <div class="botonf">
+        <button class="button" onclick="window.location.href ='/index'">
+            Volver a inicio
+        </button>
+    </div>
+
+    <script>
+
+        function status_triac_modo() {
+            var checkbx = document.getElementById('toggle');
+            var select = document.getElementById('modos_triac');
+            if (checkbx.checked) {
+                select.disabled = true;
+            }
+            else {
+                select.disabled = false;
+            }
+        }
+        window.addEventListener('load', () => {
+            setInterval(() => {
+                const inputHora = document.getElementById("hora");
+                const now = new Date();
+                inputHora.value = now.getHours() + ":" + now.getMinutes();
+
+            }, 1000)
+            updateRangoValue();
+
+        })
+
+
+        function formatNumber(number) { //funcion para agregar un cero si es que el numero es menor a 10 para mostrarlo
+            if (number >= 0 && number < 10) {
+                return '0' + number;
+            } else {
+                return number;
+            }
+        }
+
+        function obtenerHoraYMinutos(inputId) {
+            // Obtén el elemento input por su ID
+            const inputHora = document.getElementById(inputId);
+
+            // Obtén el valor del input, que será en formato "HH:mm"
+            const valorInput = inputHora.value;
+
+            // Separa la hora y los minutos utilizando el método split()
+            const [hora, minutos] = valorInput.split(":");
+
+            // Convierte los valores en números enteros si es necesario
+            const horaEntero = parseInt(hora, 10);
+            const minutosEntero = parseInt(minutos, 10);
+
+            // Devuelve los valores de la hora y los minutos en un objeto
+            return {
+                hora: horaEntero,
+                minutos: minutosEntero
+            };
+        }
+
+        function colision(ih1, fh1, ih2, fh2) {
+            var sp = 0;
+            console.log(ih1.hora)
+            console.log(ih2.hora)
+            //caso que horario de encendido sea igual a apagado en h1
+            if (ih1.hora == fh1.hora && ih1.minutos == fh1.minutos) {
+                sp = 1;
+            }
+            //caso que horario de encendido sea igual a apagado en h2
+            if (ih2.hora == fh2.hora && ih2.minutos == fh2.minutos) {
+                sp = 1;
+            }
+            if (ih1.hora == fh1.hora && ih1.minutos > fh1.minutos) {
+                if (ih2.hora > ih1.hora) {
+                    sp = 1;
+                }
+                if (ih2.hora == ih1.hora) {
+                    if (ih2.minutos >= ih1.minutos || fh2.minutos > ih1.minutos) {
+                        sp = 1;
+                    }
+                }
+
+            }
+            if (ih2.hora == fh2.hora && ih2.minutos > fh2.minutos) {
+                if (ih1.hora > ih2.hora) {
+                    sp = 1;
+                }
+                if (ih1.hora == ih2.hora) {
+                    if (ih1.minutos >= ih2.minutos || fh1.minutos > ih2.minutos) {
+                        sp = 1;
+                    }
+                }
+
+            }
+            //caso superposicion en una parte de h2 en h1
+            if (ih1.hora <= ih2.hora && ih2.hora < fh1.hora) {
+                sp = 1;
+            }
+            //caso superposicion en una parte de h1 en h2
+            if (ih2.hora <= ih1.hora && ih1.hora < fh2.hora) {
+                sp = 1;
+            }
+            //caso en que h2 se superponga con misma hora y entre minutos en h1. mismo dia
+            if (ih1.hora == fh1.hora && ih2.hora == ih1.hora) {
+                if (ih2.minutos >= ih1.minutos && fh1.minutos > ih2.minutos) {
+                    sp = 1;
+                }
+            }
+            //caso en que h1 se superponga con misma hora y entre minutos en h2. mismo dia
+            if (ih2.hora == fh2.hora && ih1.hora == ih2.hora) {
+                if (ih1.minutos >= ih2.minutos && fh2.minutos > ih1.minutos) {
+                    sp = 1;
+                }
+            }
+            //caso de que se pase al dia siguiente
+            if (ih1.hora > fh1.hora) {
+                if (ih2.hora >= ih1.hora) {
+                    sp = 1;
+                }
+                if (fh1.hora > ih2.hora) {
+                    sp = 1;
+                }
+            }
+            if (ih2.hora > fh2.hora) {
+                if (ih1.hora >= ih2.hora) {
+                    sp = 1;
+                }
+                if (fh2.hora > ih1.hora) {
+                    sp = 1;
+                }
+            }
+
+            console.log("sp es", sp)
+            return sp;
+        }
+
+        function checkOverlap(en1, en2, en3, en4, ih1, fh1, ih2, fh2, ih3, fh3, ih4, fh4) {
+            var arr = [0, 0, 0, 0, 0, 0];
+            var suma = 0;
+            console.log("entro en overlap")
+            console.log(en1)
+            console.log(en2)
+            if (en1 == true && en2 == true) {
+                console.log("entro en primer if")
+                arr[0] = colision(ih1, fh1, ih2, fh2);
+                console.log("el valor de colision es", arr[0])
+            }
+            if (en1 == true && en3 == true) {
+                console.log("entro en segundo if")
+                arr[1] = colision(ih1, fh1, ih3, fh3);
+            }
+            if (en1 == true && en4 == true) {
+                console.log("entro en tercer if")
+                arr[2] = colision(ih1, fh1, ih4, fh4);
+            }
+            if (en2 == true && en3 == true) {
+                console.log("entro en cuarto if")
+                arr[3] = colision(ih2, fh2, ih3, fh3);
+            }
+            if (en2 == true && en4 == true) {
+                console.log("entro en quinto if")
+                arr[4] = colision(ih2, fh2, ih4, fh4);
+            }
+            if (en3 == true && en4 == true) {
+                console.log("entro en sexto if")
+                arr[5] = colision(ih3, fh3, ih4, fh4);
+            }
+
+            for (var i = 0; i < arr.length; i++) {
+                suma += arr[i];
+            }
+            console.log("el valor de suma es", suma);
+            return suma;
+        }
+
+        async function loadPWM() {
+            try {
+                const result = await fetch("/data_pwm");
+
+                if (!result.ok)
+                    throw new Error("Error en adquirir los datos del pwm [fetch]");
+
+                const data = await result.json();
+                console.log(data);
+                document.getElementById("rangoValor").textContent = data.intensidad + '%';
+                document.getElementById("rango").value = data.intensidad;
+                if (data.Modo == "Manual") {
+                    document.getElementById("toggle").checked = false;
+                    document.getElementById("modos_triac").disabled = false;
+                }
+                else {
+                    document.getElementById("toggle").checked = true;
+                    document.getElementById("modos_triac").disabled = true;
+                }
+                //document.getElementById("modos_pwm").value = data.Modo;
+                document.getElementById("ih_pwm").value = formatNumber(data.ih1h) + ":" + formatNumber(data.ih1m);
+                document.getElementById("fh_pwm").value = formatNumber(data.fh1h) + ":" + formatNumber(data.fh1m);
+                document.getElementById("opciones").value = data.DIA;
+            }
+            catch (e) {
+                console.error("Error en adquirir los datos del pwm", e);
+            }
+        }
+
+        async function loadTriac() {
+            try {
+                const result = await fetch("/data_triac")
+                if (!result.ok) {
+                    throw new Error("Error en adquirir los datos del triac [fetch]");
+                }
+
+                const data = await result.json();
+                console.log(data);
+                document.getElementById("modos_triac").value = data.Modo;
+                document.getElementById("checkboxh1").checked = data.cb1;
+                document.getElementById("checkboxh2").checked = data.cb2;
+                document.getElementById("checkboxh3").checked = data.cb3;
+                document.getElementById("checkboxh4").checked = data.cb4;
+                document.getElementById("ih1").value = formatNumber(data.ih1h) + ":" + formatNumber(data.ih1m);
+                document.getElementById("fh1").value = formatNumber(data.fh1h) + ":" + formatNumber(data.fh1m);
+                document.getElementById("ih2").value = formatNumber(data.ih2h) + ":" + formatNumber(data.ih2m);
+                document.getElementById("fh2").value = formatNumber(data.fh2h) + ":" + formatNumber(data.fh2m);
+                document.getElementById("ih3").value = formatNumber(data.ih3h) + ":" + formatNumber(data.ih3m);
+                document.getElementById("fh3").value = formatNumber(data.fh3h) + ":" + formatNumber(data.fh3m);
+                document.getElementById("ih4").value = formatNumber(data.ih4h) + ":" + formatNumber(data.ih4m);
+                document.getElementById("fh4").value = formatNumber(data.fh4h) + ":" + formatNumber(data.fh4m);
+            }
+            catch (e) {
+                console.error("Error en adquirir los datos del triac", e);
+            }
+
+        }
+
+        async function loadVegeflor() {
+            //document.getElementById("modo_vegeflor").value = "FLORA"
+            try {
+                const result = await fetch("/data_vegeflor");
+                if (!result.ok) {
+                    throw new Error("Error en adquirir los datos del vegeflor[fetch]");
+                }
+                const data = await result.json();
+                console.log(data);
+                document.getElementById("modo_vegeflor").value = data.Modo;
+            }
+            catch (e) {
+                console.error("Error en adquirir los datos del vegeflor", e);
+            }
+
+        }
+
+        async function loadHora() {
+            try {
+                const inputHora = document.getElementById("hora");
+                const now = new Date();
+                const hora = now.getHours();
+                const minutos = now.getMinutes();
+                //inputHora.value = now.getHours() + ":" + now.getMinutes();
+                const horaFormateada = `${hora}%3A${minutos}`;
+                const response = await fetch("/hora", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `hora=${horaFormateada}`
+                });
+
+                if (!response.ok) {
+                    throw new Error("Error al enviar la hora al servidor [fetch]");
+                }
+            }
+            catch (e) {
+                console.error("Error en adquirir los datos de la hora", e);
+            }
+
+        }
+
+        async function loadRed() {
+            try {
+                const result = await fetch("/data_red");
+                if (!result.ok) {
+                    throw new Error("Error en adquirir los datos de la red");
+                }
+                const data = await result.json();
+                console.log(data);
+                document.getElementById("nombre").value = data.ID;
+                document.getElementById("Contrasenia").value = data.PASS;
+            }
+            catch (e) {
+                console.error("Error en adquirir los datos de la red", e);
+            }
+
+
+        }
+
+        async function loadValues() {
+            await loadHora();
+            await loadPWM();
+            await loadTriac();
+            await loadVegeflor();
+            await loadRed();
+        }
+
+        function updateRangoValue() {
+            const rangoInput = document.getElementById('rango');
+            const rangoValueSpan = document.getElementById('rangoValor');
+
+            rangoValueSpan.textContent = rangoInput.value + '%';
+        }
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            await loadValues();
+            const red_form = document.getElementById("red_form");
+            const pwm_triac_vege_form = document.getElementById("pwm_triac_vege");
+            //const triac_form = document.getElementById("triac_form");
+            //const vege_form = document.getElementById("vege_form");
+            red_form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                const red_string = document.getElementById("nombre").value;
+                const pass_string = document.getElementById("Contrasenia").value;
+                if (pass_string.length >= 8 && red_string != "" && pass_string.length <= 32) {
+                    console.log("Parametros aceptados")
+
+
+                    const myForm = event.target;
+                    const formData = new FormData(myForm);
+
+                    const response = await fetch("/red", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: new URLSearchParams(formData).toString(),
+                    });
+                    const mensaje = "Se actualizaron los datos de red correctamente";
+                    alert(mensaje);
+
+                }
+                else {
+                    console.log("Error en el ingreso de datos de red")
+                    const mensaje = "Error en el ingreso de datos de red";
+                    alert(mensaje);
+                }
+            });
+            pwm_triac_vege_form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                //chequeo horarios del triac
+                const en1 = document.getElementById("checkboxh1").checked
+                const en2 = document.getElementById("checkboxh2").checked
+                const en3 = document.getElementById("checkboxh3").checked
+                const en4 = document.getElementById("checkboxh4").checked
+                console.log(en1)
+                console.log(en2)
+                console.log(en3)
+                console.log(en4)
+                const ih1 = obtenerHoraYMinutos("ih1");
+                const fh1 = obtenerHoraYMinutos("fh1");
+                const ih2 = obtenerHoraYMinutos("ih2");
+                const fh2 = obtenerHoraYMinutos("fh2");
+                const ih3 = obtenerHoraYMinutos("ih3");
+                const fh3 = obtenerHoraYMinutos("fh3");
+                const ih4 = obtenerHoraYMinutos("ih4");
+                const fh4 = obtenerHoraYMinutos("fh4");
+                console.log(ih1)
+                console.log(fh1)
+                console.log(ih2)
+                console.log(fh2)
+                const overlap = checkOverlap(en1, en2, en3, en4, ih1, fh1, ih2, fh2, ih3, fh3, ih4, fh4);
+                //chequeo hoarios del pwm
+                var e_pwm = 0;
+                const pwm_i = obtenerHoraYMinutos("ih_pwm");
+                const pwm_f = obtenerHoraYMinutos("fh_pwm");
+                console.log(pwm_i)
+                console.log(pwm_f)
+                if (pwm_i.hora == pwm_f.hora) {
+                    if (pwm_i.minutos == pwm_i.minutos) {
+                        e_pwm = 1;
+                    }
+                }
+                if (overlap == 0 && e_pwm == 0) {
+                    console.log("Parametros aceptados")
+
+                    const myForm = event.target;
+                    const formData = new FormData(myForm);
+                    console.log(formData)
+                    const response = await fetch("/pwm_triac_vege", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: new URLSearchParams(formData).toString(),
+                    });
+                    const mensaje = "Se actualizaron los datos correctamente";
+                    alert(mensaje);
+                    window.location.href = "/index";
+                }
+                else {
+                    console.log("Parametros no aceptados")
+                    const mensaje = "No se actualizaron los datos. Horarios iguales o superpuestos.";
+                    alert(mensaje);
+                }
+            });
+            /*vege_form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                console.log("Parametros aceptados")
+
+                const myForm = event.target;
+                const formData = new FormData(myForm);
+
+                const response = await fetch("/vegeflor", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: new URLSearchParams(formData).toString(),
+                });
+                const mensaje = "Se actualizaron los datos de la etapa correctamente";
+                alert(mensaje);
+            });*/
+
+        })
+
+    </script>
+</body>
+
+</html>
