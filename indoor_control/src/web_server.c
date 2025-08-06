@@ -14,7 +14,7 @@
 #include "esp_tls.h"
 #include <esp_wifi.h>
 #include "esp_system.h"
-//#include "nvs_flash.h"
+// #include "nvs_flash.h"
 #include "web_server.h"
 #include "cJSON.h"
 #include "../include/version.h"
@@ -46,11 +46,11 @@ struct tm aux_hora; // variable para setear y leer la hora actual
 
 //---------------PWM------------------
 
-//calendar_auto_mode_t pwm_hora; // variable para setear la hora del pwm
+// calendar_auto_mode_t pwm_hora; // variable para setear la hora del pwm
 
-//simul_day_status_t dia; // variable para setear la simulacion dia del PWM
+// simul_day_status_t dia; // variable para setear la simulacion dia del PWM
 
-//output_mode_t modo_pwm; // variable setear y leer el modo del pwm
+// output_mode_t modo_pwm; // variable setear y leer el modo del pwm
 
 pwm_auto_info_t pwm_info; // variable con la info para leer el pwm
 
@@ -72,7 +72,7 @@ triac_auto_info_t triac_auto_info; // variable para leer toda la data del triac 
 
 //---------------VEGEFLOR------------------
 
-//rele_output_status_t rele_status; // variable para leer el estado del relé
+// rele_output_status_t rele_status; // variable para leer el estado del relé
 
 //----------FUNCIONES------------//
 
@@ -725,13 +725,13 @@ httpd_uri_t index_uri = {
     .handler = index_get_handler,
     .user_ctx = NULL};
 
-/*httpd_uri_t config_uri = {
+httpd_uri_t config_uri = {
     .uri = "/config",
     .method = HTTP_GET,
     .handler = config_get_handler,
     .user_ctx = NULL};
 
-httpd_uri_t red_post = {
+/*httpd_uri_t red_post = {
     .uri = "/red",
     .method = HTTP_POST,
     .handler = red_post_handler,
@@ -803,34 +803,62 @@ httpd_uri_t hora_data_uri = {
     .method = HTTP_GET,
     .handler = hora_data_handler,
     .user_ctx = NULL};
-
+*/
 httpd_uri_t image = {
     .uri = "/logo",
     .method = HTTP_GET,
     .handler = logo_handler,
     .user_ctx = NULL};
-*/
+
 //----------HANDLERS PARA LOS HTML------------//
 esp_err_t index_get_handler(httpd_req_t *req)
 {
     extern unsigned char index_start[] asm("_binary_index_html_start");
     extern unsigned char index_end[] asm("_binary_index_html_end");
     size_t index_len = index_end - index_start;
-    char indexHtml[index_len];
-    memcpy(indexHtml, index_start, index_len);
-    httpd_resp_send(req, indexHtml, index_len);
-    return ESP_OK;
+    size_t chunk_size = 2048; // podés ajustar este tamaño
+    size_t offset = 0;
+
+    while (offset < index_len)
+    {
+        size_t bytes_to_send = (index_len - offset > chunk_size) ? chunk_size : (index_len - offset);
+        esp_err_t err = httpd_resp_send_chunk(req, (const char *)&index_start[offset], bytes_to_send);
+        if (err != ESP_OK)
+        {
+            ESP_LOGE("HTTP", "Error al enviar chunk: %s", esp_err_to_name(err));
+            return err;
+        }
+        offset += bytes_to_send;
+    }
+
+    // Señalar el final del contenido
+    return httpd_resp_send_chunk(req, NULL, 0);
 }
 
-/*esp_err_t config_get_handler(httpd_req_t *req)
+esp_err_t config_get_handler(httpd_req_t *req)
 {
     extern unsigned char config_start[] asm("_binary_config_html_start");
     extern unsigned char config_end[] asm("_binary_config_html_end");
     size_t config_len = config_end - config_start;
-    char configHtml[config_len];
-    memcpy(configHtml, config_start, config_len);
-    httpd_resp_send(req, configHtml, config_len);
-    return ESP_OK;
+    size_t chunk_size = 2048; // ajustá este valor si querés chunks más grandes o más chicos
+    size_t offset = 0;
+
+    while (offset < config_len)
+    {
+        size_t bytes_to_send = (config_len - offset > chunk_size) ? chunk_size : (config_len - offset);
+
+        esp_err_t err = httpd_resp_send_chunk(req, (const char *)&config_start[offset], bytes_to_send);
+        if (err != ESP_OK)
+        {
+            ESP_LOGE("HTTP", "Error al enviar chunk en offset %d: %s", (int)offset, esp_err_to_name(err));
+            return err;
+        }
+
+        offset += bytes_to_send;
+    }
+
+    // Señal de fin de transmisión
+    return httpd_resp_send_chunk(req, NULL, 0);
 }
 
 esp_err_t logo_handler(httpd_req_t *req)
@@ -838,13 +866,30 @@ esp_err_t logo_handler(httpd_req_t *req)
     extern unsigned char logo_start[] asm("_binary_logo_png_start");
     extern unsigned char logo_end[] asm("_binary_logo_png_end");
     size_t logo_len = logo_end - logo_start;
-    char logo[logo_len];
-    memcpy(logo, logo_start, logo_len);
-    httpd_resp_set_type(req, "image/png");
-    httpd_resp_send(req, logo, logo_len);
-    return ESP_OK;
-}
+    size_t chunk_size = 2048; // o 512 si querés ser más conservador
+    size_t offset = 0;
 
+    // Importante: establecer el tipo MIME antes de enviar chunks
+    httpd_resp_set_type(req, "image/png");
+
+    while (offset < logo_len)
+    {
+        size_t bytes_to_send = (logo_len - offset > chunk_size) ? chunk_size : (logo_len - offset);
+
+        esp_err_t err = httpd_resp_send_chunk(req, (const char *)&logo_start[offset], bytes_to_send);
+        if (err != ESP_OK)
+        {
+            ESP_LOGE("HTTP", "Error al enviar chunk en offset %d: %s", (int)offset, esp_err_to_name(err));
+            return err;
+        }
+
+        offset += bytes_to_send;
+    }
+
+    // Señalar fin de la respuesta
+    return httpd_resp_send_chunk(req, NULL, 0);
+}
+/*
 //----------HANDLERS PARA LOS POST DE LAS SECCIONES------------//
 esp_err_t pwm_triac_vege_post_handler(httpd_req_t *req)
 {
@@ -858,7 +903,7 @@ esp_err_t pwm_triac_vege_post_handler(httpd_req_t *req)
     ESP_LOGI(TAG, "%d", remaining);
     if (remaining >= sizeof(buff))
     {
-        // Buffer de datos insuficiente 
+        // Buffer de datos insuficiente
         ESP_LOGI(TAG, "PAYLOAD MUY GRANDE");
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Payload too large");
         return ESP_FAIL;
@@ -867,13 +912,13 @@ esp_err_t pwm_triac_vege_post_handler(httpd_req_t *req)
     {
         while (remaining > 0)
         {
-            // Leer los datos del formulario 
+            // Leer los datos del formulario
             ret = httpd_req_recv(req, buff, sizeof(buff)); // en buff se pone lo que estaba en el req y devuelve el numero de bytes que se pasaron al buffer
             if (ret <= 0)                                  // si es 0 o menor es que hubo error
             {
                 if (ret == HTTPD_SOCK_ERR_TIMEOUT)
                 {
-                    // El tiempo de espera para recibir los datos ha expirado 
+                    // El tiempo de espera para recibir los datos ha expirado
                     httpd_resp_send_408(req);
                 }
                 return ESP_FAIL;
@@ -901,7 +946,7 @@ esp_err_t pwm_post_handler(httpd_req_t *req)
     ESP_LOGI(TAG, "%d", remaining);
     if (remaining >= sizeof(buff))
     {
-        // Buffer de datos insuficiente 
+        // Buffer de datos insuficiente
         ESP_LOGI(TAG, "PAYLOAD MUY GRANDE");
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Payload too large");
         return ESP_FAIL;
@@ -910,13 +955,13 @@ esp_err_t pwm_post_handler(httpd_req_t *req)
     {
         while (remaining > 0)
         {
-            // Leer los datos del formulario 
+            // Leer los datos del formulario
             ret = httpd_req_recv(req, buff, sizeof(buff)); // en buff se pone lo que estaba en el req y devuelve el numero de bytes que se pasaron al buffer
             if (ret <= 0)                                  // si es 0 o menor es que hubo error
             {
                 if (ret == HTTPD_SOCK_ERR_TIMEOUT)
                 {
-                    // El tiempo de espera para recibir los datos ha expirado 
+                    // El tiempo de espera para recibir los datos ha expirado
                     httpd_resp_send_408(req);
                 }
                 return ESP_FAIL;
@@ -944,7 +989,7 @@ esp_err_t red_post_handler(httpd_req_t *req)
     ESP_LOGI(TAG, "%d", remaining);
     if (remaining >= sizeof(buff))
     {
-        // Buffer de datos insuficiente 
+        // Buffer de datos insuficiente
         ESP_LOGI(TAG, "PAYLOAD MUY GRANDE");
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Payload too large");
         return ESP_FAIL;
@@ -953,13 +998,13 @@ esp_err_t red_post_handler(httpd_req_t *req)
     {
         while (remaining > 0)
         {
-            // Leer los datos del formulario 
+            // Leer los datos del formulario
             ret = httpd_req_recv(req, buff, sizeof(buff)); // en buff se pone lo que estaba en el req y devuelve el numero de bytes que se pasaron al buffer
             if (ret <= 0)                                  // si es 0 o menor es que hubo error
             {
                 if (ret == HTTPD_SOCK_ERR_TIMEOUT)
                 {
-                    //El tiempo de espera para recibir los datos ha expirado 
+                    //El tiempo de espera para recibir los datos ha expirado
                     httpd_resp_send_408(req);
                 }
                 return ESP_FAIL;
@@ -987,7 +1032,7 @@ esp_err_t triac_post_handler(httpd_req_t *req)
     ESP_LOGI(TAG, "%d", remaining);
     if (remaining >= sizeof(buff))
     {
-        // Buffer de datos insuficiente 
+        // Buffer de datos insuficiente
         ESP_LOGI(TRIAC, "PAYLOAD MUY GRANDE");
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Payload too large");
         return ESP_FAIL;
@@ -996,13 +1041,13 @@ esp_err_t triac_post_handler(httpd_req_t *req)
     {
         while (remaining > 0)
         {
-            // Leer los datos del formulario 
+            // Leer los datos del formulario
             ret = httpd_req_recv(req, buff, sizeof(buff)); // en buff se pone lo que estaba en el req y devuelve el numero de bytes que se pasaron al buffer
             if (ret <= 0)                                  // si es 0 o menor es que hubo error
             {
                 if (ret == HTTPD_SOCK_ERR_TIMEOUT)
                 {
-                    // El tiempo de espera para recibir los datos ha expirado 
+                    // El tiempo de espera para recibir los datos ha expirado
                     httpd_resp_send_408(req);
                 }
                 return ESP_FAIL;
@@ -1028,7 +1073,7 @@ esp_err_t vegeflor_post_handler(httpd_req_t *req)
     ESP_LOGI(TAG, "%d", remaining);
     if (remaining >= sizeof(buff))
     {
-        // Buffer de datos insuficiente 
+        // Buffer de datos insuficiente
         ESP_LOGI(VEGEFLOR, "PAYLOAD MUY GRANDE");
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Payload too large");
         return ESP_FAIL;
@@ -1037,13 +1082,13 @@ esp_err_t vegeflor_post_handler(httpd_req_t *req)
     {
         while (remaining > 0)
         {
-             //Leer los datos del formulario 
+             //Leer los datos del formulario
             ret = httpd_req_recv(req, buff, sizeof(buff)); // en buff se pone lo que estaba en el req y devuelve el numero de bytes que se pasaron al buffer
             if (ret <= 0)                                  // si es 0 o menor es que hubo error
             {
                 if (ret == HTTPD_SOCK_ERR_TIMEOUT)
                 {
-                    //El tiempo de espera para recibir los datos ha expirado 
+                    //El tiempo de espera para recibir los datos ha expirado
                     httpd_resp_send_408(req);
                 }
                 return ESP_FAIL;
@@ -1071,7 +1116,7 @@ esp_err_t hora_post_handler(httpd_req_t *req)
     ESP_LOGI(TAG, "%d", remaining);
     if (remaining >= sizeof(buff))
     {
-        // Buffer de datos insuficiente 
+        // Buffer de datos insuficiente
         ESP_LOGI(VEGEFLOR, "PAYLOAD MUY GRANDE");
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Payload too large");
         return ESP_FAIL;
@@ -1080,13 +1125,13 @@ esp_err_t hora_post_handler(httpd_req_t *req)
     {
         while (remaining > 0)
         {
-            // Leer los datos del formulario 
+            // Leer los datos del formulario
             ret = httpd_req_recv(req, buff, sizeof(buff)); // en buff se pone lo que estaba en el req y devuelve el numero de bytes que se pasaron al buffer
             if (ret <= 0)                                  // si es 0 o menor es que hubo error
             {
                 if (ret == HTTPD_SOCK_ERR_TIMEOUT)
                 {
-                    // El tiempo de espera para recibir los datos ha expirado 
+                    // El tiempo de espera para recibir los datos ha expirado
                     httpd_resp_send_408(req);
                 }
                 return ESP_FAIL;
@@ -1226,7 +1271,7 @@ esp_err_t triac_data_handler(httpd_req_t *req)
         {
             modo = "Apagado";
         }
-  
+
         // ESP_LOGE(TRIAC, " EL ENABLE DEL 1 ES %d", triac_auto_info.triac_auto[0].enable);
         cJSON_AddStringToObject(json_object, "Modo", modo);
         cJSON_AddBoolToObject(json_object, "cb1", triac_auto_info.triac_auto[0].enable);
@@ -1371,7 +1416,7 @@ httpd_handle_t start_webserver(void)
 {
     httpd_handle_t server = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG(); // Configuracion por default del server
-    config.stack_size = 250000;
+    config.stack_size = 300000;
     config.max_uri_handlers = 16;
     config.max_resp_headers = 16;
 
@@ -1384,8 +1429,8 @@ httpd_handle_t start_webserver(void)
         ESP_LOGI(TAG, "Registering URI handlers");
         // ESP_LOGI(TAG, "Registering HTML");
         httpd_register_uri_handler(server, &index_uri);
-        /*httpd_register_uri_handler(server, &config_uri);
-        httpd_register_uri_handler(server, &pwm_triac_vege_post);
+        httpd_register_uri_handler(server, &config_uri);
+        /*httpd_register_uri_handler(server, &pwm_triac_vege_post);
         httpd_register_uri_handler(server, &pwm_post);
         httpd_register_uri_handler(server, &red_post);
         httpd_register_uri_handler(server, &triac_post);
@@ -1396,9 +1441,9 @@ httpd_handle_t start_webserver(void)
         httpd_register_uri_handler(server, &data_vegeflor_uri);
         httpd_register_uri_handler(server, &version_data_uri);
         httpd_register_uri_handler(server, &hora_data_uri);
-        httpd_register_uri_handler(server, &hora_post);
-        httpd_register_uri_handler(server, &image);*/
-        //init_red(&red);
+        httpd_register_uri_handler(server, &hora_post);*/
+        httpd_register_uri_handler(server, &image);
+        // init_red(&red);
 
         esp_timer_create_args_t timer_reset_esp32_args = {
             .callback = timer_reset_esp32_callback,
