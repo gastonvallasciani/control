@@ -71,7 +71,6 @@ static void first_time_flash(void)
     init_parameter_in_flash_uint32(S_OUT_4_DATE_ENABLE, S_OUT_4_DATE_ENABLE_DEFAULT);
     init_parameter_in_flash_uint32(PPF_KEY, PPF_DEFAULT);
     init_parameter_in_flash_uint32(DISPLAY_CONTRAST_KEY, CONTRASTE_DEFAULT);
-
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------
@@ -106,9 +105,9 @@ uint8_t read_date_from_flash(char *key, struct tm *time_info)
     strcpy(key_aux, key);
 
     read_parameter_from_flash_str(key_aux);
-    if(wait_for_flash_response_str(buffer))
+    if (wait_for_flash_response_str(buffer))
     {
-        if(strptime(buffer, "%Y-%m-%d %H:%M:%S", time_info) == NULL) 
+        if (strptime(buffer, "%Y-%m-%d %H:%M:%S", time_info) == NULL)
         {
             printf("Error al convertir la cadena a struct tm.\n");
         }
@@ -124,13 +123,13 @@ void write_date_on_flash(char *key, struct tm time_info)
     memset(buffer, '\0', sizeof(buffer));
 
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &time_info);
-    write_parameter_on_flash_str(key, buffer);  
+    write_parameter_on_flash_str(key, buffer);
 }
 //------------------------------------------------------------------------------
 uint8_t read_uint32_from_flash(char *key, uint32_t *value)
 {
     read_parameter_from_flash_uint32(key);
-    if(wait_for_flash_response_uint32(value))
+    if (wait_for_flash_response_uint32(value))
     {
         return 1;
     }
@@ -140,7 +139,7 @@ uint8_t read_uint32_from_flash(char *key, uint32_t *value)
 uint8_t read_str_from_flash(char *key, char *str_val)
 {
     read_parameter_from_flash_str(key);
-    if(wait_for_flash_response_str(str_val))
+    if (wait_for_flash_response_str(str_val))
     {
         return 1;
     }

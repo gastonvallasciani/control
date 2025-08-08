@@ -269,24 +269,17 @@
     </div>
 
     <script>
-        /*function formatNumber(number) { //funcion para agregar un cero si es que el numero es menor a 10 para mostrarlo
+        function formatNumber(number) { //funcion para agregar un cero si es que el numero es menor a 10 para mostrarlo
             if (number >= 0 && number < 10) {
                 return '0' + number;
             } else {
                 return number;
             }
         }
+
         window.addEventListener('load', () => {
             setInterval(() => {
-                fetch("/data_hora").then(res => {
-                    if (!res.ok)
-                        console.error("Error en adquirir los datos de la hora")
-                    return res.json()
-                }).then(data => {
-                    console.log(data)
-                    document.getElementById("Hora_h").textContent = formatNumber(data.Hora_h);
-                    document.getElementById("Hora_m").textContent = formatNumber(data.Hora_m);
-                })
+                /*
                 fetch("/data_pwm").then(res => {
                     if (!res.ok)
                         console.error("Error en adquirir los datos del pwm")
@@ -378,16 +371,7 @@
                         circleDiv.style.backgroundColor = "orange";
                     }
                 })
-                fetch("/data_red").then(res => {
-                    if (!res.ok)
-                        console.error("Error en adquirir los datos de red")
-                    return res.json()
-                }).then(data => {
-                    console.log(data);
-                    document.getElementById("ID").textContent = data.ID;
-                    //document.getElementById("PASS").textContent = data.PASS;
-
-                })
+                    */
                 fetch("/data_vegeflor").then(res => {
                     if (!res.ok)
                         console.error("Error en adquirir los datos de vegeflor")
@@ -404,9 +388,27 @@
                     }
                 })
 
+                fetch("/data_hora").then(res => {
+                    if (!res.ok)
+                        console.error("Error en adquirir los datos de la hora")
+                    return res.json()
+                }).then(data => {
+                    console.log(data)
+                    document.getElementById("Hora_h").textContent = formatNumber(data.Hora_h);
+                    document.getElementById("Hora_m").textContent = formatNumber(data.Hora_m);
+                })
+                fetch("/data_red").then(res => {
+                    if (!res.ok)
+                        console.error("Error en adquirir los datos de red")
+                    return res.json()
+                }).then(data => {
+                    console.log(data);
+                    document.getElementById("ID").textContent = data.ID;
+                    //document.getElementById("PASS").textContent = data.PASS;
 
+                })
 
-            }, 2000)
+            }, 3000)
 
             fetch("/version").then(res => {
                 if (!res.ok)
@@ -417,7 +419,7 @@
                 document.getElementById("Version").textContent = data.Version;
             })
         })
-*/
+
     </script>
 </body>
 

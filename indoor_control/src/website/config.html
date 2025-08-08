@@ -864,31 +864,31 @@
         
                 }
         
-                async function loadRed() {
-                    try {
-                        const result = await fetch("/data_red");
-                        if (!result.ok) {
-                            throw new Error("Error en adquirir los datos de la red");
-                        }
-                        const data = await result.json();
-                        console.log(data);
-                        document.getElementById("nombre").value = data.ID;
-                        document.getElementById("Contrasenia").value = data.PASS;
-                    }
-                    catch (e) {
-                        console.error("Error en adquirir los datos de la red", e);
-                    }
-        
-        
+        async function loadRed() {
+            try {
+                const result = await fetch("/data_red");
+                if (!result.ok) {
+                    throw new Error("Error en adquirir los datos de la red");
                 }
-        
-                async function loadValues() {
-                    await loadHora();
-                    await loadPWM();
-                    await loadTriac();
-                    await loadVegeflor();
-                    await loadRed();
-                }
+                const data = await result.json();
+                console.log(data);
+                document.getElementById("nombre").value = data.ID;
+                document.getElementById("Contrasenia").value = data.PASS;
+            }
+            catch (e) {
+                console.error("Error en adquirir los datos de la red", e);
+            }
+
+
+        }
+
+        async function loadValues() {
+            //await loadHora();
+            //await loadPWM();
+            //await loadTriac();
+            //await loadVegeflor();
+            await loadRed();
+        }
         
                 function updateRangoValue() {
                     const rangoInput = document.getElementById('rango');
@@ -897,102 +897,103 @@
                     rangoValueSpan.textContent = rangoInput.value + '%';
                 }
         
-                document.addEventListener("DOMContentLoaded", async function () {
-                    await loadValues();
-                    const red_form = document.getElementById("red_form");
-                    const pwm_triac_vege_form = document.getElementById("pwm_triac_vege");
-                    //const triac_form = document.getElementById("triac_form");
-                    //const vege_form = document.getElementById("vege_form");
-                    red_form.addEventListener("submit", async function (event) {
-                        event.preventDefault();
-                        const red_string = document.getElementById("nombre").value;
-                        const pass_string = document.getElementById("Contrasenia").value;
-                        if (pass_string.length >= 8 && red_string != "" && pass_string.length <= 32) {
-                            console.log("Parametros aceptados")
-        
-        
-                            const myForm = event.target;
-                            const formData = new FormData(myForm);
-        
-                            const response = await fetch("/red", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/x-www-form-urlencoded"
-                                },
-                                body: new URLSearchParams(formData).toString(),
-                            });
-                            const mensaje = "Se actualizaron los datos de red correctamente";
-                            alert(mensaje);
-        
-                        }
-                        else {
-                            console.log("Error en el ingreso de datos de red")
-                            const mensaje = "Error en el ingreso de datos de red";
-                            alert(mensaje);
-                        }
+        document.addEventListener("DOMContentLoaded", async function () {
+            await loadValues();
+            const red_form = document.getElementById("red_form");
+            //const pwm_triac_vege_form = document.getElementById("pwm_triac_vege");
+            //const triac_form = document.getElementById("triac_form");
+            //const vege_form = document.getElementById("vege_form");
+            red_form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                const red_string = document.getElementById("nombre").value;
+                const pass_string = document.getElementById("Contrasenia").value;
+                if (pass_string.length >= 8 && red_string != "" && pass_string.length <= 32) {
+                    console.log("Parametros aceptados")
+
+
+                    const myForm = event.target;
+                    const formData = new FormData(myForm);
+
+                    const response = await fetch("/red", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: new URLSearchParams(formData).toString(),
                     });
-                    pwm_triac_vege_form.addEventListener("submit", async function (event) {
-                        event.preventDefault();
-                        //chequeo horarios del triac
-                        const en1 = document.getElementById("checkboxh1").checked
-                        const en2 = document.getElementById("checkboxh2").checked
-                        const en3 = document.getElementById("checkboxh3").checked
-                        const en4 = document.getElementById("checkboxh4").checked
-                        console.log(en1)
-                        console.log(en2)
-                        console.log(en3)
-                        console.log(en4)
-                        const ih1 = obtenerHoraYMinutos("ih1");
-                        const fh1 = obtenerHoraYMinutos("fh1");
-                        const ih2 = obtenerHoraYMinutos("ih2");
-                        const fh2 = obtenerHoraYMinutos("fh2");
-                        const ih3 = obtenerHoraYMinutos("ih3");
-                        const fh3 = obtenerHoraYMinutos("fh3");
-                        const ih4 = obtenerHoraYMinutos("ih4");
-                        const fh4 = obtenerHoraYMinutos("fh4");
-                        console.log(ih1)
-                        console.log(fh1)
-                        console.log(ih2)
-                        console.log(fh2)
-                        const overlap = checkOverlap(en1, en2, en3, en4, ih1, fh1, ih2, fh2, ih3, fh3, ih4, fh4);
-                        //chequeo hoarios del pwm
-                        var e_pwm = 0;
-                        const pwm_i = obtenerHoraYMinutos("ih_pwm");
-                        const pwm_f = obtenerHoraYMinutos("fh_pwm");
-                        console.log(pwm_i)
-                        console.log(pwm_f)
-                        if (pwm_i.hora == pwm_f.hora) {
-                            if (pwm_i.minutos == pwm_i.minutos) {
-                                e_pwm = 1;
-                            }
-                        }
-                        if (overlap == 0 && e_pwm == 0) {
-                            console.log("Parametros aceptados")
-        
-                            const myForm = event.target;
-                            const formData = new FormData(myForm);
-                            console.log(formData)
-                            const response = await fetch("/pwm_triac_vege", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/x-www-form-urlencoded"
-                                },
-                                body: new URLSearchParams(formData).toString(),
-                            });
-                            const mensaje = "Se actualizaron los datos correctamente";
-                            alert(mensaje);
-                            window.location.href = "/index";
-                        }
-                        else {
-                            console.log("Parametros no aceptados")
-                            const mensaje = "No se actualizaron los datos. Horarios iguales o superpuestos.";
-                            alert(mensaje);
-                        }
+                    const mensaje = "Se actualizaron los datos de red correctamente";
+                    alert(mensaje);
+
+                }
+                else {
+                    console.log("Error en el ingreso de datos de red")
+                    const mensaje = "Error en el ingreso de datos de red";
+                    alert(mensaje);
+                }
+            });
+            /*
+            pwm_triac_vege_form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                //chequeo horarios del triac
+                const en1 = document.getElementById("checkboxh1").checked
+                const en2 = document.getElementById("checkboxh2").checked
+                const en3 = document.getElementById("checkboxh3").checked
+                const en4 = document.getElementById("checkboxh4").checked
+                console.log(en1)
+                console.log(en2)
+                console.log(en3)
+                console.log(en4)
+                const ih1 = obtenerHoraYMinutos("ih1");
+                const fh1 = obtenerHoraYMinutos("fh1");
+                const ih2 = obtenerHoraYMinutos("ih2");
+                const fh2 = obtenerHoraYMinutos("fh2");
+                const ih3 = obtenerHoraYMinutos("ih3");
+                const fh3 = obtenerHoraYMinutos("fh3");
+                const ih4 = obtenerHoraYMinutos("ih4");
+                const fh4 = obtenerHoraYMinutos("fh4");
+                console.log(ih1)
+                console.log(fh1)
+                console.log(ih2)
+                console.log(fh2)
+                const overlap = checkOverlap(en1, en2, en3, en4, ih1, fh1, ih2, fh2, ih3, fh3, ih4, fh4);
+                //chequeo hoarios del pwm
+                var e_pwm = 0;
+                const pwm_i = obtenerHoraYMinutos("ih_pwm");
+                const pwm_f = obtenerHoraYMinutos("fh_pwm");
+                console.log(pwm_i)
+                console.log(pwm_f)
+                if (pwm_i.hora == pwm_f.hora) {
+                    if (pwm_i.minutos == pwm_i.minutos) {
+                        e_pwm = 1;
+                    }
+                }
+                if (overlap == 0 && e_pwm == 0) {
+                    console.log("Parametros aceptados")
+ 
+                    const myForm = event.target;
+                    const formData = new FormData(myForm);
+                    console.log(formData)
+                    const response = await fetch("/pwm_triac_vege", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: new URLSearchParams(formData).toString(),
                     });
-                    
-        
-                })
-        */
+                    const mensaje = "Se actualizaron los datos correctamente";
+                    alert(mensaje);
+                    window.location.href = "/index";
+                }
+                else {
+                    console.log("Parametros no aceptados")
+                    const mensaje = "No se actualizaron los datos. Horarios iguales o superpuestos.";
+                    alert(mensaje);
+                }
+            });
+
+
+        })
+*/
     </script>
 </body>
 

@@ -44,10 +44,13 @@ void connect_handler(void *, esp_event_base_t, int32_t, void *);
 void parse_pwm(char *);
 void parse_triac(char *);
 void parse_vegeflor(char *);
+*/
 void parse_red(char *, red_t *);
+/*
 void parse_hora(char *, struct tm *);
 void analyze_token_pwm_triac_vege(char *);
 void analyze_token_pwm(char *);
 void analyze_token_triac(char *);
+*/
 void init_red(red_t *);
-void reset_triac_h(triac_config_info_t *);*/
+// void reset_triac_h(triac_config_info_t *);

@@ -26,12 +26,13 @@
 #include "esp_timer.h"
 
 static const char *TAG = "WEBSERVER";
+static const char *VERSIONN = "VERSION";
+static const char *HORA = "HORA";
+static const char *VEGEFLOR = "VEGEFLOR";
 /*static const char *PWM = "PWM";
 static const char *TRIAC = "TRIAC";
-static const char *VEGEFLOR = "VEGEFLOR";
 static const char *MAIN = "MAIN";
-static const char *VERSIONN = "VERSION";
-static const char *HORA = "HORA";*/
+*/
 
 static esp_timer_handle_t timer_reset_esp32;
 static void timer_reset_esp32_callback(void *arg);
@@ -72,7 +73,7 @@ triac_auto_info_t triac_auto_info; // variable para leer toda la data del triac 
 
 //---------------VEGEFLOR------------------
 
-// rele_output_status_t rele_status; // variable para leer el estado del relé
+flora_vege_status_t vegeflor; // variable para leer el estado del relé vegeflora
 
 //----------FUNCIONES------------//
 
@@ -92,7 +93,7 @@ void init_red(red_t *red)
     memset(red->PASS, '\0', sizeof(red->PASS));
     strcpy(red->PASS, "-");
 }
-
+*/
 void print_red(red_t *red)
 {
 
@@ -100,7 +101,7 @@ void print_red(red_t *red)
 
     ESP_LOGW(TAG, "PASS:%s", red->PASS);
 }
-
+/*
 void analyze_token_pwm_triac_vege(char *token)
 {
     int dh, dm; // unidades y decenas de horas y minutos
@@ -730,8 +731,8 @@ httpd_uri_t config_uri = {
     .method = HTTP_GET,
     .handler = config_get_handler,
     .user_ctx = NULL};
-
-/*httpd_uri_t red_post = {
+/*
+httpd_uri_t red_post = {
     .uri = "/red",
     .method = HTTP_POST,
     .handler = red_post_handler,
@@ -767,13 +768,13 @@ httpd_uri_t hora_post = {
     .method = HTTP_POST,
     .handler = hora_post_handler,
     .user_ctx = NULL};
-
+*/
 httpd_uri_t data_red_uri = {
     .uri = "/data_red",
     .method = HTTP_GET,
     .handler = red_data_handler,
     .user_ctx = NULL};
-
+/*
 httpd_uri_t data_pwm_uri = {
     .uri = "/data_pwm",
     .method = HTTP_GET,
@@ -785,7 +786,7 @@ httpd_uri_t data_triac_uri = {
     .method = HTTP_GET,
     .handler = triac_data_handler,
     .user_ctx = NULL};
-
+*/
 httpd_uri_t data_vegeflor_uri = {
     .uri = "/data_vegeflor",
     .method = HTTP_GET,
@@ -803,7 +804,7 @@ httpd_uri_t hora_data_uri = {
     .method = HTTP_GET,
     .handler = hora_data_handler,
     .user_ctx = NULL};
-*/
+
 httpd_uri_t image = {
     .uri = "/logo",
     .method = HTTP_GET,
@@ -1004,7 +1005,7 @@ esp_err_t red_post_handler(httpd_req_t *req)
             {
                 if (ret == HTTPD_SOCK_ERR_TIMEOUT)
                 {
-                    //El tiempo de espera para recibir los datos ha expirado
+                    // El tiempo de espera para recibir los datos ha expirado
                     httpd_resp_send_408(req);
                 }
                 return ESP_FAIL;
@@ -1147,7 +1148,7 @@ esp_err_t hora_post_handler(httpd_req_t *req)
 }*/
 
 //----------HANDLERS PARA LEER LOS DATOS------------/
-/*
+
 esp_err_t red_data_handler(httpd_req_t *req)
 {
     uint8_t status = 0;
@@ -1174,7 +1175,7 @@ esp_err_t red_data_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 }
-
+/*
 esp_err_t pwm_data_handler(httpd_req_t *req)
 {
     char *modo;
@@ -1323,16 +1324,16 @@ esp_err_t triac_data_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 }
-
+*/
 esp_err_t vegeflor_data_handler(httpd_req_t *req)
 {
     char *modo;
     uint8_t status = 0;
-    status = global_manager_get_rele_vege_info(&rele_status);
+    status = global_manager_get_flora_vege_status(&vegeflor);
     if (status == 1)
     {
         cJSON *json_object = cJSON_CreateObject();
-        if (rele_status == RELE_VEGE_ENABLE)
+        if (vegeflor == FLORA_VEGE_OUTPUT_DISABLE)
         {
             modo = "Vegetativo";
         }
@@ -1404,7 +1405,7 @@ esp_err_t hora_data_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 }
-*/
+
 //---------FUNCIONES DEL WEBSERVER-------------//
 
 static void timer_reset_esp32_callback(void *arg)
@@ -1435,13 +1436,16 @@ httpd_handle_t start_webserver(void)
         httpd_register_uri_handler(server, &red_post);
         httpd_register_uri_handler(server, &triac_post);
         httpd_register_uri_handler(server, &vegeflor_post);
+        httpd_register_uri_handler(server, &hora_post);*/
         httpd_register_uri_handler(server, &data_red_uri);
-        httpd_register_uri_handler(server, &data_pwm_uri);
-        httpd_register_uri_handler(server, &data_triac_uri);
-        httpd_register_uri_handler(server, &data_vegeflor_uri);
         httpd_register_uri_handler(server, &version_data_uri);
         httpd_register_uri_handler(server, &hora_data_uri);
-        httpd_register_uri_handler(server, &hora_post);*/
+        httpd_register_uri_handler(server, &data_vegeflor_uri);
+        /*
+         httpd_register_uri_handler(server, &data_pwm_uri);
+         httpd_register_uri_handler(server, &data_triac_uri);
+
+         */
         httpd_register_uri_handler(server, &image);
         // init_red(&red);
 

@@ -458,12 +458,27 @@ device_mode_t global_manager_find_device_mode(void)
 }
 //------------------------------------------------------------------------------
 uint8_t global_manager_is_device_in_phase_3(void)
-{ 
-    if(is_jp2_fase3_connected() == true)
+{
+    if (is_jp2_fase3_connected() == true)
     {
         return 1;
     }
     return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_get_net_info(char *ssid, char *password)
+{
+    /*get_net_info();
+    if (wait_net_info_response(ssid, password))
+    {
+        return (1);
+    }
+    return (0);*/
+    /*char wifi_ssid[DEVICE_SSID_MAX_LENGTH];
+    char wifi_password[DEVICE_PASS_MAX_LENGTH];*/
+    strcpy(ssid, "TEST");
+    strcpy(password, "PASS_PRUEBA");
+    return 1;
 }
 //------------------------------------------------------------------------------
 static void global_manager_task(void *arg)
@@ -517,7 +532,6 @@ static void global_manager_task(void *arg)
     global_manager_init_flora_vege_status(flora_vege_status);
     global_manager_init_ppf(ppf);
     global_manager_init_display_contrast(display_contrast);
-    
 
     printf("INICIO PRINT DEBUG \n");
     printf("PWM DIGITAL VALUE %d \n", pwm_digital_value);
@@ -548,7 +562,7 @@ static void global_manager_task(void *arg)
         flora_vege_turn_off();
     }
 
-    if(pwm_mode == PWM_MANUAL)
+    if (pwm_mode == PWM_MANUAL)
     {
         printf("MODO MANUAL \n");
         if (is_jp3_teclas_connected() == false)
@@ -572,15 +586,15 @@ static void global_manager_task(void *arg)
                 display_manager_start(pwm_digital_value, 'F', pwm_mode);
         }
     }
-    else if(pwm_mode == PWM_AUTOMATIC)
+    else if (pwm_mode == PWM_AUTOMATIC)
     {
         printf("MODO AUTOMATIC \n");
         pwm_manager_turn_off_pwm();
         led_manager_pwm_output(0);
         if (flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
-                display_manager_start(0, 'V', pwm_mode);
-            else
-                display_manager_start(0, 'F', pwm_mode);
+            display_manager_start(0, 'V', pwm_mode);
+        else
+            display_manager_start(0, 'F', pwm_mode);
     }
 
     while (true)
@@ -665,7 +679,7 @@ void global_manager_init(void)
     device_mode = global_manager_find_device_mode();
     global_manager_set_device_mode(device_mode);
 
-    //global_manager_set_pwm_mode(PWM_MANUAL);
+    // global_manager_set_pwm_mode(PWM_MANUAL);
 
     pote_input_manager_init();
 
