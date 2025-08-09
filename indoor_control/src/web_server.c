@@ -24,15 +24,15 @@
 #include "../include/dia.h"
 #include <time.h>
 #include "esp_timer.h"
+#include "../include/jumpers_manager.h"
 
 static const char *TAG = "WEBSERVER";
 static const char *VERSIONN = "VERSION";
 static const char *HORA = "HORA";
 static const char *VEGEFLOR = "VEGEFLOR";
-/*static const char *PWM = "PWM";
+static const char *PWM = "PWM";
 static const char *TRIAC = "TRIAC";
 static const char *MAIN = "MAIN";
-*/
 
 static esp_timer_handle_t timer_reset_esp32;
 static void timer_reset_esp32_callback(void *arg);
@@ -53,23 +53,32 @@ struct tm aux_hora; // variable para setear y leer la hora actual
 
 // output_mode_t modo_pwm; // variable setear y leer el modo del pwm
 
-pwm_auto_info_t pwm_info; // variable con la info para leer el pwm
+struct tm time_pwmi_web; // variable con la info para leer el pwm
+struct tm time_pwmf_web; // variable con la info para leer el pwm
+pwm_mode_t modo_pwm_web;
+simul_day_status_t dia_web;
+uint8_t pwm_auto_web;
+uint8_t pwm_man_web;
 
 //---------------TRIAC------------------
 
 /*output_mode_t modo_triac; // variable para setear y leer el modo del triac
 
 calendar_auto_mode_t triac_h; // variable para setear el modo del triac
+*/
+struct tm triac_h1f; // variable para setear los horarios del triac
+struct tm triac_h1i; // variable para setear los horarios del triac
 
-triac_config_info_t triac_h1; // variable para setear los horarios del triac
+struct tm triac_h2f; // variable para setear los horarios del triac
+struct tm triac_h2i; // variable para setear los horarios del triac
 
-triac_config_info_t triac_h2; // variable para setear los horarios del triac
+struct tm triac_h3f; // variable para setear los horarios del triac
+struct tm triac_h3i; // variable para setear los horarios del triac
 
-triac_config_info_t triac_h3; // variable para setear los horarios del triac
+struct tm triac_h4f; // variable para setear los horarios del triac
+struct tm triac_h4i; // variable para setear los horarios del triac
 
-triac_config_info_t triac_h4; // variable para setear los horarios del triac
-
-triac_auto_info_t triac_auto_info; // variable para leer toda la data del triac (y los 4 horarios)*/
+// triac_auto_info_t triac_auto_info; // variable para leer toda la data del triac (y los 4 horarios)
 
 //---------------VEGEFLOR------------------
 
@@ -774,7 +783,7 @@ httpd_uri_t data_red_uri = {
     .method = HTTP_GET,
     .handler = red_data_handler,
     .user_ctx = NULL};
-/*
+
 httpd_uri_t data_pwm_uri = {
     .uri = "/data_pwm",
     .method = HTTP_GET,
@@ -786,7 +795,7 @@ httpd_uri_t data_triac_uri = {
     .method = HTTP_GET,
     .handler = triac_data_handler,
     .user_ctx = NULL};
-*/
+
 httpd_uri_t data_vegeflor_uri = {
     .uri = "/data_vegeflor",
     .method = HTTP_GET,
@@ -1175,40 +1184,57 @@ esp_err_t red_data_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 }
-/*
+
 esp_err_t pwm_data_handler(httpd_req_t *req)
 {
     char *modo;
     uint8_t status = 0;
-    status = global_manager_get_pwm_info(&modo_pwm, &pwm_info);
+    // status = global_manager_get_pwm_info(&modo_pwm, &pwm_info);
+    status = global_manager_get_turn_on_time(&time_pwmi_web);
+    global_manager_get_turn_off_time(&time_pwmf_web);
+    global_manager_get_simul_day_status(&dia_web);
+    global_manager_get_pwm_mode(&modo_pwm_web);
+    global_manager_get_automatic_pwm_power(&pwm_auto_web);
+
+    if (is_jp3_teclas_connected() == true)
+    {
+        global_manager_get_pwm_digital_percentage(&pwm_man_web);
+    }
+    else
+    {
+        global_manager_get_pwm_analog_percentage(&pwm_man_web);
+    }
+
     if (status == 1)
     {
         cJSON *json_object = cJSON_CreateObject();
-        cJSON_AddNumberToObject(json_object, "intensidad", pwm_info.percent_power);
+        // cJSON_AddNumberToObject(json_object, "intensidad", pwm_info.percent_power);
 
-        if (modo_pwm == MANUAL_ON)
+        if (modo_pwm_web == PWM_MANUAL)
         {
             modo = "Manual";
-            cJSON_AddNumberToObject(json_object, "ih1h", pwm_info.turn_on_time.tm_hour);
-            cJSON_AddNumberToObject(json_object, "ih1m", pwm_info.turn_on_time.tm_min);
-            cJSON_AddNumberToObject(json_object, "fh1h", pwm_info.turn_off_time.tm_hour);
-            cJSON_AddNumberToObject(json_object, "fh1m", pwm_info.turn_off_time.tm_min);
+            cJSON_AddNumberToObject(json_object, "intensidad", pwm_man_web);
+            cJSON_AddNumberToObject(json_object, "ih1h", time_pwmi_web.tm_hour);
+            cJSON_AddNumberToObject(json_object, "ih1m", time_pwmi_web.tm_min);
+            cJSON_AddNumberToObject(json_object, "fh1h", time_pwmf_web.tm_hour);
+            cJSON_AddNumberToObject(json_object, "fh1m", time_pwmf_web.tm_min);
         }
-        else if (modo_pwm == MANUAL_OFF)
+        /*else if (modo_pwm == MANUAL_OFF)
         {
             modo = "OFF";
             cJSON_AddNumberToObject(json_object, "ih1h", pwm_info.turn_on_time.tm_hour);
             cJSON_AddNumberToObject(json_object, "ih1m", pwm_info.turn_on_time.tm_min);
             cJSON_AddNumberToObject(json_object, "fh1h", pwm_info.turn_off_time.tm_hour);
             cJSON_AddNumberToObject(json_object, "fh1m", pwm_info.turn_off_time.tm_min);
-        }
-        else if (modo_pwm == AUTOMATIC)
+        }*/
+        else if (modo_pwm_web == PWM_AUTOMATIC)
         {
             modo = "Automatico";
-            cJSON_AddNumberToObject(json_object, "ih1h", pwm_info.turn_on_time.tm_hour);
-            cJSON_AddNumberToObject(json_object, "ih1m", pwm_info.turn_on_time.tm_min);
-            cJSON_AddNumberToObject(json_object, "fh1h", pwm_info.turn_off_time.tm_hour);
-            cJSON_AddNumberToObject(json_object, "fh1m", pwm_info.turn_off_time.tm_min);
+            cJSON_AddNumberToObject(json_object, "intensidad", pwm_auto_web);
+            cJSON_AddNumberToObject(json_object, "ih1h", time_pwmi_web.tm_hour);
+            cJSON_AddNumberToObject(json_object, "ih1m", time_pwmi_web.tm_min);
+            cJSON_AddNumberToObject(json_object, "fh1h", time_pwmf_web.tm_hour);
+            cJSON_AddNumberToObject(json_object, "fh1m", time_pwmf_web.tm_min);
         }
         else
         {
@@ -1219,7 +1245,7 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
             cJSON_AddStringToObject(json_object, "fh1m", "-");
         }
         cJSON_AddStringToObject(json_object, "Modo", modo);
-        if (pwm_info.simul_day_status == SIMUL_DAY_ON)
+        if (dia_web == SIMUL_DAY_ON)
         {
             modo = "Si";
         }
@@ -1228,7 +1254,7 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
             modo = "No";
         }
         cJSON_AddStringToObject(json_object, "DIA", modo);
-        if (pwm_info.output_status == PWM_OUTPUT_ON)
+        if (1 == 1) // pwm_info.output_status == PWM_OUTPUT_ON)
         {
             modo = "ON";
             cJSON_AddStringToObject(json_object, "State", modo);
@@ -1260,43 +1286,51 @@ esp_err_t triac_data_handler(httpd_req_t *req)
 {
     char *modo;
     uint8_t status = 0;
-    status = global_manager_get_triac_info(&modo_triac, &triac_auto_info);
+    // status = global_manager_get_triac_info(&modo_triac, &triac_auto_info);
+    status = global_manager_get_s_out_turn_on_time(&triac_h1i, 0);
+    global_manager_get_s_out_turn_off_time(&triac_h1f, 0);
+    //
+    global_manager_get_s_out_turn_on_time(&triac_h2i, 1);
+    global_manager_get_s_out_turn_off_time(&triac_h2f, 1);
+    //
+    global_manager_get_s_out_turn_on_time(&triac_h3i, 2);
+    global_manager_get_s_out_turn_off_time(&triac_h3f, 2);
+    //
+    global_manager_get_s_out_turn_on_time(&triac_h4i, 3);
+    global_manager_get_s_out_turn_off_time(&triac_h4f, 3);
     if (status == 1)
     {
         cJSON *json_object = cJSON_CreateObject();
-        if (modo_triac == MANUAL_ON)
+        if (1==1)//modo_triac == MANUAL_ON)
         {
             modo = "Encendido";
         }
-        if (modo_triac == MANUAL_OFF)
-        {
-            modo = "Apagado";
-        }
+        
 
         // ESP_LOGE(TRIAC, " EL ENABLE DEL 1 ES %d", triac_auto_info.triac_auto[0].enable);
         cJSON_AddStringToObject(json_object, "Modo", modo);
-        cJSON_AddBoolToObject(json_object, "cb1", triac_auto_info.triac_auto[0].enable);
-        cJSON_AddNumberToObject(json_object, "ih1h", triac_auto_info.triac_auto[0].turn_on_time.tm_hour);
-        cJSON_AddNumberToObject(json_object, "ih1m", triac_auto_info.triac_auto[0].turn_on_time.tm_min);
-        cJSON_AddNumberToObject(json_object, "fh1h", triac_auto_info.triac_auto[0].turn_off_time.tm_hour);
-        cJSON_AddNumberToObject(json_object, "fh1m", triac_auto_info.triac_auto[0].turn_off_time.tm_min);
-        cJSON_AddBoolToObject(json_object, "cb2", triac_auto_info.triac_auto[1].enable);
-        cJSON_AddNumberToObject(json_object, "ih2h", triac_auto_info.triac_auto[1].turn_on_time.tm_hour);
-        cJSON_AddNumberToObject(json_object, "ih2m", triac_auto_info.triac_auto[1].turn_on_time.tm_min);
-        cJSON_AddNumberToObject(json_object, "fh2h", triac_auto_info.triac_auto[1].turn_off_time.tm_hour);
-        cJSON_AddNumberToObject(json_object, "fh2m", triac_auto_info.triac_auto[1].turn_off_time.tm_min);
-        cJSON_AddBoolToObject(json_object, "cb3", triac_auto_info.triac_auto[2].enable);
-        cJSON_AddNumberToObject(json_object, "ih3h", triac_auto_info.triac_auto[2].turn_on_time.tm_hour);
-        cJSON_AddNumberToObject(json_object, "ih3m", triac_auto_info.triac_auto[2].turn_on_time.tm_min);
-        cJSON_AddNumberToObject(json_object, "fh3h", triac_auto_info.triac_auto[2].turn_off_time.tm_hour);
-        cJSON_AddNumberToObject(json_object, "fh3m", triac_auto_info.triac_auto[2].turn_off_time.tm_min);
-        cJSON_AddBoolToObject(json_object, "cb4", triac_auto_info.triac_auto[3].enable);
-        cJSON_AddNumberToObject(json_object, "ih4h", triac_auto_info.triac_auto[3].turn_on_time.tm_hour);
-        cJSON_AddNumberToObject(json_object, "ih4m", triac_auto_info.triac_auto[3].turn_on_time.tm_min);
-        cJSON_AddNumberToObject(json_object, "fh4h", triac_auto_info.triac_auto[3].turn_off_time.tm_hour);
-        cJSON_AddNumberToObject(json_object, "fh4m", triac_auto_info.triac_auto[3].turn_off_time.tm_min);
+        cJSON_AddBoolToObject(json_object, "cb1", 1);
+        cJSON_AddNumberToObject(json_object, "ih1h", triac_h1i.tm_hour);
+        cJSON_AddNumberToObject(json_object, "ih1m", triac_h1i.tm_min);
+        cJSON_AddNumberToObject(json_object, "fh1h", triac_h1f.tm_hour);
+        cJSON_AddNumberToObject(json_object, "fh1m", triac_h1f.tm_min);
+        cJSON_AddBoolToObject(json_object, "cb2", 1);
+        cJSON_AddNumberToObject(json_object, "ih2h", triac_h2i.tm_hour);
+        cJSON_AddNumberToObject(json_object, "ih2m", triac_h2i.tm_min);
+        cJSON_AddNumberToObject(json_object, "fh2h", triac_h2f.tm_hour);
+        cJSON_AddNumberToObject(json_object, "fh2m", triac_h2f.tm_min);
+        cJSON_AddBoolToObject(json_object, "cb3", 1);
+        cJSON_AddNumberToObject(json_object, "ih3h", triac_h3i.tm_hour);
+        cJSON_AddNumberToObject(json_object, "ih3m", triac_h3i.tm_min);
+        cJSON_AddNumberToObject(json_object, "fh3h", triac_h3f.tm_hour);
+        cJSON_AddNumberToObject(json_object, "fh3m", triac_h3f.tm_min);
+        cJSON_AddBoolToObject(json_object, "cb4", 1);
+        cJSON_AddNumberToObject(json_object, "ih4h", triac_h4i.tm_hour);
+        cJSON_AddNumberToObject(json_object, "ih4m", triac_h4i.tm_min);
+        cJSON_AddNumberToObject(json_object, "fh4h", triac_h4f.tm_hour);
+        cJSON_AddNumberToObject(json_object, "fh4m", triac_h4f.tm_min);
 
-        if (triac_auto_info.output_status == TRIAC_OUTPUT_ON)
+        if (1 == 1) // triac_auto_info.output_status == TRIAC_OUTPUT_ON)
         {
             modo = "ON";
             cJSON_AddStringToObject(json_object, "State", modo);
@@ -1324,7 +1358,7 @@ esp_err_t triac_data_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 }
-*/
+
 esp_err_t vegeflor_data_handler(httpd_req_t *req)
 {
     char *modo;
@@ -1441,11 +1475,8 @@ httpd_handle_t start_webserver(void)
         httpd_register_uri_handler(server, &version_data_uri);
         httpd_register_uri_handler(server, &hora_data_uri);
         httpd_register_uri_handler(server, &data_vegeflor_uri);
-        /*
-         httpd_register_uri_handler(server, &data_pwm_uri);
-         httpd_register_uri_handler(server, &data_triac_uri);
-
-         */
+        httpd_register_uri_handler(server, &data_pwm_uri);
+        httpd_register_uri_handler(server, &data_triac_uri);
         httpd_register_uri_handler(server, &image);
         // init_red(&red);
 
