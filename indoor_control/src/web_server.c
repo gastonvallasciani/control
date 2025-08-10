@@ -60,6 +60,8 @@ simul_day_status_t dia_web;
 uint8_t pwm_auto_web;
 uint8_t pwm_man_web;
 
+uint8_t auto_pwm_output_status;
+
 //---------------TRIAC------------------
 
 /*output_mode_t modo_triac; // variable para setear y leer el modo del triac
@@ -302,224 +304,7 @@ void analyze_token_pwm_triac_vege(char *token)
         break;
     }
 }
-// Este habria que borrarlo
-void analyze_token_pwm(char *token)
-{
-    int dh, dm; // unidades y decenas de horas y minutos
-    uint8_t inten;
-    output_mode_t triac_mode;
-    triac_auto_info_t triac_auto;
-    switch (token[0])
-    {
-    case 'r': // Parseo intensidad
-        ESP_LOGI(PWM, "%d", strlen(token));
-        if (strlen(token) == 7) // caso de que sea un numero de un solo digito
-        {
-            inten = (uint8_t)atoi(&token[6]);
-            global_manager_set_pwm_power_value_auto(inten, pdFALSE);
-        }
-        else if (strlen(token) == 8) // caso de un numero de dos digitos
-        {
-            dh = atoi(&token[6]);
-            inten = (uint8_t)atoi(&token[6]);
-            ESP_LOGI(TAG, "%d", dh);
-            global_manager_set_pwm_power_value_auto(inten, pdFALSE);
-        }
-        else if (strlen(token) == 9) // caso 100
-        {
-            global_manager_set_pwm_power_value_auto(100, pdFALSE);
-        }
-        else
-        {
-            ESP_LOGE(PWM, "Error en parseo del RANGO");
-        }
 
-        break;
-
-    case 'm':
-        if (token[10] == 'A')
-        {
-            global_manager_set_pwm_mode_auto();
-            global_manager_set_triac_mode_auto(false);
-        }
-        else if (token[10] == 'M')
-        {
-            global_manager_set_pwm_mode_manual_on();
-            if (global_manager_get_triac_info(&triac_mode, &triac_auto))
-            {
-                if (triac_auto.output_status == TRIAC_OUTPUT_ON)
-                {
-                    global_manager_set_triac_mode_manual_on(false);
-                }
-                else if (triac_auto.output_status == TRIAC_OUTPUT_OFF)
-                {
-                    global_manager_set_triac_mode_off(false);
-                }
-            }
-        }
-        else if (token[10] == 'O')
-        {
-            global_manager_set_pwm_mode_manual_on();
-            // global_manager_set_pwm_mode_off();
-        }
-        else
-        {
-            ESP_LOGE(PWM, "Erro en parseo del MODO");
-        }
-        break;
-    case 'i':
-        dh = atoi(&token[7]);
-        dm = atoi(&token[12]);
-
-        pwm_hora.turn_on_time.tm_hour = dh;
-        pwm_hora.turn_on_time.tm_min = dm;
-
-        break;
-    case 'f':
-        dh = atoi(&token[7]);
-        dm = atoi(&token[12]);
-
-        pwm_hora.turn_off_time.tm_hour = dh;
-        pwm_hora.turn_off_time.tm_min = dm;
-
-        break;
-    case 'O':
-        if (token[9] == 'S')
-        {
-            global_manager_update_simul_day_function_status(SIMUL_DAY_ON, pdFALSE);
-        }
-        else
-        {
-            global_manager_update_simul_day_function_status(SIMUL_DAY_OFF, pdFALSE);
-        }
-
-        break;
-    default:
-        break;
-    }
-}
-// Este habria que borrarlo
-void analyze_token_triac(char *token)
-{
-    int dh, dm; // unidades y decenas de horas y minutos
-    ESP_LOGI(TRIAC, "%d", strlen(token));
-    switch (token[0])
-    {
-    case 'm': // Parseo modo
-        if (token[12] == 'E')
-        {
-            global_manager_set_triac_mode_manual_on(false);
-            global_manager_set_pwm_mode_manual_on();
-        }
-        else if (token[12] == 'A' && token[13] == 'p')
-        {
-            global_manager_set_triac_mode_off(false);
-            global_manager_set_pwm_mode_manual_on();
-        }
-        else if (token[12] == 'A')
-        {
-            global_manager_set_triac_mode_auto(false);
-            global_manager_set_pwm_mode_auto();
-        }
-        else
-        {
-            ESP_LOGE(TRIAC, "Error en parseo del MODO");
-        }
-
-        break;
-    case 'c':
-        if (token[9] == '1')
-        {
-            ESP_LOGE(TRIAC, "ENTRE EN ENABLE DE H1");
-            triac_h1.enable = 1;
-        }
-        if (token[9] == '2')
-        {
-            triac_h2.enable = 1;
-        }
-        if (token[9] == '3')
-        {
-            triac_h3.enable = 1;
-        }
-        if (token[9] == '4')
-        {
-            triac_h4.enable = 1;
-        }
-        // else
-        //{
-        //  ESP_LOGE(TRIAC, "Error en parseo del del CHECKBOX");
-        //}
-        break;
-
-    case 'i':
-        dh = atoi(&token[4]);
-        dm = atoi(&token[9]);
-        if (token[2] == '1')
-        {
-
-            triac_h1.turn_on_time.tm_hour = dh;
-            triac_h1.turn_on_time.tm_min = dm;
-        }
-        else if (token[2] == '2')
-        {
-
-            triac_h2.turn_on_time.tm_hour = dh;
-            triac_h2.turn_on_time.tm_min = dm;
-        }
-        else if (token[2] == '3')
-        {
-
-            triac_h3.turn_on_time.tm_hour = dh;
-            triac_h3.turn_on_time.tm_min = dm;
-        }
-        else if (token[2] == '4')
-        {
-
-            triac_h4.turn_on_time.tm_hour = dh;
-            triac_h4.turn_on_time.tm_min = dm;
-        }
-        else
-        {
-            ESP_LOGE(TRIAC, "Error en parseo del HORARIO INICIAL");
-        }
-        break;
-    case 'f':
-        dh = atoi(&token[4]);
-        dm = atoi(&token[9]);
-        if (token[2] == '1')
-        {
-
-            triac_h1.turn_off_time.tm_hour = dh;
-            triac_h1.turn_off_time.tm_min = dm;
-        }
-        else if (token[2] == '2')
-        {
-
-            triac_h2.turn_off_time.tm_hour = dh;
-            triac_h2.turn_off_time.tm_min = dm;
-        }
-        else if (token[2] == '3')
-        {
-
-            triac_h3.turn_off_time.tm_hour = dh;
-            triac_h3.turn_off_time.tm_min = dm;
-        }
-        else if (token[2] == '4')
-        {
-
-            triac_h4.turn_off_time.tm_hour = dh;
-            triac_h4.turn_off_time.tm_min = dm;
-        }
-        else
-        {
-            ESP_LOGE(TRIAC, "Error en parseo del HORARIO FINAL");
-        }
-
-        break;
-    default:
-        break;
-    }
-}
 
 void parse_pwm_triac_vege(char *buff)
 {
@@ -588,89 +373,7 @@ void parse_pwm_triac_vege(char *buff)
 
     ESP_LOGI(MAIN, "Salgo del parseo MAIN");
 }
-// Este habria que borrarlo
-void parse_pwm(char *buff)
-{
-    // el & es el separador de los campos
-    ESP_LOGI(PWM, "Testeo del parseo de PWM y TRIAC");
 
-    char delim[2] = "&";
-    char *token;
-    token = strtok(buff, delim);
-    while (token != NULL)
-    {
-        analyze_token_pwm(token);
-        ESP_LOGI(PWM, "%s", token);
-        token = strtok(NULL, delim);
-    }
-    global_manager_update_auto_pwm_calendar(pwm_hora, pdFALSE);
-    ESP_LOGI(PWM, "Salgo del parseo");
-    led_manager_new_update();
-};
-// Este habria que borrarlo
-void parse_triac(char *buff)
-{
-    // el & es el separador de los campos
-    ESP_LOGI(TRIAC, "Testeo del parseo de TRIAC");
-    int status = global_manager_get_triac_info(&modo_triac, &triac_auto_info);
-
-    triac_auto_info.triac_auto[0].enable = 0;
-    triac_auto_info.triac_auto[1].enable = 0;
-    triac_auto_info.triac_auto[2].enable = 0;
-    triac_auto_info.triac_auto[3].enable = 0;
-
-    triac_h1 = triac_auto_info.triac_auto[0];
-    triac_h2 = triac_auto_info.triac_auto[1];
-    triac_h3 = triac_auto_info.triac_auto[2];
-    triac_h4 = triac_auto_info.triac_auto[3];
-
-    char delim[2] = "&";
-    char *token;
-    token = strtok(buff, delim);
-    while (token != NULL)
-    {
-        analyze_token_triac(token);
-        ESP_LOGI(TRIAC, "%s", token);
-        token = strtok(NULL, delim);
-    }
-    if (triac_h1.enable != 1)
-        triac_h1.enable = 0;
-    if (triac_h2.enable != 1)
-        triac_h2.enable = 0;
-    if (triac_h3.enable != 1)
-        triac_h3.enable = 0;
-    if (triac_h4.enable != 1)
-        triac_h4.enable = 0;
-    ESP_LOGE(TRIAC, " EL ENABLE DEL 1 ES %d", triac_h1.enable);
-    global_manager_update_auto_triac_calendar(triac_h1, 1, false);
-    global_manager_update_auto_triac_calendar(triac_h2, 2, false);
-    global_manager_update_auto_triac_calendar(triac_h3, 3, false);
-    global_manager_update_auto_triac_calendar(triac_h4, 4, false);
-
-    led_manager_new_update();
-
-    ESP_LOGI(TRIAC, "Salgo del parseo");
-}
-// Este habria que borrarlo
-void parse_vegeflor(char *buff)
-{
-    // el & es el separador de los campos
-    ESP_LOGI(VEGEFLOR, "Testeo del parseo de VEGEFLOR");
-    if (buff[14] == 'V')
-    {
-        global_manager_set_rele_vege_status_on(pdFALSE);
-    }
-    else if (buff[14] == 'F')
-    {
-        global_manager_set_rele_vege_status_off(pdFALSE);
-    }
-    else
-    {
-        ESP_LOGE(VEGEFLOR, "Error en parseo del MODO");
-    }
-    ESP_LOGI(VEGEFLOR, "Salgo del parseo");
-    led_manager_new_update();
-};
 
 void parse_red(char *buff, red_t *red)
 {
@@ -707,7 +410,7 @@ void parse_red(char *buff, red_t *red)
 
     led_manager_new_update();
 };
-
+*/
 void parse_hora(char *buff, struct tm *aux)
 {
     // el & es el separador de los campos
@@ -727,7 +430,7 @@ void parse_hora(char *buff, struct tm *aux)
 
     ESP_LOGI(HORA, "Salgo del parseo HORA");
 };
-*/
+
 //----------URL´S------------//
 httpd_uri_t index_uri = {
     .uri = "/index",
@@ -753,31 +456,13 @@ httpd_uri_t pwm_triac_vege_post = {
     .handler = pwm_triac_vege_post_handler,
     .user_ctx = NULL};
 
-// este habria que borrarlo
-httpd_uri_t pwm_post = {
-    .uri = "/pwm",
-    .method = HTTP_POST,
-    .handler = pwm_post_handler,
-    .user_ctx = NULL};
-// este habria que borrarlo
-httpd_uri_t triac_post = {
-    .uri = "/triac",
-    .method = HTTP_POST,
-    .handler = triac_post_handler,
-    .user_ctx = NULL};
-// este habria que borrarlo
-httpd_uri_t vegeflor_post = {
-    .uri = "/vegeflor",
-    .method = HTTP_POST,
-    .handler = vegeflor_post_handler,
-    .user_ctx = NULL};
-
+*/
 httpd_uri_t hora_post = {
     .uri = "/hora",
     .method = HTTP_POST,
     .handler = hora_post_handler,
     .user_ctx = NULL};
-*/
+
 httpd_uri_t data_red_uri = {
     .uri = "/data_red",
     .method = HTTP_GET,
@@ -944,48 +629,7 @@ esp_err_t pwm_triac_vege_post_handler(httpd_req_t *req)
     }
 }
 
-esp_err_t pwm_post_handler(httpd_req_t *req)
-{
-    // Enviar una respuesta HTTP predeterminada
-    ESP_LOGI(TAG, "ENTRE AL HANDLER DEL PWM");
-    char buff[150];
-    int ret, remaining = 0;
-    remaining = req->content_len;
-    ret = req->content_len;
-    ESP_LOGI(TAG, "%d", ret);
-    ESP_LOGI(TAG, "%d", remaining);
-    if (remaining >= sizeof(buff))
-    {
-        // Buffer de datos insuficiente
-        ESP_LOGI(TAG, "PAYLOAD MUY GRANDE");
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Payload too large");
-        return ESP_FAIL;
-    }
-    else
-    {
-        while (remaining > 0)
-        {
-            // Leer los datos del formulario
-            ret = httpd_req_recv(req, buff, sizeof(buff)); // en buff se pone lo que estaba en el req y devuelve el numero de bytes que se pasaron al buffer
-            if (ret <= 0)                                  // si es 0 o menor es que hubo error
-            {
-                if (ret == HTTPD_SOCK_ERR_TIMEOUT)
-                {
-                    // El tiempo de espera para recibir los datos ha expirado
-                    httpd_resp_send_408(req);
-                }
-                return ESP_FAIL;
-            }
-            remaining -= ret; // resto la cantidad que se pasaron para pasar en el siguiente ciclo el resto. aca cuidado porque los esstaria sobrescribiendo
-            // Procesar los datos recibidos, por ejemplo, almacenarlos en una variable
-        }
-        ESP_LOGI(TAG, "%s", buff);
-        parse_pwm(buff);
-        ESP_LOGI(TAG, "Salgo del PWM HANDLER");
-        httpd_resp_send(req, NULL, 0);
-        return ESP_OK;
-    }
-}
+
 
 esp_err_t red_post_handler(httpd_req_t *req)
 {
@@ -1031,90 +675,8 @@ esp_err_t red_post_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-esp_err_t triac_post_handler(httpd_req_t *req)
-{
-    ESP_LOGI(TAG, "ENTRE AL HANDLER DEL TRIAC");
-    char buff[200];
-    int ret, remaining = 0;
-    remaining = req->content_len;
-    ret = req->content_len;
-    ESP_LOGI(TAG, "%d", ret);
-    ESP_LOGI(TAG, "%d", remaining);
-    if (remaining >= sizeof(buff))
-    {
-        // Buffer de datos insuficiente
-        ESP_LOGI(TRIAC, "PAYLOAD MUY GRANDE");
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Payload too large");
-        return ESP_FAIL;
-    }
-    else
-    {
-        while (remaining > 0)
-        {
-            // Leer los datos del formulario
-            ret = httpd_req_recv(req, buff, sizeof(buff)); // en buff se pone lo que estaba en el req y devuelve el numero de bytes que se pasaron al buffer
-            if (ret <= 0)                                  // si es 0 o menor es que hubo error
-            {
-                if (ret == HTTPD_SOCK_ERR_TIMEOUT)
-                {
-                    // El tiempo de espera para recibir los datos ha expirado
-                    httpd_resp_send_408(req);
-                }
-                return ESP_FAIL;
-            }
-            remaining -= ret; // resto la cantidad que se pasaron para pasar en el siguiente ciclo el resto. aca cuidado porque los esstaria sobrescribiendo
-            // Procesar los datos recibidos, por ejemplo, almacenarlos en una variable
-        }
-        ESP_LOGI(TAG, "%s", buff);
-        parse_triac(buff);
-        httpd_resp_send(req, NULL, 0);
-        return ESP_OK;
-    }
-}
 
-esp_err_t vegeflor_post_handler(httpd_req_t *req)
-{
-    ESP_LOGI(TAG, "ENTRE AL HANDLER DEL VEGEFLOR");
-    char buff[30];
-    int ret, remaining = 0;
-    remaining = req->content_len;
-    ret = req->content_len;
-    ESP_LOGI(TAG, "%d", ret);
-    ESP_LOGI(TAG, "%d", remaining);
-    if (remaining >= sizeof(buff))
-    {
-        // Buffer de datos insuficiente
-        ESP_LOGI(VEGEFLOR, "PAYLOAD MUY GRANDE");
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Payload too large");
-        return ESP_FAIL;
-    }
-    else
-    {
-        while (remaining > 0)
-        {
-             //Leer los datos del formulario
-            ret = httpd_req_recv(req, buff, sizeof(buff)); // en buff se pone lo que estaba en el req y devuelve el numero de bytes que se pasaron al buffer
-            if (ret <= 0)                                  // si es 0 o menor es que hubo error
-            {
-                if (ret == HTTPD_SOCK_ERR_TIMEOUT)
-                {
-                    //El tiempo de espera para recibir los datos ha expirado
-                    httpd_resp_send_408(req);
-                }
-                return ESP_FAIL;
-            }
-            remaining -= ret; // resto la cantidad que se pasaron para pasar en el siguiente ciclo el resto. aca cuidado porque los esstaria sobrescribiendo
-            // Procesar los datos recibidos, por ejemplo, almacenarlos en una variable
-        }
-        ESP_LOGI(TAG, "%s", buff);
-        parse_vegeflor(buff);
-        ESP_LOGI(TAG, "Salgo del VEGEFLOR HANDLER");
-
-        httpd_resp_send(req, NULL, 0);
-        return ESP_OK;
-    }
-}
-
+*/
 esp_err_t hora_post_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "ENTRE AL HANDLER DE LA HORA");
@@ -1154,7 +716,7 @@ esp_err_t hora_post_handler(httpd_req_t *req)
         httpd_resp_send(req, NULL, 0);
         return ESP_OK;
     }
-}*/
+}
 
 //----------HANDLERS PARA LEER LOS DATOS------------/
 
@@ -1254,7 +816,8 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
             modo = "No";
         }
         cJSON_AddStringToObject(json_object, "DIA", modo);
-        if (1 == 1) // pwm_info.output_status == PWM_OUTPUT_ON)
+        global_manager_get_automatic_pwm_output_status(&auto_pwm_output_status);
+        if (auto_pwm_output_status == PWM_OUTPUT_ON) // pwm_info.output_status == PWM_OUTPUT_ON)
         {
             modo = "ON";
             cJSON_AddStringToObject(json_object, "State", modo);
@@ -1301,11 +864,10 @@ esp_err_t triac_data_handler(httpd_req_t *req)
     if (status == 1)
     {
         cJSON *json_object = cJSON_CreateObject();
-        if (1==1)//modo_triac == MANUAL_ON)
+        if (1 == 1) // modo_triac == MANUAL_ON)
         {
             modo = "Encendido";
         }
-        
 
         // ESP_LOGE(TRIAC, " EL ENABLE DEL 1 ES %d", triac_auto_info.triac_auto[0].enable);
         cJSON_AddStringToObject(json_object, "Modo", modo);
@@ -1466,11 +1028,8 @@ httpd_handle_t start_webserver(void)
         httpd_register_uri_handler(server, &index_uri);
         httpd_register_uri_handler(server, &config_uri);
         /*httpd_register_uri_handler(server, &pwm_triac_vege_post);
-        httpd_register_uri_handler(server, &pwm_post);
-        httpd_register_uri_handler(server, &red_post);
-        httpd_register_uri_handler(server, &triac_post);
-        httpd_register_uri_handler(server, &vegeflor_post);
-        httpd_register_uri_handler(server, &hora_post);*/
+        httpd_register_uri_handler(server, &red_post);*/
+        httpd_register_uri_handler(server, &hora_post);
         httpd_register_uri_handler(server, &data_red_uri);
         httpd_register_uri_handler(server, &version_data_uri);
         httpd_register_uri_handler(server, &hora_data_uri);
