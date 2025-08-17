@@ -85,5 +85,7 @@ void display_manager_pwm_mode_update(uint8_t pwm_value, flora_vege_status_t vege
 compare_t compare_times(struct tm, struct tm);
 uint8_t colision_times(struct tm, struct tm, struct tm, struct tm);
 uint8_t checkOverlap(struct tm, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm, struct tm);
+void set_screen_one_from_web();
+void set_screen_two_from_web();
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* DISPLAY_MANAGER_H__ */

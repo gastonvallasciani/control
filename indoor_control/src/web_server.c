@@ -25,6 +25,9 @@
 #include <time.h>
 #include "esp_timer.h"
 #include "../include/jumpers_manager.h"
+#include "../include/button_manager.h"
+#include "../include/display_manager.h"
+#include "esp_log.h"
 
 static const char *TAG = "WEBSERVER";
 static const char *VERSIONN = "VERSION";
@@ -80,23 +83,47 @@ struct tm triac_h3i; // variable para setear los horarios del triac
 struct tm triac_h4f; // variable para setear los horarios del triac
 struct tm triac_h4i; // variable para setear los horarios del triac
 
+uint8_t en1 = 0; // 0 apagado, 1 activado
+uint8_t en2 = 0;
+uint8_t en3 = 0;
+uint8_t en4 = 0;
+
 // triac_auto_info_t triac_auto_info; // variable para leer toda la data del triac (y los 4 horarios)
 
 //---------------VEGEFLOR------------------
 
 flora_vege_status_t vegeflor; // variable para leer el estado del relé vegeflora
 
+// comandos al equipo
+
+button_events_t ev;
+
 //----------FUNCIONES------------//
 
-/*void reset_triac_h(triac_config_info_t *triac_h)
+/*void reset_triac_h(struct tm h1f,struct tm h1i,struct tm h2f,struct tm h2i,struct tm h3f,struct tm h3i,struct tm h4f,struct tm h4i)
 {
-    triac_h->enable = 0;
-    triac_h->turn_off_time.tm_hour = 0;
-    triac_h->turn_off_time.tm_min = 0;
-    triac_h->turn_on_time.tm_hour = 0;
-    triac_h->turn_on_time.tm_min = 0;
-}
-
+    //triac_h->enable = 0;
+    h1i.tm_hour = 0;
+    h1i.tm_min = 0;
+    h1f.tm_hour = 0;
+    h1f.tm_min = 0;
+    //
+    h2i.tm_hour = 0;
+    h2i.tm_min = 0;
+    h2f.tm_hour = 0;
+    h2f.tm_min = 0;
+    //
+    h3i.tm_hour = 0;
+    h3i.tm_min = 0;
+    h3f.tm_hour = 0;
+    h3f.tm_min = 0;
+    //
+    h4i.tm_hour = 0;
+    h4i.tm_min = 0;
+    h4f.tm_hour = 0;
+    h4f.tm_min = 0;
+}*/
+/*
 void init_red(red_t *red)
 {
     memset(red->ID, '\0', sizeof(red->ID));
@@ -112,38 +139,60 @@ void print_red(red_t *red)
 
     ESP_LOGW(TAG, "PASS:%s", red->PASS);
 }
-/*
+
 void analyze_token_pwm_triac_vege(char *token)
 {
     int dh, dm; // unidades y decenas de horas y minutos
-    uint8_t inten;
-    output_mode_t triac_mode;
-    triac_auto_info_t triac_auto;
+    uint8_t inten = 0;
+    // output_mode_t triac_mode;
+    // triac_auto_info_t triac_auto;
 
     switch (token[0])
     {
-    case 't': // parseo modo, solo se ve el automatico
+    case 't': // parseo modo, solo se ve el automatico //LISTO
         flag_modo = 1;
-        global_manager_set_triac_mode_auto(false);
-        global_manager_set_pwm_mode_auto();
+        // global_manager_set_pwm_mode(PWM_AUTOMATIC); // aca falta mandar el comando para que se actualice el display y todo el equipo
+        //  global_manager_set_triac_mode_auto(false);
+        //  global_manager_set_pwm_mode_auto();
         break;
     case 'r':
-        ESP_LOGI(PWM, "%d", strlen(token));
-        if (strlen(token) == 7) // caso de que sea un numero de un solo digito
+        ESP_LOGI(PWM, "%d", strlen(token)); // LISTO? CHEQUEAR QUE PASA EN MANUAL Y AUTO
+        if (strlen(token) == 7)             // caso de que sea un numero de un solo digito
         {
             inten = (uint8_t)atoi(&token[6]);
-            global_manager_set_pwm_power_value_auto(inten, pdFALSE);
+            if (flag_modo == 1) // estoy en modo automatico, entonces guardo el valor del pwm en automatico.
+            {
+                global_manager_set_automatic_pwm_power(inten);
+            }
+            else
+            {
+                global_manager_set_pwm_digital_percentage(inten);
+            }
         }
         else if (strlen(token) == 8) // caso de un numero de dos digitos
         {
             dh = atoi(&token[6]);
             inten = (uint8_t)atoi(&token[6]);
             ESP_LOGI(TAG, "%d", dh);
-            global_manager_set_pwm_power_value_auto(inten, pdFALSE);
+            if (flag_modo == 1) // estoy en modo automatico, entonces guardo el valor del pwm en automatico.
+            {
+                global_manager_set_automatic_pwm_power(inten);
+            }
+            else
+            {
+                global_manager_set_pwm_digital_percentage(inten);
+            }
         }
         else if (strlen(token) == 9) // caso 100
         {
-            global_manager_set_pwm_power_value_auto(100, pdFALSE);
+            if (flag_modo == 1) // estoy en modo automatico, entonces guardo el valor del pwm en automatico.
+            {
+                global_manager_set_automatic_pwm_power(inten);
+            }
+            else
+            {
+                global_manager_set_pwm_digital_percentage(inten);
+            }
         }
         else
         {
@@ -151,14 +200,15 @@ void analyze_token_pwm_triac_vege(char *token)
         }
 
         break;
-    case 'O':
+    case 'O': // seteo dia si o no LISTO
+
         if (token[9] == 'S')
         {
-            global_manager_update_simul_day_function_status(SIMUL_DAY_ON, pdFALSE);
+            global_manager_set_simul_day_status(SIMUL_DAY_ON);
         }
         else if (token[9] == 'N')
         {
-            global_manager_update_simul_day_function_status(SIMUL_DAY_OFF, pdFALSE);
+            global_manager_set_simul_day_status(SIMUL_DAY_OFF);
         }
         else
         {
@@ -166,14 +216,14 @@ void analyze_token_pwm_triac_vege(char *token)
         }
 
         break;
-    case 'i':                // este es muy largo porque tengo que contemplar los horarios de los dos
+    case 'i':                // este es muy largo porque tengo que contemplar los horarios de los dos. LISTO
         if (token[3] == 'p') // es horario inicial del pwm
         {
             dh = atoi(&token[7]);
             dm = atoi(&token[12]);
 
-            pwm_hora.turn_on_time.tm_hour = dh;
-            pwm_hora.turn_on_time.tm_min = dm;
+            time_pwmi_web.tm_hour = dh;
+            time_pwmi_web.tm_min = dm;
 
             break;
         }
@@ -184,26 +234,26 @@ void analyze_token_pwm_triac_vege(char *token)
             if (token[2] == '1')
             {
 
-                triac_h1.turn_on_time.tm_hour = dh;
-                triac_h1.turn_on_time.tm_min = dm;
+                triac_h1i.tm_hour = dh;
+                triac_h1i.tm_min = dm;
             }
             else if (token[2] == '2')
             {
 
-                triac_h2.turn_on_time.tm_hour = dh;
-                triac_h2.turn_on_time.tm_min = dm;
+                triac_h2i.tm_hour = dh;
+                triac_h2i.tm_min = dm;
             }
             else if (token[2] == '3')
             {
 
-                triac_h3.turn_on_time.tm_hour = dh;
-                triac_h3.turn_on_time.tm_min = dm;
+                triac_h3i.tm_hour = dh;
+                triac_h3i.tm_min = dm;
             }
             else if (token[2] == '4')
             {
 
-                triac_h4.turn_on_time.tm_hour = dh;
-                triac_h4.turn_on_time.tm_min = dm;
+                triac_h4i.tm_hour = dh;
+                triac_h4i.tm_min = dm;
             }
         }
         break;
@@ -213,8 +263,8 @@ void analyze_token_pwm_triac_vege(char *token)
             dh = atoi(&token[7]);
             dm = atoi(&token[12]);
 
-            pwm_hora.turn_off_time.tm_hour = dh;
-            pwm_hora.turn_off_time.tm_min = dm;
+            time_pwmf_web.tm_hour = dh;
+            time_pwmf_web.tm_min = dm;
 
             break;
         }
@@ -225,26 +275,26 @@ void analyze_token_pwm_triac_vege(char *token)
             if (token[2] == '1')
             {
 
-                triac_h1.turn_off_time.tm_hour = dh;
-                triac_h1.turn_off_time.tm_min = dm;
+                triac_h1f.tm_hour = dh;
+                triac_h1f.tm_min = dm;
             }
             else if (token[2] == '2')
             {
 
-                triac_h2.turn_off_time.tm_hour = dh;
-                triac_h2.turn_off_time.tm_min = dm;
+                triac_h2f.tm_hour = dh;
+                triac_h2f.tm_min = dm;
             }
             else if (token[2] == '3')
             {
 
-                triac_h3.turn_off_time.tm_hour = dh;
-                triac_h3.turn_off_time.tm_min = dm;
+                triac_h3f.tm_hour = dh;
+                triac_h3f.tm_min = dm;
             }
             else if (token[2] == '4')
             {
 
-                triac_h4.turn_off_time.tm_hour = dh;
-                triac_h4.turn_off_time.tm_min = dm;
+                triac_h4f.tm_hour = dh;
+                triac_h4f.tm_min = dm;
             }
         }
         else
@@ -257,7 +307,7 @@ void analyze_token_pwm_triac_vege(char *token)
         ESP_LOGW(MAIN, "el token 12 es %c", token[12]);
         ESP_LOGW(MAIN, "el token 5 es %c", token[5]);
         ESP_LOGW(MAIN, "el token 14 es %c", token[14]);
-        if (token[12] == 'E')
+        /*if (token[12] == 'E') //elimino la opcion de prender o apagar la salida 220V
         {
             global_manager_set_triac_mode_manual_on(false);
         }
@@ -265,39 +315,41 @@ void analyze_token_pwm_triac_vege(char *token)
         {
             global_manager_set_triac_mode_off(false);
         }
-        else if (token[5] == 'v')
+        else */
+        if (token[5] == 'v')
         {
             if (token[14] == 'V')
             {
-                global_manager_set_rele_vege_status_on(pdFALSE);
+
+                global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_DISABLE);
             }
             else if (token[14] == 'F')
             {
-                global_manager_set_rele_vege_status_off(pdFALSE);
+                global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_ENABLE);
             }
         }
         else
         {
-            ESP_LOGE(TRIAC, "Error en parseo del Estado triac o vegeflor");
+            ESP_LOGE(TRIAC, "Error en parseo de vegeflor");
         }
         break;
 
     case 'c': // los checkbox del triac
         if (token[9] == '1')
         {
-            triac_h1.enable = 1;
+            en1 = 1;
         }
         if (token[9] == '2')
         {
-            triac_h2.enable = 1;
+            en2 = 1;
         }
         if (token[9] == '3')
         {
-            triac_h3.enable = 1;
+            en3 = 1;
         }
         if (token[9] == '4')
         {
-            triac_h4.enable = 1;
+            en4 = 1;
         }
         break;
     default:
@@ -305,29 +357,36 @@ void analyze_token_pwm_triac_vege(char *token)
     }
 }
 
-
 void parse_pwm_triac_vege(char *buff)
 {
     // el & es el separador de los campos
     ESP_LOGI(MAIN, "Testeo del MAIN parseo");
     char delim[2] = "&";
     char *token;
-    output_mode_t triac_mode;
-    triac_auto_info_t triac_auto;
-    // seteo un par de cosas del triac para que ya tenga los valores de antes
-    int status = global_manager_get_triac_info(&modo_triac, &triac_auto_info);
+    // output_mode_t triac_mode;
+    // triac_auto_info_t triac_auto;
+    //  seteo un par de cosas del triac para que ya tenga los valores de antes
+    // int status = global_manager_get_triac_info(&modo_triac, &triac_auto_info);
 
-    triac_auto_info.triac_auto[0].enable = 0;
-    triac_auto_info.triac_auto[1].enable = 0;
-    triac_auto_info.triac_auto[2].enable = 0;
-    triac_auto_info.triac_auto[3].enable = 0;
+    en1 = 0;
+    en2 = 0;
+    en3 = 0;
+    en4 = 0;
 
-    triac_h1 = triac_auto_info.triac_auto[0];
-    triac_h2 = triac_auto_info.triac_auto[1];
-    triac_h3 = triac_auto_info.triac_auto[2];
-    triac_h4 = triac_auto_info.triac_auto[3];
+    // obtengo los 4 horarios de s.out
+    global_manager_get_s_out_turn_on_time(&triac_h1i, 0);
+    global_manager_get_s_out_turn_off_time(&triac_h1f, 0);
+    //
+    global_manager_get_s_out_turn_on_time(&triac_h2i, 1);
+    global_manager_get_s_out_turn_off_time(&triac_h2f, 1);
+    //
+    global_manager_get_s_out_turn_on_time(&triac_h3i, 2);
+    global_manager_get_s_out_turn_off_time(&triac_h3f, 2);
+    //
+    global_manager_get_s_out_turn_on_time(&triac_h4i, 3);
+    global_manager_get_s_out_turn_off_time(&triac_h4f, 3);
 
-    // Pongo el flag del triac y pwm en manual por default
+    // Pongo el flag del modo del  pwm en manual por default
     flag_modo = 0;
     //   hago los token del header para parsear
     token = strtok(buff, delim);
@@ -338,42 +397,42 @@ void parse_pwm_triac_vege(char *buff)
         token = strtok(NULL, delim);
     }
     // condicion para ver si se mando el modo automatico o no
-    if (flag_modo == 0)
+    if (flag_modo == 0) // significa que sigo en manual
     {
-        global_manager_set_pwm_mode_manual_on();
-        if (global_manager_get_triac_info(&triac_mode, &triac_auto))
-        {
-            if (triac_auto.output_status == TRIAC_OUTPUT_ON)
-            {
-                global_manager_set_triac_mode_manual_on(false);
-            }
-            else if (triac_auto.output_status == TRIAC_OUTPUT_OFF)
-            {
-                global_manager_set_triac_mode_off(false);
-            }
-        }
+        // global_manager_set_pwm_mode(PWM_MANUAL);
     }
-    if (triac_h1.enable != 1)
-        triac_h1.enable = 0;
-    if (triac_h2.enable != 1)
-        triac_h2.enable = 0;
-    if (triac_h3.enable != 1)
-        triac_h3.enable = 0;
-    if (triac_h4.enable != 1)
-        triac_h4.enable = 0;
+    if (en1 != 1)
+        en1 = 0;
+    if (en2 != 1)
+        en2 = 0;
+    if (en3 != 1)
+        en3 = 0;
+    if (en4 != 1)
+        en4 = 0;
     // guardo los horarios de los triac
-    global_manager_update_auto_triac_calendar(triac_h1, 1, false);
-    global_manager_update_auto_triac_calendar(triac_h2, 2, false);
-    global_manager_update_auto_triac_calendar(triac_h3, 3, false);
-    global_manager_update_auto_triac_calendar(triac_h4, 4, false);
-    // guardo el horario del pwm
-    global_manager_update_auto_pwm_calendar(pwm_hora, pdFALSE);
 
-    led_manager_new_update();
+    // set horario 1 final e inicial
+    global_manager_set_s_out_turn_on_time(triac_h1i, 0);
+    global_manager_set_s_out_turn_off_time(triac_h1f, 0);
+    // set horario 2 final e inicial
+    global_manager_set_s_out_turn_on_time(triac_h2i, 1);
+    global_manager_set_s_out_turn_off_time(triac_h2f, 1);
+    // set horario 3 final e inicial
+    global_manager_set_s_out_turn_on_time(triac_h3i, 2);
+    global_manager_set_s_out_turn_off_time(triac_h3f, 2);
+    // set horario 4 final e inicial
+    global_manager_set_s_out_turn_on_time(triac_h4i, 3);
+    global_manager_set_s_out_turn_off_time(triac_h4f, 3);
+
+    // guardo el horario del pwm
+
+    global_manager_set_turn_on_time(time_pwmi_web);
+    global_manager_set_turn_off_time(time_pwmf_web);
+
+    // led_manager_new_update();
 
     ESP_LOGI(MAIN, "Salgo del parseo MAIN");
 }
-
 
 void parse_red(char *buff, red_t *red)
 {
@@ -396,21 +455,20 @@ void parse_red(char *buff, red_t *red)
     }
     red->ID[j] = '\0';
     j = 0;
-    status = global_manager_set_wifi_ssid(red->ID, pdFALSE);
+    // status = global_manager_set_wifi_ssid(red->ID, pdFALSE);
     for (int i = secondEqualIndex + 1; i <= len; i++)
     {
         red->PASS[j] = buff[i];
         j++;
     }
-    status = global_manager_set_wifi_password(red->PASS, pdFALSE);
-    // strncpy(red->ID, buff + equalIndex + 1, index - equalIndex - 1);
-    // strncpy(red->PASS, buff + secondEqualIndex + 1, len - secondEqualIndex - 1);
+    // status = global_manager_set_wifi_password(red->PASS, pdFALSE);
+
     esp_timer_start_once(timer_reset_esp32, 2000000);
     ESP_LOGI(TAG, "Salgo del parseo de RED");
 
-    led_manager_new_update();
+    // led_manager_new_update();
 };
-*/
+
 void parse_hora(char *buff, struct tm *aux)
 {
     // el & es el separador de los campos
@@ -443,7 +501,7 @@ httpd_uri_t config_uri = {
     .method = HTTP_GET,
     .handler = config_get_handler,
     .user_ctx = NULL};
-/*
+
 httpd_uri_t red_post = {
     .uri = "/red",
     .method = HTTP_POST,
@@ -456,7 +514,6 @@ httpd_uri_t pwm_triac_vege_post = {
     .handler = pwm_triac_vege_post_handler,
     .user_ctx = NULL};
 
-*/
 httpd_uri_t hora_post = {
     .uri = "/hora",
     .method = HTTP_POST,
@@ -584,7 +641,7 @@ esp_err_t logo_handler(httpd_req_t *req)
     // Señalar fin de la respuesta
     return httpd_resp_send_chunk(req, NULL, 0);
 }
-/*
+
 //----------HANDLERS PARA LOS POST DE LAS SECCIONES------------//
 esp_err_t pwm_triac_vege_post_handler(httpd_req_t *req)
 {
@@ -625,11 +682,12 @@ esp_err_t pwm_triac_vege_post_handler(httpd_req_t *req)
         parse_pwm_triac_vege(buff);
         ESP_LOGI(TAG, "Salgo del MAIN HANDLER");
         httpd_resp_send(req, NULL, 0);
+
+        set_screen_one_from_web();
+
         return ESP_OK;
     }
 }
-
-
 
 esp_err_t red_post_handler(httpd_req_t *req)
 {
@@ -675,8 +733,6 @@ esp_err_t red_post_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-
-*/
 esp_err_t hora_post_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "ENTRE AL HANDLER DE LA HORA");
@@ -755,6 +811,7 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
     status = global_manager_get_turn_on_time(&time_pwmi_web);
     global_manager_get_turn_off_time(&time_pwmf_web);
     global_manager_get_simul_day_status(&dia_web);
+    ESP_LOGE("DIADIA", " EL DIA ES %u", dia_web);
     global_manager_get_pwm_mode(&modo_pwm_web);
     global_manager_get_automatic_pwm_power(&pwm_auto_web);
 
@@ -774,12 +831,15 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
 
         if (modo_pwm_web == PWM_MANUAL)
         {
+            // ESP_LOGE("TAG", "ENTRE EN MODO PWM_MANUAL");
+
             modo = "Manual";
             cJSON_AddNumberToObject(json_object, "intensidad", pwm_man_web);
             cJSON_AddNumberToObject(json_object, "ih1h", time_pwmi_web.tm_hour);
             cJSON_AddNumberToObject(json_object, "ih1m", time_pwmi_web.tm_min);
             cJSON_AddNumberToObject(json_object, "fh1h", time_pwmf_web.tm_hour);
             cJSON_AddNumberToObject(json_object, "fh1m", time_pwmf_web.tm_min);
+            // ESP_LOGE("TAG", "Las horas son: %u : %u y %u : %u", time_pwmi_web.tm_hour, time_pwmi_web.tm_min, time_pwmf_web.tm_hour, time_pwmf_web.tm_min);
         }
         /*else if (modo_pwm == MANUAL_OFF)
         {
@@ -864,13 +924,13 @@ esp_err_t triac_data_handler(httpd_req_t *req)
     if (status == 1)
     {
         cJSON *json_object = cJSON_CreateObject();
-        if (1 == 1) // modo_triac == MANUAL_ON)
+        /*if (1 == 1) // modo_triac == MANUAL_ON)
         {
             modo = "Encendido";
-        }
+        }*/
 
         // ESP_LOGE(TRIAC, " EL ENABLE DEL 1 ES %d", triac_auto_info.triac_auto[0].enable);
-        cJSON_AddStringToObject(json_object, "Modo", modo);
+        // cJSON_AddStringToObject(json_object, "Modo", modo);
         cJSON_AddBoolToObject(json_object, "cb1", 1);
         cJSON_AddNumberToObject(json_object, "ih1h", triac_h1i.tm_hour);
         cJSON_AddNumberToObject(json_object, "ih1m", triac_h1i.tm_min);
@@ -1027,8 +1087,8 @@ httpd_handle_t start_webserver(void)
         // ESP_LOGI(TAG, "Registering HTML");
         httpd_register_uri_handler(server, &index_uri);
         httpd_register_uri_handler(server, &config_uri);
-        /*httpd_register_uri_handler(server, &pwm_triac_vege_post);
-        httpd_register_uri_handler(server, &red_post);*/
+        httpd_register_uri_handler(server, &pwm_triac_vege_post);
+        httpd_register_uri_handler(server, &red_post);
         httpd_register_uri_handler(server, &hora_post);
         httpd_register_uri_handler(server, &data_red_uri);
         httpd_register_uri_handler(server, &version_data_uri);

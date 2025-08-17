@@ -35,6 +35,8 @@ typedef enum
 
 typedef struct
 {
+    char wifi_ssid[DEVICE_SSID_MAX_LENGTH];
+    char wifi_password[DEVICE_PASS_MAX_LENGTH];
     pwm_mode_t pwm_mode;
     flora_vege_status_t flora_vege_status;
     pwm_auto_info_t pwm_auto;
@@ -130,6 +132,9 @@ uint8_t global_manager_get_automatic_pwm_output_percent_power(uint8_t *output_pe
 
 uint8_t global_manager_set_display_contrast(uint8_t display_contrast);
 uint8_t global_manager_get_display_contrast(uint8_t *display_contrast);
+
+uint8_t global_manager_set_wifi_ssid(char *wifi_ssid, bool read_from_flash);
+uint8_t global_manager_set_wifi_password(char *wifi_password, bool read_from_flash);
 
 uint8_t global_manager_get_net_info(char *ssid, char *password);
 

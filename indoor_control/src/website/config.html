@@ -496,13 +496,13 @@
                 <div class="Triac-form__title">
                     <h2>Control 220V</h2>
                 </div>
-                <div class="Triac-form__select">
+                <!--<div class="Triac-form__select">
                     <label>Estado:</label>
                     <select id="modos_triac" name="modos_triac">
                         <option value="Encendido">ACTIVAR</option>
                         <option value="Apagado">NO</option>
                     </select>
-                </div>
+                </div>-->
                 <table>
 
                     <tr>
@@ -776,11 +776,11 @@
                 document.getElementById("rango").value = data.intensidad;
                 if (data.Modo == "Manual") {
                     document.getElementById("toggle").checked = false;
-                    document.getElementById("modos_triac").disabled = false;
+                    //document.getElementById("modos_triac").disabled = false;
                 }
                 else {
                     document.getElementById("toggle").checked = true;
-                    document.getElementById("modos_triac").disabled = true;
+                    //document.getElementById("modos_triac").disabled = true;
                 }
                 //document.getElementById("modos_pwm").value = data.Modo;
                 document.getElementById("ih_pwm").value = formatNumber(data.ih1h) + ":" + formatNumber(data.ih1m);
@@ -801,7 +801,7 @@
 
                 const data = await result.json();
                 console.log(data);
-                document.getElementById("modos_triac").value = data.Modo;
+                //document.getElementById("modos_triac").value = data.Modo;
                 document.getElementById("checkboxh1").checked = data.cb1;
                 document.getElementById("checkboxh2").checked = data.cb2;
                 document.getElementById("checkboxh3").checked = data.cb3;
@@ -899,11 +899,9 @@
 
         document.addEventListener("DOMContentLoaded", async function () {
             await loadValues();
-            //const red_form = document.getElementById("red_form");
-            //const pwm_triac_vege_form = document.getElementById("pwm_triac_vege");
-            //const triac_form = document.getElementById("triac_form");
-            //const vege_form = document.getElementById("vege_form");
-            /*red_form.addEventListener("submit", async function (event) {
+            const red_form = document.getElementById("red_form");
+            const pwm_triac_vege_form = document.getElementById("pwm_triac_vege");
+            red_form.addEventListener("submit", async function (event) {
                 event.preventDefault();
                 const red_string = document.getElementById("nombre").value;
                 const pass_string = document.getElementById("Contrasenia").value;
@@ -930,8 +928,8 @@
                     const mensaje = "Error en el ingreso de datos de red";
                     alert(mensaje);
                 }
-            });*/
-            /*
+            });
+
             pwm_triac_vege_form.addEventListener("submit", async function (event) {
                 event.preventDefault();
                 //chequeo horarios del triac
@@ -955,7 +953,8 @@
                 console.log(fh1)
                 console.log(ih2)
                 console.log(fh2)
-                const overlap = checkOverlap(en1, en2, en3, en4, ih1, fh1, ih2, fh2, ih3, fh3, ih4, fh4);
+                const overlap = 0
+                //const overlap = checkOverlap(en1, en2, en3, en4, ih1, fh1, ih2, fh2, ih3, fh3, ih4, fh4);
                 //chequeo hoarios del pwm
                 var e_pwm = 0;
                 const pwm_i = obtenerHoraYMinutos("ih_pwm");
@@ -969,7 +968,7 @@
                 }
                 if (overlap == 0 && e_pwm == 0) {
                     console.log("Parametros aceptados")
- 
+
                     const myForm = event.target;
                     const formData = new FormData(myForm);
                     console.log(formData)
@@ -991,7 +990,7 @@
                 }
             });
 
-*/
+
         })
 
     </script>

@@ -134,11 +134,6 @@ static void display_manager_task(void *arg)
     amanecer = pdFALSE;
     get_fading_status(&fade_stat);
     ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
-    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
-    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
-    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
-    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
-    ESP_LOGE("FADING STATUS", "FADING STATUS ES %u", fade_stat);
 
     while (true)
     {
@@ -621,19 +616,19 @@ static void display_manager_task(void *arg)
             case PWM_MANUAL_VALUE:
                 switch (state)
                 {
-                    case NORMAL:
-                        //pwm_dia_rise = display_ev.pwm_value;
-                        //power = display_ev.pwm_value;
-                        get_params();
-                        pwm_dia_rise = display_ev.pwm_value;
-                        if (screen == SCREEN_ONE)
-                        {
-                            ESP_LOGI("PWM_MANUAL_VALUE", "PWM_MANUAL_VALUE");
-                            display_set_power(display_ev.pwm_value, fpower);
-                        }
+                case NORMAL:
+                    // pwm_dia_rise = display_ev.pwm_value;
+                    // power = display_ev.pwm_value;
+                    get_params();
+                    pwm_dia_rise = display_ev.pwm_value;
+                    if (screen == SCREEN_ONE)
+                    {
+                        ESP_LOGI("PWM_MANUAL_VALUE", "PWM_MANUAL_VALUE");
+                        display_set_power(display_ev.pwm_value, fpower);
+                    }
                     break;
-                    default:
-                        break;
+                default:
+                    break;
                 }
                 break;
             case PWM_MODE_UPDATE:
@@ -2234,7 +2229,7 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         global_manager_set_turn_off_time(time_pwmf);
         // set horario device
         current_time_manager_set_current_time(time_device);
-        // set contrast (falta funcion)
+        global_manager_set_display_contrast(contrast);
         // set dia
         if (diabool == false)
         {
@@ -2267,7 +2262,7 @@ esp_err_t save_params() // el/los parametros los tengo que salvar cuando vuelvo 
         break;
     }
     // GET CONTRAST
-    global_manager_set_display_contrast(contrast);
+
     return ESP_OK;
 }
 
@@ -2545,6 +2540,66 @@ uint8_t checkOverlap(struct tm ih1, struct tm fh1, struct tm ih2, struct tm fh2,
         suma += arr[i];
     }
     return suma;
+}
+
+void set_screen_one_from_web()
+{
+    get_params();
+    if (modobool == false) //el modo es manual
+    {
+        power = pwm_man;
+    }
+    else //el modo es automatico
+    {
+        if (compare_times(time_pwmi, time_device) == GREATER) // el horario de inicio del pwm es mayor  que el del equipo, no está la  salida prendida
+        {
+            power = 0;
+        }
+        else if (compare_times(time_pwmi, time_device) == EQUAL) // los horarios son  iguales, ya empieza el pwm pro ende muestro la potencia
+        {
+            power = pwm_dia_rise;
+        }
+        else // horairo de inicio de pwm menor al del equipo
+        {
+            if (compare_times(time_pwmf, time_device) == GREATER) // si el horario final es superior al del equipo, está activa la salida del pwm
+            {
+                if (fade_stat == FADING_IN_PROGRESS)
+                {
+                    power = pwm_dia_rise;
+                }
+                else
+                {
+                    power = pwm_auto;
+                }
+            }
+            else if (compare_times(time_pwmf, time_device) == EQUAL) // horario final iguala l del dispositivo, ya se acaba asique muestro cero
+            {
+
+                power = 0;
+            }
+            else // horario final del dispositivo menor al del equipo, la salida pwm esta apagada
+            {
+                if (time_pwmi.tm_hour > time_pwmf.tm_hour)
+                {
+                    power = pwm_auto;
+                }
+                else
+                {
+                    power = 0;
+                }
+            }
+        }
+    }
+    display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
+    ESP_LOGI(TAG, "Pantalla %u", screen);
+}
+
+void set_screen_two_from_web()
+{
+    get_params();
+
+    display_set_screen_one(&screen, fpower, power, vegeflorachar, diabool, modobool, time_device, time_pwmi, time_pwmf);
+    ESP_LOGI(TAG, "Pantalla %u", screen);
 }
 
 //---------------------------- END OF FILE -------------------------------------

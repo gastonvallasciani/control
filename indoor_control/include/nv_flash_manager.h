@@ -12,42 +12,42 @@
 // Tamaño maximo de key 15 caracteres
 #define RELE_VEGE_STATUS_KEY "rele_vege_key\0"
 #define PWM_DIGITAL_VALUE_KEY "pwm_dig_key\0"
-#define PWM_MODE_KEY "pwm_mode_key\0" 
+#define PWM_MODE_KEY "pwm_mode_key\0"
 #define SIMUL_DAY_STATUS_KEY "sim_day_key\0"
-#define PWM_DATE_ON_KEY "pwm_on_key\0" 
+#define PWM_DATE_ON_KEY "pwm_on_key\0"
 #define PWM_DATE_OFF_KEY "pwm_off_key\0"
 #define PWM_PERCENT_POWER_KEY "pwm_power_key\0"
-#define S_OUT_1_DATE_ON_KEY "s_out_1_on\0" 
+#define S_OUT_1_DATE_ON_KEY "s_out_1_on\0"
 #define S_OUT_1_DATE_OFF_KEY "s_out_1_off\0"
 #define S_OUT_1_DATE_ENABLE "s_out_1_enable\0"
-#define S_OUT_2_DATE_ON_KEY "s_out_2_on\0" 
+#define S_OUT_2_DATE_ON_KEY "s_out_2_on\0"
 #define S_OUT_2_DATE_OFF_KEY "s_out_2_off\0"
 #define S_OUT_2_DATE_ENABLE "s_out_2_enable\0"
-#define S_OUT_3_DATE_ON_KEY "s_out_3_on\0" 
+#define S_OUT_3_DATE_ON_KEY "s_out_3_on\0"
 #define S_OUT_3_DATE_OFF_KEY "s_out_3_off\0"
 #define S_OUT_3_DATE_ENABLE "s_out_3_enable\0"
-#define S_OUT_4_DATE_ON_KEY "s_out_4_on\0" 
+#define S_OUT_4_DATE_ON_KEY "s_out_4_on\0"
 #define S_OUT_4_DATE_OFF_KEY "s_out_4_off\0"
 #define S_OUT_4_DATE_ENABLE "s_out_4_enable\0"
 #define PPF_KEY "ppf_key\0"
 #define DISPLAY_CONTRAST_KEY "cont_key\0"
-
-
-
+#define WIFI_AP_SSID_KEY "ssid_ap_key\0"
+#define WIFI_AP_PASSWORD_KEY "pass_ap_key\0"
 
 // DEFAULT VALUES
-#define RELE_VEGE_STATUS_DEFAULT 0 // OFF
-#define PWM_DIGITAL_VALUE_DEFAULT 0 // pwm value configurado pro tecla. Rango: 0-100
-#define PWM_MODE_DEFAULT 0 // PWM_MANUAL 
+#define RELE_VEGE_STATUS_DEFAULT 0     // OFF
+#define PWM_DIGITAL_VALUE_DEFAULT 0    // pwm value configurado pro tecla. Rango: 0-100
+#define PWM_MODE_DEFAULT 0             // PWM_MANUAL
 #define PWM_SIMUL_DAY_STATUS_DEFAULT 0 // SIMUL_DAY_OFF
-#define PWM_PERCENT_POWER_DEFAULT 50 // 50 percent
-#define S_OUT_1_DATE_ENABLE_DEFAULT 1 // enable
-#define S_OUT_2_DATE_ENABLE_DEFAULT 0 // disable
-#define S_OUT_3_DATE_ENABLE_DEFAULT 0 // disable
-#define S_OUT_4_DATE_ENABLE_DEFAULT 0 // disable
+#define PWM_PERCENT_POWER_DEFAULT 50   // 50 percent
+#define S_OUT_1_DATE_ENABLE_DEFAULT 1  // enable
+#define S_OUT_2_DATE_ENABLE_DEFAULT 0  // disable
+#define S_OUT_3_DATE_ENABLE_DEFAULT 0  // disable
+#define S_OUT_4_DATE_ENABLE_DEFAULT 0  // disable
 #define PPF_DEFAULT 1000
 #define CONTRASTE_DEFAULT 10
-
+#define WIFI_AP_SSID_DEFAULT "Lumenar01" // el tamaño maximo del ssid no debe exceder los 32 caracteres
+#define WIFI_AP_PASSWORD_DEFAULT "12345678"
 
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------

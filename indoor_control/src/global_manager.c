@@ -43,6 +43,10 @@ static flora_vege_status_t nv_init_flora_vege_status(void);
 static s_out_conf_t nv_init_s_out_calendar(uint8_t s_out_num);
 static uint16_t nv_init_ppf(void);
 static uint8_t nv_init_display_contrast_value(void);
+static void nv_init_ssid_ap_wifi(void);
+static void nv_save_ssid_ap_wifi(char *ssid);
+static void nv_init_password_ap_wifi(void);
+static void nv_save_password_ap_wifi(char *password);
 
 static uint8_t global_manager_init_automatic_pwm_params(pwm_auto_info_t pwm_auto);
 static uint8_t global_manager_init_pwm_mode(pwm_mode_t pwm_mode);
@@ -429,6 +433,56 @@ static pwm_mode_t nv_init_pwm_mode(void)
     }
 }
 //------------------------------------------------------------------------------
+static void nv_init_ssid_ap_wifi(void)
+{
+    char ssid[DEVICE_SSID_MAX_LENGTH];
+    memset(ssid, '\0', sizeof(ssid));
+
+    if (read_str_from_flash(WIFI_AP_SSID_KEY, ssid))
+    {
+#ifdef DEBUG_MODULE
+        printf("SSID READ: %s \n", ssid);
+#endif
+        global_manager_set_wifi_ssid(ssid, true);
+    }
+    else
+    {
+#ifdef DEBUG_MODULE
+        printf("SSID READING FAILED \n");
+#endif
+    }
+}
+//------------------------------------------------------------------------------
+static void nv_save_ssid_ap_wifi(char *ssid)
+{
+    write_parameter_on_flash_str(WIFI_AP_SSID_KEY, ssid);
+}
+//------------------------------------------------------------------------------
+static void nv_init_password_ap_wifi(void)
+{
+    char password[DEVICE_PASS_MAX_LENGTH];
+    memset(password, '\0', sizeof(password));
+
+    if (read_str_from_flash(WIFI_AP_PASSWORD_KEY, password))
+    {
+#ifdef DEBUG_MODULE
+        printf("WIFI PASSWORD READ: %s \n", password);
+#endif
+        global_manager_set_wifi_password(password, true);
+    }
+    else
+    {
+#ifdef DEBUG_MODULE
+        printf("WIFI PASSWORD READING FAILED \n");
+#endif
+    }
+}
+//------------------------------------------------------------------------------
+static void nv_save_password_ap_wifi(char *password)
+{
+    write_parameter_on_flash_str(WIFI_AP_PASSWORD_KEY, password);
+}
+//------------------------------------------------------------------------------
 device_mode_t global_manager_find_device_mode(void)
 {
     device_mode_t device_mode;
@@ -505,6 +559,9 @@ static void global_manager_task(void *arg)
     s_out_auto_info_t s_out_auto_info;
     s_out_conf_t s_out_conf;
     s_out_config_info_t s_out_config_info;
+
+    // nv_init_ssid_ap_wifi();
+    // nv_init_password_ap_wifi();
 
     pwm_auto_info.percent_power = nv_init_auto_percent_power();
     pwm_auto_info.simul_day_status = nv_init_simul_day_status();

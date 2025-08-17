@@ -12,6 +12,7 @@
 #include "../include/display_dogs164.h"
 // #include "../include/display_manager.h"
 #include "../include/board_def.h"
+#include "esp_log.h"
 
 #define RESET_PIN_DISPLAY RST_DSPY
 
@@ -425,6 +426,7 @@ esp_err_t display_set_screen_one(screen_t *screen, char *fpower, uint8_t power, 
     }
     // segunda fila
     set_cursor(1, 0);
+    ESP_LOGE("TAG", "La potencia es %u", power);
     display_write_string(numero); // escribo el valor de potencia
     set_cursor(1, 5);
     display_write_char(vege_flora); // escribo la letra si es vege o flora
