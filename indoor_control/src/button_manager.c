@@ -23,6 +23,7 @@
 #include "../include/pwm_manager.h"
 #include "../include/jumpers_manager.h"
 #include "../include/display_manager.h"
+#include "esp_log.h"
 
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
@@ -516,6 +517,16 @@ void button_event_manager_task(void *pvParameters)
             }
         }
     }
+}
+
+//------------------------------------------------------------------------------
+void change_mode_device()
+{
+    ESP_LOGE("CHANGEMODEDEVICE", "ENTRO A CHANGE MODE DEVICE");
+    button_events_t ev;
+    ev.cmd = VEGE_BUTTON_PUSHED_3_SECONDS;
+
+    xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
 }
 //--------------------DEFINICION DE FUNCIONES EXTERNAS--------------------------
 //------------------------------------------------------------------------------

@@ -151,9 +151,8 @@ void analyze_token_pwm_triac_vege(char *token)
     {
     case 't': // parseo modo, solo se ve el automatico //LISTO
         flag_modo = 1;
-        // global_manager_set_pwm_mode(PWM_AUTOMATIC); // aca falta mandar el comando para que se actualice el display y todo el equipo
-        //  global_manager_set_triac_mode_auto(false);
-        //  global_manager_set_pwm_mode_auto();
+        global_manager_set_pwm_mode(PWM_MANUAL);
+
         break;
     case 'r':
         ESP_LOGI(PWM, "%d", strlen(token)); // LISTO? CHEQUEAR QUE PASA EN MANUAL Y AUTO
@@ -397,9 +396,10 @@ void parse_pwm_triac_vege(char *buff)
         token = strtok(NULL, delim);
     }
     // condicion para ver si se mando el modo automatico o no
+    ESP_LOGE(MAIN, "el flag modo es: %u", flag_modo);
     if (flag_modo == 0) // significa que sigo en manual
     {
-        // global_manager_set_pwm_mode(PWM_MANUAL);
+        global_manager_set_pwm_mode(PWM_AUTOMATIC);
     }
     if (en1 != 1)
         en1 = 0;
@@ -428,6 +428,9 @@ void parse_pwm_triac_vege(char *buff)
 
     global_manager_set_turn_on_time(time_pwmi_web);
     global_manager_set_turn_off_time(time_pwmf_web);
+
+    // mando comando para actualizar el modo
+    change_mode_device();
 
     // led_manager_new_update();
 

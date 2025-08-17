@@ -42,6 +42,7 @@ typedef struct
 //--------------------DECLARACION DE FUNCIONES EXTERNAS-------------------------
 //------------------------------------------------------------------------------
 void button_manager_init(void);
+void change_mode_device();
 
 //--------------------FIN DEL ARCHIVO-------------------------------------------
 #endif /* BUTTON_MANAGER_H__ */
