@@ -28,6 +28,7 @@
 #include "../include/button_manager.h"
 #include "../include/display_manager.h"
 #include "esp_log.h"
+#include "board_def.h"
 
 static const char *TAG = "WEBSERVER";
 static const char *VERSIONN = "VERSION";
@@ -87,6 +88,8 @@ uint8_t en1 = 0; // 0 apagado, 1 activado
 uint8_t en2 = 0;
 uint8_t en3 = 0;
 uint8_t en4 = 0;
+
+s_out_auto_info_t sout_info;
 
 // triac_auto_info_t triac_auto_info; // variable para leer toda la data del triac (y los 4 horarios)
 
@@ -814,7 +817,7 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
     status = global_manager_get_turn_on_time(&time_pwmi_web);
     global_manager_get_turn_off_time(&time_pwmf_web);
     global_manager_get_simul_day_status(&dia_web);
-    ESP_LOGE("DIADIA", " EL DIA ES %u", dia_web);
+
     global_manager_get_pwm_mode(&modo_pwm_web);
     global_manager_get_automatic_pwm_power(&pwm_auto_web);
 
@@ -912,6 +915,7 @@ esp_err_t triac_data_handler(httpd_req_t *req)
 {
     char *modo;
     uint8_t status = 0;
+
     // status = global_manager_get_triac_info(&modo_triac, &triac_auto_info);
     status = global_manager_get_s_out_turn_on_time(&triac_h1i, 0);
     global_manager_get_s_out_turn_off_time(&triac_h1f, 0);
@@ -924,6 +928,9 @@ esp_err_t triac_data_handler(httpd_req_t *req)
     //
     global_manager_get_s_out_turn_on_time(&triac_h4i, 3);
     global_manager_get_s_out_turn_off_time(&triac_h4f, 3);
+
+    global_manager_get_s_out_automatic_info(&sout_info);
+
     if (status == 1)
     {
         cJSON *json_object = cJSON_CreateObject();
@@ -955,7 +962,7 @@ esp_err_t triac_data_handler(httpd_req_t *req)
         cJSON_AddNumberToObject(json_object, "fh4h", triac_h4f.tm_hour);
         cJSON_AddNumberToObject(json_object, "fh4m", triac_h4f.tm_min);
 
-        if (1 == 1) // triac_auto_info.output_status == TRIAC_OUTPUT_ON)
+        if (sout_info.output_status == S_OUT_OUTPUT_ON)
         {
             modo = "ON";
             cJSON_AddStringToObject(json_object, "State", modo);
