@@ -530,8 +530,8 @@ uint8_t global_manager_get_net_info(char *ssid, char *password)
     return (0);*/
     /*char wifi_ssid[DEVICE_SSID_MAX_LENGTH];
     char wifi_password[DEVICE_PASS_MAX_LENGTH];*/
-    strcpy(ssid, "TEST");
-    strcpy(password, "PASS_PRUEBA");
+    strcpy(ssid, "LUMENAR01");
+    strcpy(password, "11111111");
     return 1;
 }
 //------------------------------------------------------------------------------

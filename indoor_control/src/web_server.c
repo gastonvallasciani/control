@@ -882,16 +882,32 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
             modo = "No";
         }
         cJSON_AddStringToObject(json_object, "DIA", modo);
-        global_manager_get_automatic_pwm_output_status(&auto_pwm_output_status);
-        if (auto_pwm_output_status == PWM_OUTPUT_ON) // pwm_info.output_status == PWM_OUTPUT_ON)
+        if (modo_pwm_web == PWM_AUTOMATIC)
         {
-            modo = "ON";
-            cJSON_AddStringToObject(json_object, "State", modo);
+            global_manager_get_automatic_pwm_output_status(&auto_pwm_output_status);
+            if (auto_pwm_output_status == PWM_OUTPUT_ON) // pwm_info.output_status == PWM_OUTPUT_ON)
+            {
+                modo = "ON";
+                cJSON_AddStringToObject(json_object, "State", modo);
+            }
+            else
+            {
+                modo = "OFF";
+                cJSON_AddStringToObject(json_object, "State", modo);
+            }
         }
         else
         {
-            modo = "OFF";
-            cJSON_AddStringToObject(json_object, "State", modo);
+            if (pwm_man_web == 0)
+            {
+                modo = "OFF";
+                cJSON_AddStringToObject(json_object, "State", modo);
+            }
+            else
+            {
+                modo = "ON";
+                cJSON_AddStringToObject(json_object, "State", modo);
+            }
         }
 
         char *json_str = cJSON_Print(json_object);

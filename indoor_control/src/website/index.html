@@ -194,7 +194,7 @@
                 <th style="width: 30px;"></th>
                 <th>Encendido</th>
                 <th>Apagado</th>
-                <th style="width: 70px;">Habilitado</th>
+                <!--<th style="width: 70px;">Habilitado</th>-->
             </tr>
 
             <tr>
@@ -202,10 +202,10 @@
                     <th><label>T1</label></th>
                     <th><span id="TRIAC_horarioi1_h">--</span>:<span id="TRIAC_horarioi1_m">--</span></th>
                     <th><span id="TRIAC_horariof1_h">--</span>:<span id="TRIAC_horariof1_m">--</span></th>
-                    <th>
+                    <!--<th>
                         <p id="h1e" style="display: none;color: darkgreen;">&#x2714</p>
                         <p id="h1d" style="display: none;color: red;">X</p>
-                    </th>
+                    </th>-->
                 </div>
             </tr>
             <tr>
@@ -213,10 +213,10 @@
                     <th><label>T2</label></th>
                     <th><span id="TRIAC_horarioi2_h">--</span>:<span id="TRIAC_horarioi2_m">--</span></th>
                     <th><span id="TRIAC_horariof2_h">--</span>:<span id="TRIAC_horariof2_m">--</span></th>
-                    <th>
+                    <!--<th>
                         <p id="h2e" style="display: none;color: darkgreen;">&#x2714</p>
                         <p id="h2d" style="display: none;color: red;">X</p>
-                    </th>
+                    </th>-->
                 </div>
             </tr>
             <tr>
@@ -224,10 +224,10 @@
                     <th><label>T3</label></th>
                     <th><span id="TRIAC_horarioi3_h">--</span>:<span id="TRIAC_horarioi3_m">--</span></th>
                     <th><span id="TRIAC_horariof3_h">--</span>:<span id="TRIAC_horariof3_m">--</span></th>
-                    <th>
+                    <!--<th>
                         <p id="h3e" style="display: none;color: darkgreen;">&#x2714</p>
                         <p id="h3d" style="display: none;color: red;">X</p>
-                    </th>
+                    </th>-->
                 </div>
             </tr>
             <tr>
@@ -235,10 +235,10 @@
                     <th><label>T4</label></th>
                     <th><span id="TRIAC_horarioi4_h">--</span>:<span id="TRIAC_horarioi4_m">--</span></th>
                     <th><span id="TRIAC_horariof4_h">--</span>:<span id="TRIAC_horariof4_m">--</span></th>
-                    <th>
+                    <!--<th>
                         <p id="h4e" style="display: none; color: darkgreen;">&#x2714</p>
                         <p id="h4d" style="display: none; color: red;">X</p>
-                    </th>
+                    </th>-->
                 </div>
             </tr>
         </table>
@@ -313,7 +313,7 @@
                 }).then(data => {
                     console.log(data)
                     //document.getElementById("TRIAC_modo").textContent = data.Modo;
-                    if (data.cb1 == true) {
+                    /*if (data.cb1 == true) {
                         document.getElementById('h1d').style.display = 'none'
                         document.getElementById('h1e').style.display = 'block'
                     }
@@ -344,7 +344,7 @@
                     else {
                         document.getElementById('h4e').style.display = 'none'
                         document.getElementById('h4d').style.display = 'block'
-                    }
+                    }*/
                     document.getElementById("TRIAC_horarioi1_h").textContent = formatNumber(data.ih1h);
                     document.getElementById("TRIAC_horarioi1_m").textContent = formatNumber(data.ih1m);
                     document.getElementById("TRIAC_horariof1_h").textContent = formatNumber(data.fh1h);

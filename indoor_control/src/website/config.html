@@ -509,7 +509,7 @@
                         <th style="width: 30px;"></th>
                         <th>Encendido</th>
                         <th>Apagado</th>
-                        <th style="width: 70px;">Habilitar</th>
+                        <!--<th style="width: 70px;">Habilitar</th>-->
                     </tr>
 
                     <tr>
@@ -517,7 +517,7 @@
                             <th><label>T1</label></th>
                             <th><input type="time" id="ih1" name="ih1" value="00:00"></th>
                             <th><input type="time" id="fh1" name="fh1" value="00:00"></th>
-                            <th><input type="checkbox" id="checkboxh1" name="checkboxh1"></th>
+                            <!--<th><input type="checkbox" id="checkboxh1" name="checkboxh1"></th>-->
                         </div>
                     </tr>
                     <tr>
@@ -525,7 +525,7 @@
                             <th><label>T2</label></th>
                             <th><input type="time" id="ih2" name="ih2" value="00:00"></th>
                             <th><input type="time" id="fh2" name="fh2" value="00:00"></th>
-                            <th><input type="checkbox" id="checkboxh2" name="checkboxh2"></th>
+                            <!--<th><input type="checkbox" id="checkboxh2" name="checkboxh2"></th>-->
                         </div>
                     </tr>
                     <tr>
@@ -533,7 +533,7 @@
                             <th><label>T3</label></th>
                             <th><input type="time" id="ih3" name="ih3" value="00:00"></th>
                             <th><input type="time" id="fh3" name="fh3" value="00:00"></th>
-                            <th> <input type="checkbox" id="checkboxh3" name="checkboxh3"></th>
+                            <!--<th> <input type="checkbox" id="checkboxh3" name="checkboxh3"></th>-->
                         </div>
                     </tr>
                     <tr>
@@ -541,7 +541,7 @@
                             <th><label>T4</label></th>
                             <th><input type="time" id="ih4" name="ih4" value="00:00"></th>
                             <th><input type="time" id="fh4" name="fh4" value="00:00"></th>
-                            <th> <input type="checkbox" id="checkboxh4" name="checkboxh4"></th>
+                            <!--<th> <input type="checkbox" id="checkboxh4" name="checkboxh4"></th>-->
                         </div>
                     </tr>
                 </table>
@@ -740,12 +740,12 @@
 
         }
 
-        function checkOverlap(en1, en2, en3, en4, ih1, fh1, ih2, fh2, ih3, fh3, ih4, fh4) {
+        function checkOverlap(ih1, fh1, ih2, fh2, ih3, fh3, ih4, fh4) {
             var arr = [0, 0, 0, 0, 0, 0];
             var suma = 0;
             console.log("entro en overlap")
-            console.log(en1)
-            console.log(en2)
+            //console.log(en1)
+            //console.log(en2)
             //if (en1 == true && en2 == true) {
             //console.log("entro en primer if")
             if (checkZero(ih1, fh1) == 0 && checkZero(ih2, fh2) == 0) {
@@ -843,10 +843,10 @@
                 const data = await result.json();
                 console.log(data);
                 //document.getElementById("modos_triac").value = data.Modo;
-                document.getElementById("checkboxh1").checked = data.cb1;
-                document.getElementById("checkboxh2").checked = data.cb2;
-                document.getElementById("checkboxh3").checked = data.cb3;
-                document.getElementById("checkboxh4").checked = data.cb4;
+                //document.getElementById("checkboxh1").checked = data.cb1;
+                //document.getElementById("checkboxh2").checked = data.cb2;
+                //document.getElementById("checkboxh3").checked = data.cb3;
+                //document.getElementById("checkboxh4").checked = data.cb4;
                 document.getElementById("ih1").value = formatNumber(data.ih1h) + ":" + formatNumber(data.ih1m);
                 document.getElementById("fh1").value = formatNumber(data.fh1h) + ":" + formatNumber(data.fh1m);
                 document.getElementById("ih2").value = formatNumber(data.ih2h) + ":" + formatNumber(data.ih2m);
@@ -974,14 +974,14 @@
             pwm_triac_vege_form.addEventListener("submit", async function (event) {
                 event.preventDefault();
                 //chequeo horarios del triac
-                const en1 = document.getElementById("checkboxh1").checked
-                const en2 = document.getElementById("checkboxh2").checked
-                const en3 = document.getElementById("checkboxh3").checked
-                const en4 = document.getElementById("checkboxh4").checked
-                console.log(en1)
-                console.log(en2)
-                console.log(en3)
-                console.log(en4)
+                //const en1 = document.getElementById("checkboxh1").checked
+                //const en2 = document.getElementById("checkboxh2").checked
+                //const en3 = document.getElementById("checkboxh3").checked
+                //const en4 = document.getElementById("checkboxh4").checked
+                //console.log(en1)
+                //console.log(en2)
+                //console.log(en3)
+                //console.log(en4)
                 const ih1 = obtenerHoraYMinutos("ih1");
                 const fh1 = obtenerHoraYMinutos("fh1");
                 const ih2 = obtenerHoraYMinutos("ih2");
@@ -995,7 +995,7 @@
                 console.log(ih2)
                 console.log(fh2)
                 //var overlap = 0;
-                const overlap = checkOverlap(en1, en2, en3, en4, ih1, fh1, ih2, fh2, ih3, fh3, ih4, fh4);
+                const overlap = checkOverlap(ih1, fh1, ih2, fh2, ih3, fh3, ih4, fh4);
                 //chequeo hoarios del pwm
                 var e_pwm = 0;
                 const pwm_i = obtenerHoraYMinutos("ih_pwm");

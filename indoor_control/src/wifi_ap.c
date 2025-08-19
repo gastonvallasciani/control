@@ -25,7 +25,7 @@
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE
 
-#define EXAMPLE_ESP_WIFI_SSID "TEST"
+#define EXAMPLE_ESP_WIFI_SSID "LUMENAR01"
 #define EXAMPLE_ESP_WIFI_PASS "11111111"
 #define EXAMPLE_ESP_WIFI_CHANNEL 1
 #define EXAMPLE_MAX_STA_CONN 10
