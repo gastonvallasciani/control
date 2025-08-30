@@ -176,6 +176,7 @@ void current_time_manager_set_current_time(struct tm current_time)
 
     ev.cmd = SET_CURRENT_TIME;
     ev.current_time = current_time;
+    ev.current_time.tm_sec = 0; // Asegurarse de que los segundos estén en 0
     xQueueSend(current_time_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
