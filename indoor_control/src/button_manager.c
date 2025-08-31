@@ -70,6 +70,7 @@ static TimerHandle_t pwm_up_timer;
 
 static TimerHandle_t aux_button_timer = NULL;  // Timer para manejar el tiempo de 3 segundos
 static TimerHandle_t vege_button_timer = NULL; // Timer para manejar el tiempo de 3 segundos
+static TimerHandle_t aux_button_timer_reset_factory_settings = NULL;  // Timer para manejar el tiempo de 6 segundos
 
 static int64_t last_time_pwm_down = 0;
 static int64_t last_time_pwm_up = 0;
@@ -85,6 +86,7 @@ static void aux_button_interrupt(void *arg);
 static void pwm_up_timer_callback(TimerHandle_t xTimer);
 static void pwm_down_timer_callback(TimerHandle_t xTimer);
 static void vege_button_timer_callback(TimerHandle_t xTimer);
+static void aux_button_timer_reset_factory_settings_callback(TimerHandle_t xTimer);
 
 //--------------------DEFINICION DE DATOS INTERNOS------------------------------
 //------------------------------------------------------------------------------
@@ -146,6 +148,16 @@ static void aux_button_timer_callback(TimerHandle_t xTimer)
     }
 }
 //------------------------------------------------------------------------------
+static void aux_button_timer_reset_factory_settings_callback(TimerHandle_t xTimer)
+{
+    button_events_t ev;
+    ev.cmd = FABRIC_RESET; // Usa el evento que corresponda para reset de fábrica
+    if (gpio_get_level(BT_AUX) == 0)
+    {
+        xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+    }
+}
+//------------------------------------------------------------------------------
 static void IRAM_ATTR aux_button_interrupt(void *arg)
 {
     button_events_t ev;
@@ -157,21 +169,32 @@ static void IRAM_ATTR aux_button_interrupt(void *arg)
 
         if (aux_button_timer == NULL)
         {
-            // Crear el temporizador si no existe
             aux_button_timer = xTimerCreate("Aux Button Timer",
                                             pdMS_TO_TICKS(3000), // 3 segundos
                                             pdFALSE,             // No repetitivo
                                             NULL, aux_button_timer_callback);
         }
-        // Reiniciar y empezar el temporizador
+        if (aux_button_timer_reset_factory_settings == NULL)
+        {
+            aux_button_timer_reset_factory_settings = xTimerCreate("Aux Button Timer 6s",
+                                               pdMS_TO_TICKS(10000), // 10 segundos
+                                               pdFALSE,             // No repetitivo
+                                               NULL, aux_button_timer_reset_factory_settings_callback);
+        }
+        // Reiniciar y empezar ambos temporizadores
         xTimerStartFromISR(aux_button_timer, NULL);
+        xTimerStartFromISR(aux_button_timer_reset_factory_settings, NULL);
     }
     else // Botón liberado
     {
-        // Detener el temporizador en caso de que no haya expirado
+        // Detener ambos temporizadores en caso de que no hayan expirado
         if (aux_button_timer != NULL && xTimerIsTimerActive(aux_button_timer))
         {
             xTimerStopFromISR(aux_button_timer, NULL);
+        }
+        if (aux_button_timer_reset_factory_settings != NULL && xTimerIsTimerActive(aux_button_timer_reset_factory_settings))
+        {
+            xTimerStopFromISR(aux_button_timer_reset_factory_settings, NULL);
         }
 
         // Calcular el tiempo que el botón estuvo presionado
@@ -188,6 +211,7 @@ static void IRAM_ATTR aux_button_interrupt(void *arg)
         }
 
         aux_button_timer = NULL;
+        aux_button_timer_reset_factory_settings = NULL;
         start_time_aux = 0; // Reiniciar el tiempo de inicio
     }
 }
