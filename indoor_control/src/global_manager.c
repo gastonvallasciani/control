@@ -443,7 +443,7 @@ static void nv_init_ssid_ap_wifi(void)
 #ifdef DEBUG_MODULE
         printf("SSID READ: %s \n", ssid);
 #endif
-        global_manager_set_wifi_ssid(ssid, true);
+        global_manager_set_wifi_ssid(ssid);
     }
     else
     {
@@ -468,7 +468,7 @@ static void nv_init_password_ap_wifi(void)
 #ifdef DEBUG_MODULE
         printf("WIFI PASSWORD READ: %s \n", password);
 #endif
-        global_manager_set_wifi_password(password, true);
+        global_manager_set_wifi_password(password);
     }
     else
     {
@@ -522,17 +522,16 @@ uint8_t global_manager_is_device_in_phase_3(void)
 //------------------------------------------------------------------------------
 uint8_t global_manager_get_net_info(char *ssid, char *password)
 {
-    /*get_net_info();
-    if (wait_net_info_response(ssid, password))
+    
+    if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
     {
+        strcpy(ssid, global_manager_info.nv_info.wifi_ssid);
+        strcpy(password, global_manager_info.nv_info.wifi_password);    
+        xSemaphoreGive(global_manager_semaph);
         return (1);
     }
-    return (0);*/
-    /*char wifi_ssid[DEVICE_SSID_MAX_LENGTH];
-    char wifi_password[DEVICE_PASS_MAX_LENGTH];*/
-    strcpy(ssid, "LUMENAR01");
-    strcpy(password, "11111111");
-    return 1;
+    xSemaphoreGive(global_manager_semaph);
+    return (0);
 }
 //------------------------------------------------------------------------------
 static void global_manager_task(void *arg)
@@ -560,8 +559,8 @@ static void global_manager_task(void *arg)
     s_out_conf_t s_out_conf;
     s_out_config_info_t s_out_config_info;
 
-    // nv_init_ssid_ap_wifi();
-    // nv_init_password_ap_wifi();
+    nv_init_ssid_ap_wifi();
+    nv_init_password_ap_wifi();
 
     pwm_auto_info.percent_power = nv_init_auto_percent_power();
     pwm_auto_info.simul_day_status = nv_init_simul_day_status();
@@ -1406,6 +1405,47 @@ uint8_t global_manager_set_ppf(uint32_t ppf)
         if (ppf_aux != ppf)
         {
             write_parameter_on_flash_uint32(PPF_KEY, (uint32_t)ppf);
+        }
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+uint8_t global_manager_set_wifi_ssid(char *wifi_ssid)
+{
+    char ssid_aux[DEVICE_SSID_MAX_LENGTH];
+
+    if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        strcpy(ssid_aux, global_manager_info.nv_info.wifi_ssid);
+        xSemaphoreGive(global_manager_semaph);
+        if(strcmp(ssid_aux, wifi_ssid) != 0)
+        {
+            memset(global_manager_info.nv_info.wifi_ssid, '\0', sizeof(global_manager_info.nv_info.wifi_ssid));
+            strncpy(global_manager_info.nv_info.wifi_ssid, wifi_ssid, strlen(wifi_ssid));
+            nv_save_ssid_ap_wifi(global_manager_info.nv_info.wifi_ssid);
+        }
+        return 1;
+    }
+    xSemaphoreGive(global_manager_semaph);
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_set_wifi_password(char *wifi_password)
+{
+    char password_aux[DEVICE_PASS_MAX_LENGTH];
+
+    if (xSemaphoreTake(global_manager_semaph, 10 / portTICK_PERIOD_MS))
+    {
+        strcpy(password_aux, global_manager_info.nv_info.wifi_password);
+        xSemaphoreGive(global_manager_semaph);
+        if(strcmp(password_aux, wifi_password) != 0)
+        {
+            memset(global_manager_info.nv_info.wifi_password, '\0', sizeof(global_manager_info.nv_info.wifi_password));
+            strncpy(global_manager_info.nv_info.wifi_password, wifi_password, strlen(wifi_password));
+            nv_save_password_ap_wifi(global_manager_info.nv_info.wifi_password);
         }
         return 1;
     }

@@ -63,6 +63,8 @@ static void first_time_flash(void)
     init_parameter_in_flash_uint32(S_OUT_4_DATE_ENABLE, S_OUT_4_DATE_ENABLE_DEFAULT);
     init_parameter_in_flash_uint32(PPF_KEY, PPF_DEFAULT);
     init_parameter_in_flash_uint32(DISPLAY_CONTRAST_KEY, CONTRASTE_DEFAULT);
+    init_parameter_in_flash_str(WIFI_AP_SSID_KEY, WIFI_AP_SSID_DEFAULT);
+    init_parameter_in_flash_str(WIFI_AP_PASSWORD_KEY, WIFI_AP_PASSWORD_DEFAULT);
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------

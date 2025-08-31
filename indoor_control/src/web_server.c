@@ -461,13 +461,13 @@ void parse_red(char *buff, red_t *red)
     }
     red->ID[j] = '\0';
     j = 0;
-    // status = global_manager_set_wifi_ssid(red->ID, pdFALSE);
+     status = global_manager_set_wifi_ssid(red->ID);
     for (int i = secondEqualIndex + 1; i <= len; i++)
     {
         red->PASS[j] = buff[i];
         j++;
     }
-    // status = global_manager_set_wifi_password(red->PASS, pdFALSE);
+    status = global_manager_set_wifi_password(red->PASS);
 
     esp_timer_start_once(timer_reset_esp32, 2000000);
     ESP_LOGI(TAG, "Salgo del parseo de RED");
