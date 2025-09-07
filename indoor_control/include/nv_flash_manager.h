@@ -39,12 +39,12 @@
 #define PWM_DIGITAL_VALUE_DEFAULT 0    // pwm value configurado pro tecla. Rango: 0-100
 #define PWM_MODE_DEFAULT 0             // PWM_MANUAL
 #define PWM_SIMUL_DAY_STATUS_DEFAULT 0 // SIMUL_DAY_OFF
-#define PWM_PERCENT_POWER_DEFAULT 50   // 50 percent
+#define PWM_PERCENT_POWER_DEFAULT 0   // 50 percent
 #define S_OUT_1_DATE_ENABLE_DEFAULT 1  // enable
 #define S_OUT_2_DATE_ENABLE_DEFAULT 0  // disable
 #define S_OUT_3_DATE_ENABLE_DEFAULT 0  // disable
 #define S_OUT_4_DATE_ENABLE_DEFAULT 0  // disable
-#define PPF_DEFAULT 1000
+#define PPF_DEFAULT 0
 #define CONTRASTE_DEFAULT 10
 #define WIFI_AP_SSID_DEFAULT "Lumenar01" // el tamaño maximo del ssid no debe exceder los 32 caracteres
 #define WIFI_AP_PASSWORD_DEFAULT "12345678"

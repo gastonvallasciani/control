@@ -69,6 +69,23 @@ __attribute__((unused)) static void set_manual_time(void)
     current_time_manager_set_current_time(manual_time);
 }
 //------------------------------------------------------------------------------
+void reset_manual_time(void)
+{
+    struct tm manual_time;
+
+    // Configura la hora manualmente
+    manual_time.tm_year = 2024 - 1900; // Año - 1900 (2024 en este caso)
+    manual_time.tm_mon = 10;           // Mes (0 = Enero, 10 = Noviembre)
+    manual_time.tm_mday = 3;           // Día del mes
+    manual_time.tm_hour = 0;          // Hora (formato 24 horas)
+    manual_time.tm_min = 0;           // Minuto
+    manual_time.tm_sec = 0;            // Segundo
+    manual_time.tm_isdst = -1;         // Ajuste de horario de verano automático
+
+    // Llama a la función para establecer el tiempo
+    current_time_manager_set_current_time(manual_time);
+}
+//------------------------------------------------------------------------------
 static void current_time_manager_task(void *arg)
 {
     current_time_event_t ev;

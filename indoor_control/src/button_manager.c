@@ -23,6 +23,7 @@
 #include "../include/pwm_manager.h"
 #include "../include/jumpers_manager.h"
 #include "../include/display_manager.h"
+#include "../include/current_time_manager.h"
 #include "esp_log.h"
 
 //--------------------MACROS Y DEFINES------------------------------------------
@@ -486,6 +487,11 @@ void button_event_manager_task(void *pvParameters)
 
                 break;
             case FABRIC_RESET:
+                printf("INIT FACTORY RESET \n");
+                printf("RESET DATE ON RTC \n");
+                reset_manual_time();
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+                printf("RESET NVS DATA \n");
                 nv_flash_driver_erase_flash();
                 break;
             case AUX_BUTTON_PUSHED:

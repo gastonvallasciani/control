@@ -204,41 +204,49 @@ static calendar_t nv_init_pwm_calendar(void)
 {
     pwm_auto_info_t pwm_calendar;
     calendar_t calendar;
+    int retries = 3;
+    bool on_ok = false, off_ok = false;
 
-    if (read_date_from_flash(PWM_DATE_ON_KEY, &pwm_calendar.turn_on_time))
-    {
+    // Reintentos para ON
+    for (int i = 0; i < retries; i++) {
+        if (read_date_from_flash(PWM_DATE_ON_KEY, &pwm_calendar.turn_on_time)) {
 #ifdef DEBUG_MODULE
-        printf("TURN ON TIME HOUR READ: %d \n", pwm_calendar.turn_on_time.tm_hour);
-        printf("TURN ON TIME min READ: %d \n", pwm_calendar.turn_on_time.tm_min);
+            printf("TURN ON TIME HOUR READ: %d \n", pwm_calendar.turn_on_time.tm_hour);
+            printf("TURN ON TIME min READ: %d \n", pwm_calendar.turn_on_time.tm_min);
 #endif
-        calendar.turn_on_time = pwm_calendar.turn_on_time;
-        calendar.read_ok = true;
-    }
-    else
-    {
-        calendar.read_ok = false;
+            calendar.turn_on_time = pwm_calendar.turn_on_time;
+            on_ok = true;
+            break;
+        } else {
 #ifdef DEBUG_MODULE
-        printf("TURN ON CALENDAR READING FAILED \n");
+            printf("TURN ON CALENDAR READING FAILED (try %d) \n", i+1);
 #endif
+        }
     }
-    if (read_date_from_flash(PWM_DATE_OFF_KEY, &pwm_calendar.turn_off_time))
-    {
-#ifdef DEBUG_MODULE
-        printf("TURN OFF TIME HOUR READ: %d \n", pwm_calendar.turn_off_time.tm_hour);
-        printf("TURN OFF TIME min READ: %d \n", pwm_calendar.turn_off_time.tm_min);
-#endif
-        calendar.turn_off_time = pwm_calendar.turn_off_time;
-        calendar.read_ok = true;
-    }
-    else
-    {
-        calendar.read_ok = false;
-#ifdef DEBUG_MODULE
-        printf("TURN OFF CALENDAR READING FAILED \n");
-#endif
-    }
+    calendar.read_ok = on_ok;
 
-    return (calendar);
+    // Reintentos para OFF
+    for (int i = 0; i < retries; i++) {
+        if (read_date_from_flash(PWM_DATE_OFF_KEY, &pwm_calendar.turn_off_time)) {
+#ifdef DEBUG_MODULE
+            printf("TURN OFF TIME HOUR READ: %d \n", pwm_calendar.turn_off_time.tm_hour);
+            printf("TURN OFF TIME min READ: %d \n", pwm_calendar.turn_off_time.tm_min);
+#endif
+            calendar.turn_off_time = pwm_calendar.turn_off_time;
+            off_ok = true;
+            break;
+        } else {
+#ifdef DEBUG_MODULE
+            printf("TURN OFF CALENDAR READING FAILED (try %d) \n", i+1);
+#endif
+        }
+    }
+    if (off_ok)
+        calendar.read_ok = true;
+    else
+        calendar.read_ok = false;
+
+    return calendar;
 }
 //------------------------------------------------------------------------------
 static s_out_conf_t nv_init_s_out_calendar(uint8_t s_out_num)
@@ -559,9 +567,6 @@ static void global_manager_task(void *arg)
     s_out_conf_t s_out_conf;
     s_out_config_info_t s_out_config_info;
 
-    nv_init_ssid_ap_wifi();
-    nv_init_password_ap_wifi();
-
     pwm_auto_info.percent_power = nv_init_auto_percent_power();
     pwm_auto_info.simul_day_status = nv_init_simul_day_status();
     if (pwm_calendar.read_ok)
@@ -582,12 +587,8 @@ static void global_manager_task(void *arg)
         }
     }
 
-    global_manager_init_automatic_pwm_params(pwm_auto_info);
-    global_manager_init_pwm_mode(pwm_mode);
-    global_manager_init_pwm_digital_percentage(pwm_digital_value);
-    global_manager_init_flora_vege_status(flora_vege_status);
-    global_manager_init_ppf(ppf);
-    global_manager_init_display_contrast(display_contrast);
+    nv_init_ssid_ap_wifi();
+    nv_init_password_ap_wifi();
 
     printf("INICIO PRINT DEBUG \n");
     printf("PWM DIGITAL VALUE %d \n", pwm_digital_value);
@@ -608,6 +609,15 @@ static void global_manager_task(void *arg)
     printf("PPF VALUE %d \n", ppf);
     printf("DISPLAY CONTRAST %d \n", display_contrast);
     printf("FIN PRINT DEBUG \n");
+
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+    global_manager_init_automatic_pwm_params(pwm_auto_info);
+    global_manager_init_pwm_mode(pwm_mode);
+    global_manager_init_pwm_digital_percentage(pwm_digital_value);
+    global_manager_init_flora_vege_status(flora_vege_status);
+    global_manager_init_ppf(ppf);
+    global_manager_init_display_contrast(display_contrast);
 
     if (flora_vege_status == FLORA_VEGE_OUTPUT_ENABLE)
     {
@@ -721,7 +731,6 @@ void global_manager_init(void)
 
     current_time_manager_init();
     display_manager_init();
-
     xTaskCreate(global_manager_task, "global_manager_task",
                 configMINIMAL_STACK_SIZE * 4, NULL, configMAX_PRIORITIES - 2, NULL);
 

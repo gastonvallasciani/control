@@ -17,5 +17,6 @@
 void current_time_manager_init(void);
 void current_time_manager_set_current_time(struct tm current_time);
 uint8_t global_manager_get_current_time_info(struct tm *current_time);
+void reset_manual_time(void);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* CURRENT_TIME_MANAGER_H__ */
