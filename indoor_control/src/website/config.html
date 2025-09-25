@@ -1004,7 +1004,10 @@
                 console.log(pwm_f)
                 if (pwm_i.hora == pwm_f.hora) {
                     if (pwm_i.minutos == pwm_f.minutos) {
-                        e_pwm = 1;
+                        //if (pwm_i.hora != 0 || pwm_i.minutos != 0) {
+                            e_pwm = 1;
+                        //}
+
                     }
                 }
                 if (overlap == 0 && e_pwm == 0) {

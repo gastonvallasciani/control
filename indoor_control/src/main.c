@@ -10,7 +10,7 @@
 #include "../include/s_run_manager.h"
 #include "../include/wifi_manager.h"
 #include "esp_log.h"
-#define PHASE_NUMBER 3
+#define PHASE_NUMBER 5
 
 void app_main()
 {

@@ -461,7 +461,7 @@ void parse_red(char *buff, red_t *red)
     }
     red->ID[j] = '\0';
     j = 0;
-     status = global_manager_set_wifi_ssid(red->ID);
+    status = global_manager_set_wifi_ssid(red->ID);
     for (int i = secondEqualIndex + 1; i <= len; i++)
     {
         red->PASS[j] = buff[i];
@@ -574,9 +574,9 @@ esp_err_t index_get_handler(httpd_req_t *req)
     extern unsigned char index_start[] asm("_binary_index_html_start");
     extern unsigned char index_end[] asm("_binary_index_html_end");
     size_t index_len = index_end - index_start;
-    size_t chunk_size = 2048; // podés ajustar este tamaño
+    size_t chunk_size = 512; // podés ajustar este tamaño
     size_t offset = 0;
-
+    httpd_resp_set_type(req, "text/html");
     while (offset < index_len)
     {
         size_t bytes_to_send = (index_len - offset > chunk_size) ? chunk_size : (index_len - offset);
@@ -598,8 +598,9 @@ esp_err_t config_get_handler(httpd_req_t *req)
     extern unsigned char config_start[] asm("_binary_config_html_start");
     extern unsigned char config_end[] asm("_binary_config_html_end");
     size_t config_len = config_end - config_start;
-    size_t chunk_size = 2048; // ajustá este valor si querés chunks más grandes o más chicos
+    size_t chunk_size = 512; // ajustá este valor si querés chunks más grandes o más chicos
     size_t offset = 0;
+    httpd_resp_set_type(req, "text/html");
 
     while (offset < config_len)
     {
@@ -689,6 +690,7 @@ esp_err_t pwm_triac_vege_post_handler(httpd_req_t *req)
         ESP_LOGI(TAG, "Salgo del MAIN HANDLER");
         httpd_resp_send(req, NULL, 0);
 
+        set_screen_one_from_web();
         set_screen_one_from_web();
 
         return ESP_OK;
