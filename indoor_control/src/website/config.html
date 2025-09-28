@@ -459,7 +459,7 @@
                 <div class="PWM-form__box1">
                     <div class="PWM-form__h2--range">
                         <label>Potencia</label>
-                        <input type="range" id="rango" name="rango" min="10" max="100" value="0"
+                        <input type="range" id="rango" name="rango" min="0" max="100" value="0"
                             onchange="updateRangoValue()">
                     </div>
                     <div class="PWM-form__Valor">
@@ -934,6 +934,16 @@
         function updateRangoValue() {
             const rangoInput = document.getElementById('rango');
             const rangoValueSpan = document.getElementById('rangoValor');
+            let raw = parseInt(rangoInput.value);
+            let val;
+
+            if (raw <= 5) {
+                val = 0;            // todo lo de 0 a 5 se redondea a 0
+                rangoInput.value = 0;
+            } else {
+                val = Math.max(10, raw);  // de 6 para arriba arranca en 10
+                rangoInput.value = val;
+            }
 
             rangoValueSpan.textContent = rangoInput.value + '%';
         }
@@ -1005,7 +1015,7 @@
                 if (pwm_i.hora == pwm_f.hora) {
                     if (pwm_i.minutos == pwm_f.minutos) {
                         //if (pwm_i.hora != 0 || pwm_i.minutos != 0) {
-                            e_pwm = 1;
+                        e_pwm = 1;
                         //}
 
                     }
