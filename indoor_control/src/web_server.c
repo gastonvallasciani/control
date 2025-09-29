@@ -162,6 +162,7 @@ void analyze_token_pwm_triac_vege(char *token)
         if (strlen(token) == 7)             // caso de que sea un numero de un solo digito
         {
             inten = (uint8_t)atoi(&token[6]);
+            ESP_LOGE(PWM, "La instensidad es %u de un digito", inten);
             if (flag_modo == 1) // estoy en modo automatico, entonces guardo el valor del pwm en automatico.
             {
                 global_manager_set_automatic_pwm_power(inten);
@@ -175,6 +176,7 @@ void analyze_token_pwm_triac_vege(char *token)
         {
             dh = atoi(&token[6]);
             inten = (uint8_t)atoi(&token[6]);
+            ESP_LOGE(PWM, "La instensidad es %u de dos digitos", inten);
             ESP_LOGI(TAG, "%d", dh);
             if (flag_modo == 1) // estoy en modo automatico, entonces guardo el valor del pwm en automatico.
             {
@@ -187,6 +189,9 @@ void analyze_token_pwm_triac_vege(char *token)
         }
         else if (strlen(token) == 9) // caso 100
         {
+            dh = atoi(&token[6]);
+            inten = (uint8_t)atoi(&token[6]);
+            ESP_LOGE(PWM, "La instensidad es %u de tres digitos", inten);
             if (flag_modo == 1) // estoy en modo automatico, entonces guardo el valor del pwm en automatico.
             {
                 global_manager_set_automatic_pwm_power(inten);
@@ -690,9 +695,7 @@ esp_err_t pwm_triac_vege_post_handler(httpd_req_t *req)
         ESP_LOGI(TAG, "Salgo del MAIN HANDLER");
         httpd_resp_send(req, NULL, 0);
 
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-
-        set_screen_one_from_web();
+                set_screen_one_from_web();
         // set_screen_one_from_web();
 
         return ESP_OK;
@@ -891,8 +894,16 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
             global_manager_get_automatic_pwm_output_status(&auto_pwm_output_status);
             if (auto_pwm_output_status == PWM_OUTPUT_ON) // pwm_info.output_status == PWM_OUTPUT_ON)
             {
-                modo = "ON";
-                cJSON_AddStringToObject(json_object, "State", modo);
+                if (pwm_auto_web == 0)
+                {
+                    modo = "OFF";
+                    cJSON_AddStringToObject(json_object, "State", modo);
+                }
+                else
+                {
+                    modo = "ON";
+                    cJSON_AddStringToObject(json_object, "State", modo);
+                }
             }
             else
             {

@@ -2544,12 +2544,13 @@ uint8_t checkOverlap(struct tm ih1, struct tm fh1, struct tm ih2, struct tm fh2,
 
 void set_screen_one_from_web()
 {
+    vTaskDelay(100 / portTICK_PERIOD_MS);
     get_params();
-    if (modobool == false) //el modo es manual
+    if (modobool == false) // el modo es manual
     {
         power = pwm_man;
     }
-    else //el modo es automatico
+    else // el modo es automatico
     {
         if (compare_times(time_pwmi, time_device) == GREATER) // el horario de inicio del pwm es mayor  que el del equipo, no está la  salida prendida
         {
