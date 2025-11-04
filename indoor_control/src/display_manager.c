@@ -316,17 +316,19 @@ static void display_manager_task(void *arg)
                         }
                     }
                     // aca tengo que entrar a la primera linea titilante en la pantanlla en la que este
-                    if (screen == SCREEN_ONE)
+                    if (screen == SCREEN_TWO)
+                    {
+                    }
+                    else
                     {
                         display_set_screen_three(&screen, time_device, time_pwmi, time_pwmf, fpower, diabool, modobool, contrast, pwm_auto);
                         ESP_LOGI(TAG, "Pantalla %u", screen);
+                        state = CONFIG_LINE;
+                        line = 0;
+                        param_two = 1;
+                        param_three = 1;
+                        display_blink_manager(screen, 3); // con esta veo que pantalla estoy
                     }
-
-                    state = CONFIG_LINE;
-                    line = 0;
-                    param_two = 1;
-                    param_three = 1;
-                    display_blink_manager(screen, 3); // con esta veo que pantalla estoy
 
                     break;
                 case CONFIG_LINE:
