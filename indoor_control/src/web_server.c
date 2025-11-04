@@ -695,7 +695,7 @@ esp_err_t pwm_triac_vege_post_handler(httpd_req_t *req)
         ESP_LOGI(TAG, "Salgo del MAIN HANDLER");
         httpd_resp_send(req, NULL, 0);
 
-                set_screen_one_from_web();
+        set_screen_one_from_web();
         // set_screen_one_from_web();
 
         return ESP_OK;
