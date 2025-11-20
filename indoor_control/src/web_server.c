@@ -27,6 +27,7 @@
 #include "../include/jumpers_manager.h"
 #include "../include/button_manager.h"
 #include "../include/display_manager.h"
+#include "../include/flora_vege_manager.h"
 #include "esp_log.h"
 #include "board_def.h"
 
@@ -327,12 +328,17 @@ void analyze_token_pwm_triac_vege(char *token)
         {
             if (token[14] == 'V')
             {
-
-                global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_DISABLE);
+                ESP_LOGE(TRIAC, "Seteo en VEGETATIVO");
+                // global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_DISABLE);
+                // flora_vege_turn_off();
+                change_vege_flor_mode();
             }
             else if (token[14] == 'F')
             {
-                global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_ENABLE);
+                ESP_LOGE(TRIAC, "Seteo en FLORACION");
+                // global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_ENABLE);
+                // flora_vege_turn_on();
+                change_vege_flor_mode();
             }
         }
         else

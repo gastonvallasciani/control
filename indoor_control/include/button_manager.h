@@ -43,6 +43,7 @@ typedef struct
 //------------------------------------------------------------------------------
 void button_manager_init(void);
 void change_mode_device();
+void change_vege_flor_mode();
 
 //--------------------FIN DEL ARCHIVO-------------------------------------------
 #endif /* BUTTON_MANAGER_H__ */

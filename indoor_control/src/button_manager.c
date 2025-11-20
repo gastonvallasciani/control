@@ -69,9 +69,9 @@ volatile int64_t start_time_aux = 0;
 static TimerHandle_t pwm_down_timer;
 static TimerHandle_t pwm_up_timer;
 
-static TimerHandle_t aux_button_timer = NULL;  // Timer para manejar el tiempo de 3 segundos
-static TimerHandle_t vege_button_timer = NULL; // Timer para manejar el tiempo de 3 segundos
-static TimerHandle_t aux_button_timer_reset_factory_settings = NULL;  // Timer para manejar el tiempo de 6 segundos
+static TimerHandle_t aux_button_timer = NULL;                        // Timer para manejar el tiempo de 3 segundos
+static TimerHandle_t vege_button_timer = NULL;                       // Timer para manejar el tiempo de 3 segundos
+static TimerHandle_t aux_button_timer_reset_factory_settings = NULL; // Timer para manejar el tiempo de 6 segundos
 
 static int64_t last_time_pwm_down = 0;
 static int64_t last_time_pwm_up = 0;
@@ -178,9 +178,9 @@ static void IRAM_ATTR aux_button_interrupt(void *arg)
         if (aux_button_timer_reset_factory_settings == NULL)
         {
             aux_button_timer_reset_factory_settings = xTimerCreate("Aux Button Timer 6s",
-                                               pdMS_TO_TICKS(10000), // 10 segundos
-                                               pdFALSE,             // No repetitivo
-                                               NULL, aux_button_timer_reset_factory_settings_callback);
+                                                                   pdMS_TO_TICKS(10000), // 10 segundos
+                                                                   pdFALSE,              // No repetitivo
+                                                                   NULL, aux_button_timer_reset_factory_settings_callback);
         }
         // Reiniciar y empezar ambos temporizadores
         xTimerStartFromISR(aux_button_timer, NULL);
@@ -555,6 +555,15 @@ void change_mode_device()
     ESP_LOGE("CHANGEMODEDEVICE", "ENTRO A CHANGE MODE DEVICE");
     button_events_t ev;
     ev.cmd = VEGE_BUTTON_PUSHED_3_SECONDS;
+
+    xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+}
+
+void change_vege_flor_mode()
+{
+    ESP_LOGE("CHANGEVEGEFLOR", "ENTRO A CHANGE vegeflor mode");
+    button_events_t ev;
+    ev.cmd = VEGE_BUTTON_PUSHED;
 
     xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
 }
