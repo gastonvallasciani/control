@@ -331,14 +331,30 @@ void analyze_token_pwm_triac_vege(char *token)
                 ESP_LOGE(TRIAC, "Seteo en VEGETATIVO");
                 // global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_DISABLE);
                 // flora_vege_turn_off();
-                change_vege_flor_mode();
+                global_manager_get_flora_vege_status(&vegeflor); // obtengo el estado para saber cual hay actualmente
+                if (vegeflor == FLORA_VEGE_OUTPUT_DISABLE)       // este caso es vegetativo
+                {
+                    // no hago nada
+                }
+                else
+                {
+                    change_vege_flor_mode(); // cambio a vegetativo
+                }
             }
             else if (token[14] == 'F')
             {
                 ESP_LOGE(TRIAC, "Seteo en FLORACION");
                 // global_manager_set_flora_vege_status(FLORA_VEGE_OUTPUT_ENABLE);
                 // flora_vege_turn_on();
-                change_vege_flor_mode();
+                global_manager_get_flora_vege_status(&vegeflor); // obtengo el estado para saber cual hay actualmente
+                if (vegeflor == FLORA_VEGE_OUTPUT_ENABLE)        // este caso es floracion
+                {
+                    // no hago nada
+                }
+                else
+                {
+                    change_vege_flor_mode(); // cambio a vegetativo
+                }
             }
         }
         else
