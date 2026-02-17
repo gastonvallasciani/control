@@ -30,7 +30,7 @@
 #define EXAMPLE_ESP_WIFI_CHANNEL 1
 #define EXAMPLE_MAX_STA_CONN 10
 #define TAG "WIFI AP"
-#define DEFAULT_AP_IP "192.164.4.1 "
+#define DEFAULT_AP_IP "192.164.4.1"
 #define DEFAULT_AP_GATEWAY "192.164.4.1"
 #define DEFAULT_AP_NETMASK "255.255.255.0"
 //------------------------------------------------------------------------------
@@ -190,7 +190,9 @@ void wifi_init_softap(void)
             .authmode = WIFI_AUTH_WPA2_PSK,
 #endif
             .pmf_cfg = {
-                .required = true,
+
+                .capable = true,
+                .required = false,
             },
         },
     };
@@ -225,6 +227,7 @@ void wifi_init_softap(void)
 
     // 3- Fase de start de WiFi
     ESP_ERROR_CHECK(esp_wifi_start());
+    ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
 
     ESP_LOGI(TAG, "wifi_init_softap finished. SSID:%s password:%s channel:%d", ssid, password, EXAMPLE_ESP_WIFI_CHANNEL);
 }
